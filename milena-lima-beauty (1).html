@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milena Lima Beauty</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./store.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <div id="store" class="page page-store">
+    <div class="urgency-banner">🌸 Frete <em>GRÁTIS</em> em compras acima de R$ 150 · Consultoria personalizada inclusa em cada pedido ✨</div>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#">Milena Lima <span>Beauty</span></a>
+        <nav class="main-nav">
+          <a href="#produtos" onclick="goto('produtos'); return false;">Produtos</a>
+          <a href="#skincare" onclick="goto('skincare'); return false;">Skincare</a>
+          <a href="#rotina" onclick="goto('rotina'); return false;">Rotinas</a>
+          <a href="#contato" onclick="goto('contato'); return false;">Contato</a>
+        </nav>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="toggleCart()">Carrinho <span class="cpill" id="cnt">0</span></button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-inner">
+          <div class="hero-left">
+            <p class="hero-kicker"><span class="kicker-line"></span>Consultora Oficial Mary Kay</p>
+            <h1 class="hero-headline">
+              <span class="hl-line">Beleza que</span>
+              <span class="hl-line">transforma.</span>
+              <span class="hl-line">Cuidado que</span>
+              <span class="hl-line">permanece.</span>
+            </h1>
+            <p class="hero-sub">Produtos de alta performance para pele, corpo e bem-estar. Consultoria personalizada, feita para você.</p>
+            <div class="hero-actions">
+              <button class="btn btn-editorial" onclick="goto('produtos')">Descobrir produtos</button>
+              <button class="btn btn-ghost-editorial" onclick="goto('skincare')">Guia de skincare</button>
+            </div>
+            <div class="hero-proof">
+              <span class="proof-stars">★★★★★</span>
+              <p class="proof-text"><strong>+500 clientes</strong> &middot; Avaliação 4.9/5</p>
+            </div>
+          </div>
+          <div class="hero-right">
+            <div class="hero-orbs">
+              <div class="orb orb-1"></div>
+              <div class="orb orb-2"></div>
+            </div>
+            <div class="showcase-card">
+              <div class="showcase-badge">Best Seller</div>
+              <div class="showcase-visual">🌸</div>
+              <div class="showcase-info">
+                <p class="showcase-cat">Skincare</p>
+                <p class="showcase-name">Sérum Vitamina C</p>
+                <p class="showcase-price">R$ 129,90</p>
+              </div>
+              <button class="showcase-cta" onclick="addC(2)">Adicionar ao carrinho</button>
+            </div>
+          </div>
+        </div>
+        <div class="hero-stats-bar">
+          <div class="stat-item"><span class="stat-num" data-count="500" data-suffix="+">500+</span><span class="stat-lbl">Clientes atendidas</span></div>
+          <div class="stat-sep"></div>
+          <div class="stat-item"><span class="stat-num" data-count="8" data-suffix=" anos">8 anos</span><span class="stat-lbl">de experiência</span></div>
+          <div class="stat-sep"></div>
+          <div class="stat-item"><span class="stat-num" data-count="4.9" data-suffix="">4.9</span><span class="stat-lbl">Avaliação média</span></div>
+          <div class="stat-sep"></div>
+          <div class="stat-item"><span class="stat-num" data-count="100" data-suffix="%">100%</span><span class="stat-lbl">Originais Mary Kay</span></div>
+        </div>
+      </section>
+
+      <div class="marquee"><div class="marquee-track">
+        <span>Skincare · Maquiagem · Corpo &amp; Banho · Fragrâncias · Autocuidado · Mary Kay · Consultoria ·</span>
+        <span>Skincare · Maquiagem · Corpo &amp; Banho · Fragrâncias · Autocuidado · Mary Kay · Consultoria ·</span>
+      </div></div>
+
+      <div class="benefits-strip">
+        <div class="container benefits-grid">
+          <div class="benefit-item reveal">
+            <span class="benefit-icon">🚚</span>
+            <div><div class="benefit-title">Entrega para todo o Brasil</div><div class="benefit-desc">Rápido e com rastreamento</div></div>
+          </div>
+          <div class="benefit-item reveal">
+            <span class="benefit-icon">💳</span>
+            <div><div class="benefit-title">Parcelamento em até 12x</div><div class="benefit-desc">Sem juros no cartão</div></div>
+          </div>
+          <div class="benefit-item reveal">
+            <span class="benefit-icon">🛡️</span>
+            <div><div class="benefit-title">100% Originais Mary Kay</div><div class="benefit-desc">Garantia de autenticidade</div></div>
+          </div>
+          <div class="benefit-item reveal">
+            <span class="benefit-icon">💬</span>
+            <div><div class="benefit-title">Consultoria personalizada</div><div class="benefit-desc">Atendimento exclusivo grátis</div></div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section products" id="produtos">
+        <div class="container section-header">
+          <div>
+            <p class="section-eyebrow">Curadoria</p>
+            <h2 class="section-title">Produtos em <em>destaque</em></h2>
+          </div>
+          <div class="filters">
+            <button class="filter-btn on" onclick="filP('todos', this)">Todos</button>
+            <button class="filter-btn" onclick="filP('pele', this)">Skincare</button>
+            <button class="filter-btn" onclick="filP('corpo', this)">Corpo</button>
+            <button class="filter-btn" onclick="filP('maquiagem', this)">Maquiagem</button>
+            <button class="filter-btn" onclick="filP('fragrancias', this)">Fragrâncias</button>
+          </div>
+        </div>
+        <div class="container pgrid" id="pgrid"></div>
+      </section>
+
+      <section class="section feature-split">
+        <div class="container split-grid">
+          <div class="feature-copy">
+            <p class="section-eyebrow">Consultoria</p>
+            <h2 class="section-title section-title-light">Uma experiência <em>personalizada</em></h2>
+            <p class="section-text">Cada pele é única. Ofereço análise individual, recomendações precisas e acompanhamento contínuo para resultados reais.</p>
+            <button class="btn btn-primary" onclick="showToast('Em breve: agendamento online ✨')">Agendar consulta</button>
+          </div>
+          <div class="feature-visual">🌺</div>
+        </div>
+      </section>
+
+      <section class="section section-cards alt" id="skincare">
+        <div class="container section-header">
+          <div>
+            <p class="section-eyebrow">Educação & bem-estar</p>
+            <h2 class="section-title">Guia de <em>autocuidado</em></h2>
+            <p class="section-text">Conheça os segredos para uma pele saudável, radiante e equilibrada todos os dias.</p>
+          </div>
+        </div>
+        <div class="container card-grid">
+          <article class="info-card"><div class="info-icon">💧</div><h3>Hidratação Profunda</h3><p>Hidratação é o pilar de toda boa rotina. Pele hidratada é jovem, resistente e luminosa.</p><div class="steps"><div class="step"><span>1</span><p>Limpe o rosto antes de qualquer produto</p></div><div class="step"><span>2</span><p>Aplique sérum em movimentos ascendentes</p></div><div class="step"><span>3</span><p>Sele com hidratante levemente aquecido</p></div></div></article>
+          <article class="info-card"><div class="info-icon">☀️</div><h3>Proteção Solar Diária</h3><p>O protetor solar é o produto antienvelhecimento mais eficaz que existe. Sem exceção, todos os dias.</p><div class="steps"><div class="step"><span>1</span><p>FPS 50 como último passo da manhã</p></div><div class="step"><span>2</span><p>Aplique 15 min antes da exposição</p></div><div class="step"><span>3</span><p>Reaplicar a cada 2h ao sol</p></div></div></article>
+          <article class="info-card"><div class="info-icon">🌙</div><h3>Rotina Noturna</h3><p>À noite a pele se regenera completamente. Este é o momento dos produtos mais intensivos.</p><div class="steps"><div class="step"><span>1</span><p>Double cleansing: óleo + espuma</p></div><div class="step"><span>2</span><p>Tônico e sérum regenerador</p></div><div class="step"><span>3</span><p>Creme noturno rico e óleo facial</p></div></div></article>
+          <article class="info-card"><div class="info-icon">🌿</div><h3>Esfoliação Semanal</h3><p>Remove células mortas para uma pele mais luminosa e receptiva aos ativos de tratamento.</p><div class="steps"><div class="step"><span>1</span><p>Esfolie 1-2x por semana</p></div><div class="step"><span>2</span><p>Movimentos circulares suaves, 2 min</p></div><div class="step"><span>3</span><p>Hidrate bem em seguida</p></div></div></article>
+          <article class="info-card"><div class="info-icon">🛁</div><h3>Ritual Corporal</h3><p>O corpo merece atenção. Uma rotina corporal transforma pele e bem-estar simultaneamente.</p><div class="steps"><div class="step"><span>1</span><p>Escovação a seco antes do banho</p></div><div class="step"><span>2</span><p>Banho morno, não quente</p></div><div class="step"><span>3</span><p>Loção com pele ainda úmida</p></div></div></article>
+          <article class="info-card"><div class="info-icon">✨</div><h3>Olhos & Lábios</h3><p>As áreas mais delicadas precisam de produtos específicos e cuidado diário e consistente.</p><div class="steps"><div class="step"><span>1</span><p>Creme para olhos manhã e noite</p></div><div class="step"><span>2</span><p>Hidratante labial com FPS</p></div><div class="step"><span>3</span><p>Esfolie os lábios 1x por semana</p></div></div></article>
+        </div>
+      </section>
+
+      <section class="section section-routine" id="rotina">
+        <div class="container section-header">
+          <div>
+            <p class="section-eyebrow">Passo a passo</p>
+            <h2 class="section-title">Rotina matinal <em>completa</em></h2>
+          </div>
+        </div>
+        <div class="container routine-grid">
+          <article class="routine-step"><span class="step-number">01</span><div class="step-icon">🧼</div><h3>Limpeza</h3><p>Gel ou espuma para remover impurezas da noite.</p></article>
+          <article class="routine-step"><span class="step-number">02</span><div class="step-icon">🧴</div><h3>Tônico</h3><p>Equilibra pH e prepara a pele.</p></article>
+          <article class="routine-step"><span class="step-number">03</span><div class="step-icon">💊</div><h3>Sérum</h3><p>Vitamina C ou ácido hialurônico.</p></article>
+          <article class="routine-step"><span class="step-number">04</span><div class="step-icon">👁</div><h3>Olhos</h3><p>Creme contorno com toque leve.</p></article>
+          <article class="routine-step"><span class="step-number">05</span><div class="step-icon">💧</div><h3>Hidratante</h3><p>Sela toda a hidratação.</p></article>
+          <article class="routine-step"><span class="step-number">06</span><div class="step-icon">☀️</div><h3>FPS 50</h3><p>O mais importante. Sempre.</p></article>
+          <article class="routine-step"><span class="step-number">07</span><div class="step-icon">💄</div><h3>Maquiagem</h3><p>Realce o que já está lindo.</p></article>
+        </div>
+      </section>
+
+      <section class="section section-testimonials">
+        <div class="container section-header">
+          <div>
+            <p class="section-eyebrow">Depoimentos reais</p>
+            <h2 class="section-title">O que nossas <em>clientes dizem</em></h2>
+            <p class="section-text">Histórias reais de mulheres que transformaram a própria beleza.</p>
+          </div>
+        </div>
+        <div class="testimonials-track">
+          <article class="tcard">
+            <div class="tcard-stars">★★★★★</div>
+            <p class="tcard-text">"O Sérum Vitamina C mudou completamente a minha pele. Em menos de um mês as manchas clarearam visivelmente. Super recomendo a consultoria da Milena!"</p>
+            <div class="tcard-author">
+              <div class="tcard-avatar">🌸</div>
+              <div><div class="tcard-name">Ana Paula F.</div><div class="tcard-city">São Paulo, SP</div></div>
+            </div>
+          </article>
+          <article class="tcard">
+            <div class="tcard-stars">★★★★★</div>
+            <p class="tcard-text">"Finalmente encontrei um batom que dura o dia todo e ainda cuida dos meus lábios. A Milena acertou em cheio na indicação para o meu tom de pele!"</p>
+            <div class="tcard-author">
+              <div class="tcard-avatar">💄</div>
+              <div><div class="tcard-name">Carla Mendes</div><div class="tcard-city">Rio de Janeiro, RJ</div></div>
+            </div>
+          </article>
+          <article class="tcard">
+            <div class="tcard-stars">★★★★★</div>
+            <p class="tcard-text">"O atendimento personalizado faz toda a diferença. A Milena entende a minha pele e sempre indica o produto certo. Compro há 3 anos e nunca me decepcionei!"</p>
+            <div class="tcard-author">
+              <div class="tcard-avatar">✨</div>
+              <div><div class="tcard-name">Juliana Costa</div><div class="tcard-city">Curitiba, PR</div></div>
+            </div>
+          </article>
+          <article class="tcard">
+            <div class="tcard-stars">★★★★★</div>
+            <p class="tcard-text">"A consultoria online foi incrível! Recebi um roteiro completo para o meu tipo de pele e os produtos chegaram rapidinho. Minha pele nunca esteve tão bem!"</p>
+            <div class="tcard-author">
+              <div class="tcard-avatar">🌿</div>
+              <div><div class="tcard-name">Fernanda S.</div><div class="tcard-city">Belo Horizonte, MG</div></div>
+            </div>
+          </article>
+          <article class="tcard">
+            <div class="tcard-stars">★★★★★</div>
+            <p class="tcard-text">"O Perfume Eau de Parfum é simplesmente divino. Recebo elogios toda vez que uso. A Milena tem um olhar especial para ajudar cada cliente a encontrar o seu produto ideal."</p>
+            <div class="tcard-author">
+              <div class="tcard-avatar">💐</div>
+              <div><div class="tcard-name">Patrícia R.</div><div class="tcard-city">Porto Alegre, RS</div></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-newsletter" id="contato">
+        <div class="container newsletter-card">
+          <div>
+            <p class="section-eyebrow text-center">Newsletter</p>
+            <h2 class="section-title">Dicas direto <em>para você</em></h2>
+            <p class="section-text">Receba receitas de beleza, lançamentos Mary Kay e promoções exclusivas.</p>
+          </div>
+          <div class="newsletter-form">
+            <input type="email" class="input-field" placeholder="seu@email.com">
+            <button class="btn btn-primary" onclick="showToast('Inscrita com sucesso ✓')">Inscrever</button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <div class="container footer-grid">
+          <div class="footer-brand">
+            <div class="footer-title">Milena Lima <span>Beauty</span></div>
+            <p class="footer-text">Consultora oficial Mary Kay. Beleza, autoestima e bem-estar para mulheres que se dedicam ao próprio cuidado.</p>
+          </div>
+          <div class="footer-list">
+            <div class="footer-heading">Produtos</div>
+            <ul><li><a href="#">Skincare</a></li><li><a href="#">Maquiagem</a></li><li><a href="#">Corpo &amp; Banho</a></li><li><a href="#">Fragrâncias</a></li></ul>
+          </div>
+          <div class="footer-list">
+            <div class="footer-heading">Cuidado</div>
+            <ul><li><a href="#">Guia de Skincare</a></li><li><a href="#">Rotinas</a></li><li><a href="#">Autocuidado</a></li><li><a href="#">Blog</a></li></ul>
+          </div>
+          <div class="footer-list">
+            <div class="footer-heading">Contato</div>
+            <ul><li><a href="#">WhatsApp</a></li><li><a href="#">Instagram</a></li><li><a href="#">E-mail</a></li><li><a href="#">Agendamento</a></li></ul>
+          </div>
+        </div>
+        <div class="footer-copyright">© 2025 Milena Lima Beauty · Consultora Oficial Mary Kay<button class="footer-admin" onclick="showLogin()" title="Área restrita">⚙</button></div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="cbg" id="cbg" onclick="toggleCart()"></div>
+  <aside class="cart-panel" id="cpanel">
+    <div class="cart-header"><h3>Carrinho</h3><button class="cart-close" onclick="toggleCart()">✕</button></div>
+    <div class="cart-body" id="cbody"></div>
+    <div class="cart-footer" id="cfoot">
+      <div class="cart-row"><span>Subtotal</span><span id="csub">R$ 0</span></div>
+      <div class="cart-row"><span>Frete</span><span class="text-success">Grátis</span></div>
+      <div class="cart-row cart-total"><span>Total</span><span id="ctot">R$ 0</span></div>
+      <button class="btn btn-primary btn-block" onclick="checkout()">Finalizar via WhatsApp</button>
+    </div>
+  </aside>
+
+  <div id="login" class="page page-login">
+    <div class="login-card" id="login-card">
+      <div class="login-brand">Milena Lima <span>Beauty</span></div>
+      <p class="login-eyebrow">Área restrita</p>
+      <form class="login-form" onsubmit="doLogin(event)">
+        <label class="login-label" for="login-pw">Senha de acesso</label>
+        <div class="login-input-wrap">
+          <input type="password" id="login-pw" class="login-input" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="login-eye" onclick="togglePw()" tabindex="-1">👁</button>
+        </div>
+        <p class="login-error" id="login-err">Senha incorreta. Tente novamente.</p>
+        <button type="submit" class="btn btn-editorial login-btn">Entrar no painel</button>
+      </form>
+      <button class="login-back" onclick="closeLogin()">← Voltar à loja</button>
+    </div>
+  </div>
+
+  <div id="erp" class="page page-erp">
+    <aside class="erp-sidebar">
+      <div class="erp-branding">
+        <div class="erp-logo">Milena Lima <span>Beauty</span></div>
+        <div class="erp-subtitle">Painel de gestão</div>
+      </div>
+      <nav class="erp-nav">
+        <div class="nav-group">Principal</div>
+        <button class="nav-link on" onclick="epage('dashboard', this)"><span class="nav-icon">▦</span>Dashboard</button>
+        <div class="nav-group">Vendas</div>
+        <button class="nav-link" onclick="epage('pedidos', this)"><span class="nav-icon">🗂</span>Pedidos</button>
+        <button class="nav-link" onclick="epage('nvenda', this)"><span class="nav-icon">🛒</span>Nova Venda</button>
+        <div class="nav-group">Gestão</div>
+        <button class="nav-link" onclick="epage('estoque', this)"><span class="nav-icon">⬢</span>Estoque</button>
+        <button class="nav-link" onclick="epage('clientes', this)"><span class="nav-icon">👥</span>Clientes</button>
+        <button class="nav-link" onclick="epage('financeiro', this)"><span class="nav-icon">$</span>Financeiro</button>
+        <button class="nav-link" onclick="epage('catalogo', this)"><span class="nav-icon">🌐</span>Catálogo</button>
+        <button class="nav-link" onclick="epage('relatorios', this)"><span class="nav-icon">📊</span>Relatórios</button>
+      </nav>
+      <div class="erp-user">
+        <div class="user-avatar">M</div>
+        <div>
+          <div class="user-name">Milena Lima</div>
+          <div class="user-role">Consultora</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="erp-main">
+      <div class="erp-topbar">
+        <div class="erp-title" id="etitle">Dashboard</div>
+        <div class="erp-actions">
+          <button class="btn btn-outline" onclick="closeERP()">← Voltar à loja</button>
+          <button class="btn btn-primary" onclick="openMod('mv')">+ Nova venda</button>
+        </div>
+      </div>
+      <section class="erp-content">
+        <section class="erp-page on" id="ep-dashboard">
+          <div class="dashboard-grid" id="mgrid"></div>
+          <div class="card-grid-wide">
+            <article class="data-card"><div class="card-title">Faturamento — últimos 6 meses</div><div class="chart-shell"><canvas id="ch-fat"></canvas></div></article>
+            <article class="data-card"><div class="card-title">Vendas por categoria</div><div class="chart-shell"><canvas id="ch-cat"></canvas></div></article>
+          </div>
+          <div class="card-grid-wide">
+            <article class="data-card"><div class="card-header">Pedidos recentes <button class="btn btn-mini" onclick="epage('pedidos', null)">Ver todos</button></div><div id="dash-rec"></div></article>
+            <article class="data-card"><div class="card-header">Estoque baixo <button class="btn btn-mini" onclick="epage('estoque', null)">Gerenciar</button></div><div id="dash-low"></div></article>
+          </div>
+        </section>
+
+        <section class="erp-page" id="ep-pedidos">
+          <div class="page-header">
+            <div>
+              <h2>Pedidos</h2>
+              <p class="page-subtitle">Gerencie todos os pedidos</p>
+            </div>
+            <div class="table-controls">
+              <input type="text" class="input-field small" placeholder="Buscar…" oninput="srch('ptt', this.value)">
+              <select class="input-field small" onchange="srchSt(this.value)"><option value="">Todos</option><option>Pendente</option><option>Confirmado</option><option>Enviado</option><option>Entregue</option></select>
+              <button class="btn btn-primary" onclick="openMod('mv')">+ Novo</button>
+            </div>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Data</th><th>Produto</th><th>Total</th><th>Pag.</th><th>Status</th></tr></thead><tbody id="ptt"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-nvenda">
+          <div class="page-header">
+            <div>
+              <h2>Nova Venda</h2>
+              <p class="page-subtitle">Registre rapidamente</p>
+            </div>
+          </div>
+          <div class="card-grid-wide">
+            <article class="data-card">
+              <div class="form-grid">
+                <label class="form-label">Cliente<select class="input-field" id="vc"></select></label>
+                <label class="form-label">Produto<select class="input-field" id="vp" onchange="vUpd()"></select></label>
+                <label class="form-label">Quantidade<input type="number" class="input-field" id="vq" value="1" min="1" oninput="vUpd()"></label>
+                <label class="form-label">Pagamento<select class="input-field" id="vpg"><option>PIX</option><option>Cartão de Crédito</option><option>Cartão de Débito</option><option>Dinheiro</option><option>Mary Kay Pay</option></select></label>
+                <label class="form-label full">Observações<textarea class="input-field" rows="2" id="vob"></textarea></label>
+              </div>
+              <div class="summary-box">
+                <div class="summary-row"><span>Item</span><span id="vd">—</span></div>
+                <div class="summary-row summary-total"><span>Total</span><span id="vt">R$ 0,00</span></div>
+              </div>
+              <button class="btn btn-primary btn-block" onclick="saveV()">Registrar venda</button>
+            </article>
+            <article class="data-card"><div class="card-title">Vendas de hoje</div><div id="vhj" class="history-list"><p class="small-note">Nenhuma venda hoje.</p></div></article>
+          </div>
+        </section>
+
+        <section class="erp-page" id="ep-estoque">
+          <div class="page-header">
+            <div>
+              <h2>Estoque</h2>
+              <p class="page-subtitle">Controle de produtos</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mp')">+ Produto</button>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th><th>Ações</th></tr></thead><tbody id="ett"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-clientes">
+          <div class="page-header">
+            <div>
+              <h2>Clientes</h2>
+              <p class="page-subtitle">Cadastro e histórico</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mc')">+ Cliente</button>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-financeiro">
+          <div class="page-header">
+            <div>
+              <h2>Financeiro</h2>
+              <p class="page-subtitle">Receitas, despesas e fluxo de caixa</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mt')">+ Lançamento</button>
+          </div>
+          <div class="dashboard-grid finance-grid">
+            <article class="summary-card"><div>Receita</div><div class="summary-value" id="f-r">R$ 0</div><div class="summary-meta mup">↑ vs mês anterior</div></article>
+            <article class="summary-card"><div>Despesas</div><div class="summary-value" id="f-d">R$ 0</div><div class="summary-meta mdn">Custos operacionais</div></article>
+            <article class="summary-card"><div>Lucro Líquido</div><div class="summary-value" id="f-l">R$ 0</div><div class="summary-meta mup">Margem positiva</div></article>
+            <article class="summary-card"><div>Ticket Médio</div><div class="summary-value" id="f-t">R$ 0</div><div class="summary-meta">por pedido</div></article>
+          </div>
+          <div class="card-grid-wide">
+            <article class="data-card"><div class="card-title">Fluxo de caixa</div><div class="chart-shell"><canvas id="ch-flx"></canvas></div></article>
+            <article class="data-card"><div class="card-title">Lançamentos recentes</div><div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ftt"></tbody></table></div></article>
+          </div>
+        </section>
+
+        <section class="erp-page" id="ep-catalogo">
+          <div class="page-header">
+            <div>
+              <h2>Catálogo</h2>
+              <p class="page-subtitle">Gerenciar produtos</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mp')">+ Produto</button>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Desconto</th><th>Destaque</th><th>Ações</th></tr></thead><tbody id="ktt"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-relatorios">
+          <div class="page-header">
+            <div>
+              <h2>Relatórios</h2>
+              <p class="page-subtitle">Análise do negócio</p>
+            </div>
+          </div>
+          <div class="card-grid-wide">
+            <article class="data-card"><div class="card-title">Top produtos vendidos</div><div class="chart-shell"><canvas id="ch-top"></canvas></div></article>
+            <article class="data-card"><div class="card-title">Vendas por dia da semana</div><div class="chart-shell"><canvas id="ch-dia"></canvas></div></article>
+          </div>
+          <div class="data-card"><div class="card-title">Resumo anual</div><div class="table-shell"><table><thead><tr><th>Mês</th><th>Pedidos</th><th>Receita</th><th>Ticket Médio</th><th>Novos Clientes</th><th>Meta</th></tr></thead><tbody id="ratt"></tbody></table></div></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="mv"><div class="modal-box">
+    <div class="modal-header"><h3>Nova Venda</h3><button class="modal-close" onclick="closeMod('mv')">✕</button></div>
+    <div class="form-grid">
+      <label class="form-label">Cliente<select class="input-field" id="mvc"></select></label>
+      <label class="form-label">Produto<select class="input-field" id="mvp" onchange="mvUpd()"></select></label>
+      <label class="form-label">Quantidade<input type="number" class="input-field" id="mvq" value="1" min="1" oninput="mvUpd()"></label>
+      <label class="form-label">Pagamento<select class="input-field" id="mvpg"><option>PIX</option><option>Cartão de Crédito</option><option>Cartão de Débito</option><option>Dinheiro</option></select></label>
+    </div>
+    <div class="summary-box modal-summary"><div class="summary-row"><span>Total</span><strong id="mvt">R$ 0,00</strong></div></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mv')">Cancelar</button><button class="btn btn-primary" onclick="saveMV()">Salvar</button></div>
+  </div></div>
+
+  <div class="modal" id="mp"><div class="modal-box">
+    <div class="modal-header"><h3>Produto</h3><button class="modal-close" onclick="closeMod('mp')">✕</button></div>
+    <input type="hidden" id="pe-id">
+    <div class="form-grid">
+      <label class="form-label">Emoji<input type="text" class="input-field" id="pe-em" maxlength="2" placeholder="💄"></label>
+      <label class="form-label">Categoria<select class="input-field" id="pe-cat"><option value="pele">Skincare</option><option value="corpo">Corpo</option><option value="maquiagem">Maquiagem</option><option value="fragrancias">Fragrâncias</option></select></label>
+      <label class="form-label">Nome<input type="text" class="input-field" id="pe-nm"></label>
+      <label class="form-label">Preço (R$)<input type="number" class="input-field" id="pe-pr" step="0.01"></label>
+      <label class="form-label">Preço c/ desconto<input type="number" class="input-field" id="pe-pd" step="0.01" placeholder="Opcional"></label>
+      <label class="form-label">Estoque<input type="number" class="input-field" id="pe-st" value="0" min="0"></label>
+      <label class="form-label">Destaque<select class="input-field" id="pe-dt"><option value="">Nenhum</option><option value="new">Novo</option><option value="sale">Promoção</option></select></label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mp')">Cancelar</button><button class="btn btn-primary" onclick="saveProd()">Salvar</button></div>
+  </div></div>
+
+  <div class="modal" id="mc"><div class="modal-box">
+    <div class="modal-header"><h3>Novo Cliente</h3><button class="modal-close" onclick="closeMod('mc')">✕</button></div>
+    <div class="form-grid">
+      <label class="form-label">Nome completo<input type="text" class="input-field" id="nc-nm"></label>
+      <label class="form-label">Telefone<input type="tel" class="input-field" id="nc-tel"></label>
+      <label class="form-label">E-mail<input type="email" class="input-field" id="nc-em"></label>
+      <label class="form-label">Cidade<input type="text" class="input-field" id="nc-ci"></label>
+      <label class="form-label">Estado<input type="text" class="input-field" id="nc-es" maxlength="2" placeholder="SP"></label>
+      <label class="form-label">Aniversário<input type="date" class="input-field" id="nc-an"></label>
+      <label class="form-label">Tipo de pele<select class="input-field" id="nc-pe"><option>Normal</option><option>Seca</option><option>Oleosa</option><option>Mista</option><option>Sensível</option></select></label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mc')">Cancelar</button><button class="btn btn-primary" onclick="saveCli()">Salvar</button></div>
+  </div></div>
+
+  <div class="modal" id="mt"><div class="modal-box">
+    <div class="modal-header"><h3>Lançamento</h3><button class="modal-close" onclick="closeMod('mt')">✕</button></div>
+    <div class="form-grid">
+      <label class="form-label">Tipo<select class="input-field" id="tr-tp"><option value="receita">Receita</option><option value="despesa">Despesa</option></select></label>
+      <label class="form-label">Descrição<input type="text" class="input-field" id="tr-ds"></label>
+      <label class="form-label">Valor (R$)<input type="number" class="input-field" id="tr-vl" step="0.01"></label>
+      <label class="form-label">Data<input type="date" class="input-field" id="tr-dt"></label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mt')">Cancelar</button><button class="btn btn-primary" onclick="saveTr()">Salvar</button></div>
+  </div></div>
+
+  <script src="./app.js" defer></script>
+  <script src="./store.js" defer></script>
+</body>
+</html>

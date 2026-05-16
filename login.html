@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso — Milena Lima Beauty</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./store.css">
+  <style>
+    /* Ocultar botões nativos do navegador dentro dos inputs */
+    input::-webkit-credentials-auto-fill-button,
+    input::-webkit-contacts-auto-fill-button { visibility: hidden; display: none !important; pointer-events: none; }
+    input::-ms-reveal, input::-ms-clear { display: none; }
+    /* Fundo do autofill */
+    input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px #fff inset !important; -webkit-text-fill-color: #1a1714 !important; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Painel esquerdo ─────────────────────────── */
+    .login-left {
+      width: 360px;
+      flex-shrink: 0;
+      background: #18251f;
+      background-image:
+        radial-gradient(ellipse 260px 200px at 50% 5%, rgba(196,137,122,.18) 0%, transparent 100%),
+        linear-gradient(175deg, #1e2e26 0%, #111c17 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 40px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-left::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      right: -40px;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(61,102,85,.4) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .left-top { position: relative; z-index: 1; }
+
+    .left-monogram {
+      font-size: 22px;
+      color: #D4957F;
+      margin-bottom: 28px;
+      display: block;
+      opacity: .85;
+    }
+
+    .left-brand {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 30px;
+      font-weight: 300;
+      color: #F5F4F2;
+      line-height: 1.2;
+      letter-spacing: .02em;
+    }
+
+    .left-brand em {
+      color: #D4957F;
+      font-style: italic;
+    }
+
+    .left-tagline {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .22em;
+      color: rgba(255,255,255,.25);
+      margin-top: 8px;
+    }
+
+    .left-divider {
+      width: 32px;
+      height: 1px;
+      background: #D4957F;
+      opacity: .45;
+      margin: 28px 0;
+    }
+
+    .left-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,.36);
+      line-height: 1.75;
+    }
+
+    .left-footer {
+      font-size: 11px;
+      color: rgba(255,255,255,.18);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Painel direito ──────────────────────────── */
+    .login-right {
+      flex: 1;
+      background: #FDFCFB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 360px;
+      box-shadow: none;
+      border: none;
+      background: transparent;
+      padding: 0;
+    }
+
+    .login-card::before { display: none; }
+
+    .login-monogram { display: none; }
+
+    .login-brand {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #18181B;
+      letter-spacing: -.02em;
+    }
+
+    .login-eyebrow {
+      font-size: 13px;
+      color: #71717A;
+      margin-top: 4px;
+    }
+
+    .login-divider {
+      width: 32px;
+      height: 2px;
+      background: #D4957F;
+      opacity: .5;
+      margin: 20px 0;
+    }
+
+    .login-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #52525B;
+      margin-bottom: 6px;
+    }
+
+    .login-input-wrap { position: relative; }
+
+    .login-input {
+      width: 100%;
+      height: 42px;
+      padding: 0 14px;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 14px;
+      color: #18181B;
+      background: #fff;
+      border: 1px solid rgba(26,23,20,.15);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .login-input:focus {
+      border-color: rgba(61,102,85,.5);
+      box-shadow: 0 0 0 3px rgba(61,102,85,.1);
+    }
+
+    .login-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #A1A1AA;
+      font-size: 14px;
+      padding: 2px;
+      line-height: 1;
+      transition: color .14s;
+    }
+
+    .login-eye:hover { color: #52525B; }
+
+    .login-error {
+      font-size: 12px;
+      color: #DC2626;
+      margin: 10px 0 0;
+      display: none;
+    }
+
+    .login-error.on { display: block; }
+
+    .login-btn {
+      width: 100%;
+      height: 42px;
+      margin-top: 20px;
+      background: #2a5244;
+      color: #FAFAFA;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .14s;
+    }
+
+    .login-btn:hover { background: #1c3930; }
+    .login-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    .login-back {
+      display: block;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #71717A;
+      text-decoration: none;
+      text-align: center;
+      transition: color .14s;
+    }
+
+    .login-back:hover { color: #18181B; }
+
+    /* ── Shake animation ─────────────────────────── */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-6px); }
+      40%      { transform: translateX(6px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(4px); }
+    }
+    .shake { animation: shake .38s ease; }
+
+    /* ── Mobile ──────────────────────────────────── */
+    @media (max-width: 680px) {
+      .login-left { display: none; }
+      .login-right { padding: 32px 20px; background: #F4F5F7; }
+      .login-card {
+        background: #fff;
+        border: 1px solid #E4E4E7;
+        border-radius: 16px;
+        padding: 32px 24px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+  <script src="./supabase.js" defer></script>
+</head>
+<body>
+
+  <div class="login-left">
+    <div class="left-top">
+      <span class="left-monogram">✦</span>
+      <div class="left-brand">Milena Lima <em>Beauty</em></div>
+      <div class="left-tagline">Painel de gestão</div>
+      <div class="left-divider"></div>
+      <p class="left-desc">Gerencie pedidos, estoque, clientes e finanças da sua consultoria Mary Kay em um só lugar.</p>
+    </div>
+    <div class="left-footer">© 2026 Milena Lima Beauty</div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-card" id="login-card">
+      <span class="login-monogram">✦</span>
+      <div class="login-brand">Acesso ao painel</div>
+      <p class="login-eyebrow">Digite suas credenciais</p>
+      <div class="login-divider"></div>
+
+      <form class="login-form" id="lf">
+        <label class="login-label" for="lem">E-mail</label>
+        <div class="login-input-wrap" style="margin-bottom:16px">
+          <input type="email" id="lem" class="login-input" placeholder="seu@email.com" autocomplete="email" required style="padding-right:18px">
+        </div>
+
+        <label class="login-label" for="lpw">Senha</label>
+        <div class="login-input-wrap">
+          <input type="password" id="lpw" class="login-input" placeholder="••••••••" autocomplete="current-password" required>
+          <button type="button" id="leye" class="login-eye">◉</button>
+        </div>
+
+        <p class="login-error" id="lerr">E-mail ou senha incorretos.</p>
+        <button type="submit" id="lbtn" class="login-btn">Entrar no painel</button>
+      </form>
+
+      <a href="index.html" class="login-back">← Voltar à loja</a>
+    </div>
+  </div>
+
+  <script>
+    // Redirecionar se já autenticado
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window._sbClient) {
+        try {
+          const { data } = await window._sbClient.auth.getSession();
+          if (data?.session) { window.location.replace('erp.html'); }
+        } catch(e) {}
+      }
+    });
+
+    document.getElementById('lf').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('lem').value.trim();
+      const pw    = document.getElementById('lpw');
+      const err   = document.getElementById('lerr');
+      const btn   = document.getElementById('lbtn');
+      const card  = document.getElementById('login-card');
+
+      err.classList.remove('on');
+      btn.disabled = true;
+      btn.textContent = 'Verificando…';
+
+      try {
+        await SBAuth.signIn(email, pw.value);
+        window.location.replace('erp.html');
+      } catch(ex) {
+        pw.value = '';
+        pw.focus();
+        err.classList.add('on');
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+        btn.disabled = false;
+        btn.textContent = 'Entrar no painel';
+      }
+    });
+
+    document.getElementById('leye').addEventListener('click', () => {
+      const pw = document.getElementById('lpw');
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+    });
+  </script>
+  <a href="https://grupolima.com.br" target="_blank" rel="noopener" class="gl-badge">// feito por GrupoLima</a>
+</body>
+</html>

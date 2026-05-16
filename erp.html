@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel — Milena Lima Beauty</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    /* ── Base ──────────────────────────────────── */
+    body { font-family: 'Inter', system-ui, sans-serif; background: #F7F7F8; overflow-x: hidden; }
+
+    /* ── Sidebar ───────────────────────────────── */
+    .erp-sidebar {
+      background: #FFFFFF;
+      border-right: 1px solid #E8E8EC;
+      width: 232px;
+    }
+    .erp-main    { margin-left: 232px; width: calc(100% - 232px); background: #F7F7F8; }
+    .erp-branding {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid #F0F0F2;
+    }
+    .erp-logo { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 300; letter-spacing: .04em; color: #18181B; line-height: 1.2; }
+    .erp-logo span { color: #C4897A; font-style: italic; }
+    .erp-subtitle { font-size: 9.5px; font-weight: 400; letter-spacing: .16em; text-transform: uppercase; color: #C4C4CC; margin-top: 6px; }
+    .erp-nav { padding: 10px 0 4px; }
+    .nav-group {
+      padding: 18px 20px 5px;
+      font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+      color: #C4C4CC;
+    }
+    .nav-link {
+      padding: 8px 10px; margin: 1px 8px; border-radius: 9px;
+      font-size: 13px; font-weight: 400; gap: 9px;
+      color: #52525B;
+      border-left: none;
+      transition: background .14s, color .14s;
+    }
+    .nav-link .nav-icon { font-size: 13px; width: 18px; flex-shrink: 0; color: #A1A1AA; }
+    .nav-link:hover { background: #F4F4F5; color: #18181B; }
+    .nav-link:hover .nav-icon { color: #18181B; }
+    .nav-link.on {
+      background: #F0F0F2;
+      color: #18181B; border-left: none;
+      box-shadow: none;
+    }
+    .nav-link.on .nav-icon { color: #18181B; }
+    .erp-user {
+      border-top: 1px solid #F0F0F2;
+      padding: 14px 16px;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #18181B;
+      color: #FAFAFA; font-size: 13px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .user-name { font-size: 12.5px; font-weight: 500; color: #18181B; }
+    .user-role  { font-size: 10.5px; color: #A1A1AA; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── Topbar & Content ──────────────────────── */
+    .erp-topbar  { background: #fff; border-bottom: 1px solid #EAEAEC; padding: 0 14px; min-height: 52px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .erp-title   { font-size: 15px; font-weight: 600; color: #18181B; letter-spacing: -.01em; }
+    .erp-content { padding: 12px 14px; }
+    .dashboard-grid { margin-bottom: 18px; gap: 14px; }
+    .card-grid-wide { gap: 14px; margin-bottom: 14px; }
+
+    /* ── Cards ─────────────────────────────────── */
+    .summary-card, .data-card { background: #fff; border: 1px solid #E8E8EC; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.03); }
+    .card-title  { font-size: 13px; font-weight: 600; color: #18181B; letter-spacing: -.01em; margin-bottom: 14px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .card-header .card-title { margin-bottom: 0; }
+    .page-header { margin-bottom: 20px; }
+    .page-header h2  { font-size: 20px; font-weight: 600; color: #18181B; letter-spacing: -.03em; margin: 0; font-family: 'Inter', sans-serif; }
+    .page-subtitle   { font-size: 13px; color: #71717A; margin: 3px 0 0; }
+    .summary-value   { font-size: 26px; font-weight: 600; color: #18181B; letter-spacing: -.04em; line-height: 1; }
+    .summary-meta    { font-size: 12px; margin-top: 2px; }
+    .dashboard-grid .summary-card > div:first-child { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: #71717A; }
+
+    /* ── Tables ────────────────────────────────── */
+    table th, .compact-table th { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: #71717A; }
+    table td { font-size: 13px; color: #18181B; }
+
+    /* ── Buttons ───────────────────────────────── */
+    .btn         { font-family: 'Inter', system-ui, sans-serif; font-size: 13px; font-weight: 500; border-radius: 8px; transition: all .14s ease; }
+    .btn-primary { background: #18181B; color: #FAFAFA; border-color: #18181B; }
+    .btn-primary:hover { background: #27272A; border-color: #27272A; }
+    .btn-outline { background: #fff; color: #18181B; border-color: #D4D4D8; }
+    .btn-outline:hover { background: #F4F5F7; }
+    .btn-mini    { font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 500; }
+
+    /* ── Inputs ────────────────────────────────── */
+    .input-field { font-family: 'Inter', system-ui, sans-serif; font-size: 13px; color: #18181B; border: 1px solid #D4D4D8; border-radius: 8px; background: #fff; transition: border-color .15s, box-shadow .15s; }
+    .input-field:focus { border-color: #A1A1AA; box-shadow: 0 0 0 3px rgba(24,24,27,.07); outline: none; }
+    .form-label  { font-family: 'Inter', system-ui, sans-serif; font-size: 12px; font-weight: 500; color: #52525B; letter-spacing: -.01em; gap: 6px; }
+    .form-label small { font-weight: 400; opacity: .6; }
+
+    /* ── Badges ────────────────────────────────── */
+    .xb { border-radius: 6px; font-size: 11px; font-weight: 500; padding: 2px 8px; letter-spacing: .01em; }
+
+    /* ── Utility ───────────────────────────────── */
+    .revenue { color: #16A34A; font-weight: 500; }
+    .expense { color: #DC2626; font-weight: 500; }
+    .mup     { color: #16A34A; }
+    .mdn     { color: #DC2626; }
+    .finance-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    .eb { background: #F4F5F7; color: #52525B; border: 1px solid #E4E4E7; border-radius: 6px; font-size: 11px; font-weight: 500; padding: 4px 10px; cursor: pointer; transition: all .14s; }
+    .eb:hover { background: #18181B; color: #FAFAFA; border-color: #18181B; }
+    .small-input  { width: 62px; font-size: 12px; border-radius: 6px; border: 1px solid #E4E4E7; padding: 4px 8px; text-align: center; font-family: 'Inter', sans-serif; }
+    .small-select { font-size: 12px; border-radius: 6px; border: 1px solid #E4E4E7; background: #F4F5F7; font-family: 'Inter', sans-serif; }
+    .fi { font-family: 'Inter', sans-serif; font-size: 12px; }
+    .summary-box { background: #F7F7F8; border-radius: 10px; padding: 14px 16px; margin-top: 16px; border: none; }
+    .summary-row { font-size: 13px; }
+    .summary-total { font-size: 14px; font-weight: 600; }
+    .history-item { font-size: 12.5px; padding: 10px 0; border-bottom: 1px solid #F4F4F5; line-height: 1.5; }
+    .small-note { font-size: 13px; color: #71717A; }
+    .chart-shell { height: 200px; }
+    .cell-strong { font-weight: 500; }
+    .lsi { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #F4F4F5; font-size: 13px; }
+
+    /* ── Modais dinâmicos ──────────────────────── */
+    @keyframes modalIn  { from { opacity:0 } to { opacity:1 } }
+    @keyframes modalOut { from { opacity:1 } to { opacity:0 } }
+
+    .modal {
+      display: flex !important;
+      align-items: center; justify-content: center;
+      padding: 24px;
+      background: rgba(9,9,11,.52);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity .22s ease, visibility 0s linear .22s;
+    }
+    .modal.on {
+      opacity: 1; visibility: visible; pointer-events: auto;
+      transition: opacity .22s ease, visibility 0s linear 0s;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%; max-width: 480px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.2), 0 0 0 1px rgba(0,0,0,.06);
+      max-height: 88vh; overflow-y: auto;
+      padding: 0;
+      transform: scale(.95) translateY(14px);
+      opacity: 0;
+      transition: transform .3s cubic-bezier(0.16,1,0.3,1), opacity .22s ease;
+    }
+    .modal.on .modal-box { transform: none; opacity: 1; }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid #F4F4F5;
+      position: sticky; top: 0; background: #fff; z-index: 1;
+      border-radius: 16px 16px 0 0;
+    }
+    .modal-header h3 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: #18181B; margin: 0; letter-spacing: -.02em; }
+    .modal-close {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: #F4F4F5; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #71717A; font-size: 12px; transition: background .14s, color .14s;
+    }
+    .modal-close:hover { background: #E4E4E7; color: #18181B; }
+    .modal .form-grid { padding: 20px 22px; gap: 14px; }
+    .modal-summary { margin: 0 22px 16px; background: #F4F5F7; border-radius: 10px; border: none; padding: 14px; }
+    .modal-actions {
+      padding: 14px 22px 20px;
+      display: flex; gap: 8px; justify-content: flex-end;
+      border-top: 1px solid #F4F4F5;
+    }
+    #mp .modal-box { max-width: 560px; }
+
+    /* ── Sidebar drawer ─────────────────────────────── */
+    .erp-hamburger {
+      display: none;
+      background: none; border: none; cursor: pointer;
+      width: 36px; height: 36px; border-radius: 8px;
+      align-items: center; justify-content: center;
+      color: #52525B; font-size: 22px; flex-shrink: 0;
+      transition: background .14s;
+    }
+    .erp-hamburger:hover { background: #F4F4F5; }
+    .sidebar-overlay {
+      position: fixed; inset: 0; background: rgba(9,9,11,.46);
+      z-index: 998; opacity: 0; visibility: hidden;
+      transition: opacity .26s ease, visibility 0s .26s;
+    }
+    .sidebar-overlay.on { opacity: 1; visibility: visible; transition: opacity .26s ease; }
+
+    /* ── Nova Venda aprimorada ──────────────────────── */
+    .nv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .vprev-card { display: flex; gap: 12px; align-items: center; background: #F7F7F8; border-radius: 10px; padding: 12px 14px; margin: 12px 0 4px; }
+    .vprev-img { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .vprev-nm { font-size: 13px; font-weight: 500; color: #18181B; }
+    .vprev-meta { font-size: 12px; color: #71717A; margin-top: 3px; }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .fl-lbl { font-size: 12px; font-weight: 500; color: #52525B; letter-spacing: -.01em; }
+    .qty-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .qty-ctrl { display: flex; align-items: center; gap: 6px; }
+    .qty-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #D4D4D8; background: #fff; font-size: 20px; font-weight: 300; color: #18181B; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .14s; line-height: 1; }
+    .qty-btn:hover { background: #F4F4F5; }
+    .qty-in { width: 68px !important; text-align: center; }
+    .pay-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pay-chip { border: 1px solid #D4D4D8; background: #fff; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 500; color: #52525B; cursor: pointer; transition: all .14s; font-family: 'Inter', sans-serif; }
+    .pay-chip.on { background: #18181B; border-color: #18181B; color: #fff; }
+    .nv-total { display: flex; align-items: center; justify-content: space-between; background: #F4F4F5; border-radius: 10px; padding: 14px 16px; margin: 14px 0; }
+    .nv-total-lbl { font-size: 13px; font-weight: 500; color: #52525B; }
+    .nv-total-val { font-size: 22px; font-weight: 600; color: #18181B; letter-spacing: -.04em; }
+    .mv-prod-info { display: none; align-items: center; gap: 10px; background: #F7F7F8; border-radius: 10px; padding: 10px 12px; margin: 4px 22px 12px; }
+    .mv-prod-info.on { display: flex; }
+    .mv-prod-img { width: 42px; height: 42px; object-fit: cover; border-radius: 7px; flex-shrink: 0; }
+    .mv-prod-nm { font-size: 13px; font-weight: 500; color: #18181B; }
+    .mv-prod-pr { font-size: 12px; color: #71717A; margin-top: 2px; }
+    .modal-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #A1A1AA; padding: 14px 22px 4px; display: block; }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 768px) {
+      .erp-sidebar {
+        position: fixed; left: -270px; top: 0; bottom: 0; z-index: 999;
+        width: 270px; overflow-y: auto;
+        transition: left .32s cubic-bezier(.16,1,.3,1);
+      }
+      .erp-sidebar.open { left: 0; box-shadow: 6px 0 28px rgba(0,0,0,.12); }
+      .erp-main { margin-left: 0 !important; width: 100% !important; }
+      .erp-hamburger { display: flex; }
+      .erp-content { padding: 10px 10px 80px; }
+      .erp-topbar { padding: 0 10px; gap: 8px; }
+      .erp-title { font-size: 14px; }
+      .erp-actions .btn-outline { display: none; }
+      .erp-actions .btn { font-size: 12px; padding: 7px 12px; }
+      .chart-card { display: none !important; }
+      .dashboard-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; margin-bottom: 10px !important; }
+      .card-grid-wide { grid-template-columns: 1fr !important; gap: 10px !important; }
+      .finance-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .nv-grid { grid-template-columns: 1fr !important; }
+      .table-shell { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .table-shell table { min-width: 520px; }
+      .form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+      .form-grid .full { grid-column: 1 !important; }
+      .modal { padding: 0; align-items: flex-end; }
+      .modal-box { border-radius: 20px 20px 0 0 !important; max-height: 90vh; max-width: 100% !important; transform: translateY(100%) !important; }
+      .modal.on .modal-box { transform: translateY(0) !important; }
+      .modal-actions { flex-direction: column-reverse; gap: 6px; }
+      .modal-actions .btn { width: 100%; padding: 12px; text-align: center; }
+      .summary-card { padding: 14px 12px; }
+      .summary-value { font-size: 20px !important; }
+      .page-header { flex-wrap: wrap; gap: 10px; }
+      .page-header > div:last-child .btn, .page-header > button { width: 100%; }
+      .table-controls { flex-wrap: wrap; gap: 8px; }
+      .table-controls .input-field.small { flex: 1; min-width: 100px; }
+      .pay-chips { gap: 6px; }
+      .pay-chip { flex: 1; text-align: center; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+  <script src="./supabase.js" defer></script>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <div id="erp" class="page page-erp">
+    <aside class="erp-sidebar">
+      <div class="erp-branding">
+        <div class="erp-logo">Milena Lima <span>Beauty</span></div>
+        <div class="erp-subtitle">Painel de gestão</div>
+      </div>
+      <nav class="erp-nav">
+        <div class="nav-group">Principal</div>
+        <button class="nav-link on" onclick="epage('dashboard', this)"><span class="nav-icon">▦</span>Dashboard</button>
+        <div class="nav-group">Vendas</div>
+        <button class="nav-link" onclick="epage('pedidos', this)"><span class="nav-icon">≡</span>Pedidos</button>
+        <button class="nav-link" onclick="epage('nvenda', this)"><span class="nav-icon">✚</span>Nova Venda</button>
+        <div class="nav-group">Gestão</div>
+        <button class="nav-link" onclick="epage('estoque', this)"><span class="nav-icon">◫</span>Estoque</button>
+        <button class="nav-link" onclick="epage('clientes', this)"><span class="nav-icon">◎</span>Clientes</button>
+        <button class="nav-link" onclick="epage('financeiro', this)"><span class="nav-icon">$</span>Financeiro</button>
+        <button class="nav-link" onclick="epage('catalogo', this)"><span class="nav-icon">⊞</span>Catálogo</button>
+        <button class="nav-link" onclick="epage('relatorios', this)"><span class="nav-icon">▦</span>Relatórios</button>
+        <div class="nav-group">Loja</div>
+        <button class="nav-link" onclick="epage('loja', this)"><span class="nav-icon">⚙</span>Configurar loja</button>
+      </nav>
+      <div class="erp-user">
+        <div class="user-avatar">M</div>
+        <div style="flex:1;min-width:0">
+          <div class="user-name">Milena Lima</div>
+          <div class="user-role" id="user-email">Consultora</div>
+        </div>
+        <button onclick="doLogout()" title="Sair" style="background:none;border:none;cursor:pointer;color:#C4C4CC;font-size:14px;padding:4px;line-height:1;transition:color .14s" onmouseover="this.style.color='#18181B'" onmouseout="this.style.color='#C4C4CC'">⏻</button>
+      </div>
+    </aside>
+
+    <main class="erp-main">
+      <div class="erp-topbar">
+        <button class="erp-hamburger" onclick="openSidebar()" aria-label="Menu">☰</button>
+        <div class="erp-title" id="etitle">Dashboard</div>
+        <div class="erp-actions">
+          <button class="btn btn-outline" onclick="closeERP()">← Voltar à loja</button>
+          <button class="btn btn-primary" onclick="openMod('mv')">+ Nova venda</button>
+        </div>
+      </div>
+      <section class="erp-content">
+        <section class="erp-page on" id="ep-dashboard">
+          <div class="dashboard-grid" id="mgrid"></div>
+          <div class="card-grid-wide">
+            <article class="data-card chart-card"><div class="card-title">Faturamento — últimos 6 meses</div><div class="chart-shell"><canvas id="ch-fat"></canvas></div></article>
+            <article class="data-card chart-card"><div class="card-title">Vendas por categoria</div><div class="chart-shell"><canvas id="ch-cat"></canvas></div></article>
+          </div>
+          <div class="card-grid-wide">
+            <article class="data-card"><div class="card-header">Pedidos recentes <button class="btn btn-mini" onclick="epage('pedidos', null)">Ver todos</button></div><div id="dash-rec"></div></article>
+            <article class="data-card"><div class="card-header">Estoque baixo <button class="btn btn-mini" onclick="epage('estoque', null)">Gerenciar</button></div><div id="dash-low"></div></article>
+          </div>
+        </section>
+
+        <section class="erp-page" id="ep-pedidos">
+          <div class="page-header">
+            <div>
+              <h2>Pedidos</h2>
+              <p class="page-subtitle">Gerencie todos os pedidos</p>
+            </div>
+            <div class="table-controls">
+              <input type="text" class="input-field small" placeholder="Buscar…" oninput="srch('ptt', this.value)">
+              <select class="input-field small" onchange="srchSt(this.value)"><option value="">Todos</option><option>Pendente</option><option>Confirmado</option><option>Enviado</option><option>Entregue</option></select>
+              <button class="btn btn-primary" onclick="openMod('mv')">+ Novo</button>
+            </div>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Data</th><th>Produto</th><th>Total</th><th>Pag.</th><th>Status</th></tr></thead><tbody id="ptt"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-nvenda">
+          <div class="page-header">
+            <div>
+              <h2>Nova Venda</h2>
+              <p class="page-subtitle">Registre rapidamente</p>
+            </div>
+          </div>
+          <div class="nv-grid">
+            <article class="data-card">
+              <div class="form-grid" style="gap:12px;margin-bottom:0">
+                <label class="form-label full">Cliente
+                  <select class="input-field" id="vc" style="margin-top:4px"></select>
+                </label>
+                <label class="form-label full">Produto
+                  <select class="input-field" id="vp" onchange="vUpd()" style="margin-top:4px"></select>
+                </label>
+              </div>
+              <div id="vprev" class="vprev-card" style="display:none">
+                <img id="vprev-img" class="vprev-img" src="" alt="" style="display:none">
+                <div>
+                  <div id="vprev-nm" class="vprev-nm"></div>
+                  <div class="vprev-meta"><span id="vprev-pr"></span>&nbsp;·&nbsp;<span id="vprev-st"></span></div>
+                </div>
+              </div>
+              <div class="qty-row">
+                <span class="fl-lbl">Quantidade</span>
+                <div class="qty-ctrl">
+                  <button class="qty-btn" onclick="adjVq(-1)" type="button">−</button>
+                  <input type="number" class="input-field qty-in" id="vq" value="1" min="1" oninput="vUpd()">
+                  <button class="qty-btn" onclick="adjVq(1)" type="button">+</button>
+                </div>
+              </div>
+              <div class="form-row">
+                <span class="fl-lbl">Forma de pagamento</span>
+                <div class="pay-chips">
+                  <button class="pay-chip on" onclick="selPay(this,'PIX')" type="button">PIX</button>
+                  <button class="pay-chip" onclick="selPay(this,'Cartão de Crédito')" type="button">Crédito</button>
+                  <button class="pay-chip" onclick="selPay(this,'Cartão de Débito')" type="button">Débito</button>
+                  <button class="pay-chip" onclick="selPay(this,'Dinheiro')" type="button">Dinheiro</button>
+                </div>
+                <input type="hidden" id="vpg" value="PIX">
+              </div>
+              <div class="nv-total">
+                <span class="nv-total-lbl">Total a receber</span>
+                <span class="nv-total-val" id="vt">R$ 0,00</span>
+              </div>
+              <button class="btn btn-primary btn-block" onclick="saveV()" type="button" style="font-size:14px;padding:14px">✓ Registrar venda</button>
+            </article>
+            <article class="data-card">
+              <div class="card-title">Vendas de hoje</div>
+              <div id="vhj" class="history-list"><p class="small-note">Nenhuma venda hoje.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="erp-page" id="ep-estoque">
+          <div class="page-header">
+            <div>
+              <h2>Estoque</h2>
+              <p class="page-subtitle">Controle de produtos</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mp')">+ Produto</button>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th><th>Ações</th></tr></thead><tbody id="ett"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-clientes">
+          <div class="page-header">
+            <div>
+              <h2>Clientes</h2>
+              <p class="page-subtitle">Cadastro e histórico</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mc')">+ Cliente</button>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-financeiro">
+          <div class="page-header">
+            <div>
+              <h2>Financeiro</h2>
+              <p class="page-subtitle">Receitas, despesas e fluxo de caixa</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mt')">+ Lançamento</button>
+          </div>
+          <div class="dashboard-grid finance-grid">
+            <article class="summary-card"><div>Receita</div><div class="summary-value" id="f-r">R$ 0</div><div class="summary-meta mup">↑ vs mês anterior</div></article>
+            <article class="summary-card"><div>Despesas</div><div class="summary-value" id="f-d">R$ 0</div><div class="summary-meta mdn">Custos operacionais</div></article>
+            <article class="summary-card"><div>Lucro Líquido</div><div class="summary-value" id="f-l">R$ 0</div><div class="summary-meta mup">Margem positiva</div></article>
+            <article class="summary-card"><div>Ticket Médio</div><div class="summary-value" id="f-t">R$ 0</div><div class="summary-meta">por pedido</div></article>
+          </div>
+          <div class="card-grid-wide">
+            <article class="data-card chart-card"><div class="card-title">Fluxo de caixa</div><div class="chart-shell"><canvas id="ch-flx"></canvas></div></article>
+            <article class="data-card"><div class="card-title">Lançamentos recentes</div><div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ftt"></tbody></table></div></article>
+          </div>
+        </section>
+
+        <section class="erp-page" id="ep-catalogo">
+          <div class="page-header">
+            <div>
+              <h2>Catálogo</h2>
+              <p class="page-subtitle">Gerenciar produtos</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMod('mp')">+ Produto</button>
+          </div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Desconto</th><th>Destaque</th><th>Ações</th></tr></thead><tbody id="ktt"></tbody></table></div></div>
+        </section>
+
+        <section class="erp-page" id="ep-relatorios">
+          <div class="page-header">
+            <div>
+              <h2>Relatórios</h2>
+              <p class="page-subtitle">Análise do negócio</p>
+            </div>
+          </div>
+          <div class="card-grid-wide">
+            <article class="data-card chart-card"><div class="card-title">Top produtos vendidos</div><div class="chart-shell"><canvas id="ch-top"></canvas></div></article>
+            <article class="data-card chart-card"><div class="card-title">Vendas por dia da semana</div><div class="chart-shell"><canvas id="ch-dia"></canvas></div></article>
+          </div>
+          <div class="data-card"><div class="card-title">Resumo anual</div><div class="table-shell"><table><thead><tr><th>Mês</th><th>Pedidos</th><th>Receita</th><th>Ticket Médio</th><th>Novos Clientes</th><th>Meta</th></tr></thead><tbody id="ratt"></tbody></table></div></div>
+        </section>
+        <section class="erp-page" id="ep-loja">
+          <div class="page-header">
+            <div>
+              <h2>Configurar Loja</h2>
+              <p class="page-subtitle">Edite os textos exibidos na tela de vendas</p>
+            </div>
+            <button class="btn btn-primary" onclick="saveLojaSettings()">Salvar alterações</button>
+          </div>
+
+          <div class="card-grid-wide" style="margin-bottom:20px">
+            <article class="data-card">
+              <div class="card-title" style="margin-bottom:16px">Banner & Contato</div>
+              <div class="form-grid">
+                <label class="form-label full">Texto do banner promocional <small style="font-weight:400;opacity:.55">(use *PALAVRA* para destaque)</small>
+                  <input type="text" class="input-field" id="ls-banner" placeholder="Frete *GRÁTIS* em compras acima de R$ 150">
+                </label>
+                <label class="form-label">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
+                  <input type="text" class="input-field" id="ls-wa" placeholder="5511999999999">
+                </label>
+              </div>
+            </article>
+            <article class="data-card">
+              <div class="card-title" style="margin-bottom:16px">Ticker de texto</div>
+              <div class="form-grid">
+                <label class="form-label full">Texto do marquee <small style="font-weight:400;opacity:.55">(separe os itens com ·)</small>
+                  <input type="text" class="input-field" id="ls-marquee">
+                </label>
+              </div>
+            </article>
+          </div>
+
+          <article class="data-card" style="margin-bottom:20px">
+            <div class="card-title" style="margin-bottom:16px">Hero — seção principal</div>
+            <div class="form-grid">
+              <label class="form-label">Kicker (acima do título)
+                <input type="text" class="input-field" id="ls-kicker">
+              </label>
+              <label class="form-label">Prova social
+                <input type="text" class="input-field" id="ls-proof" placeholder="+500 clientes · Avaliação 4.9/5">
+              </label>
+              <label class="form-label">Linha 1 do título
+                <input type="text" class="input-field" id="ls-hl1">
+              </label>
+              <label class="form-label">Linha 2 — itálico colorido
+                <input type="text" class="input-field" id="ls-hl2">
+              </label>
+              <label class="form-label">Linha 3 do título
+                <input type="text" class="input-field" id="ls-hl3">
+              </label>
+              <label class="form-label">Linha 4 — itálico colorido
+                <input type="text" class="input-field" id="ls-hl4">
+              </label>
+              <label class="form-label full">Sub-texto
+                <textarea class="input-field" rows="2" id="ls-sub"></textarea>
+              </label>
+            </div>
+          </article>
+
+          <article class="data-card">
+            <div class="card-title" style="margin-bottom:16px">Barra de benefícios</div>
+            <div id="ls-benefits-grid" class="form-grid"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="mv"><div class="modal-box">
+    <div class="modal-header"><h3>Nova Venda</h3><button class="modal-close" onclick="closeMod('mv')">✕</button></div>
+    <div class="form-grid">
+      <label class="form-label full">Cliente<select class="input-field" id="mvc" style="margin-top:4px"></select></label>
+      <label class="form-label full">Produto<select class="input-field" id="mvp" onchange="mvUpd()" style="margin-top:4px"></select></label>
+    </div>
+    <div id="mvprev" class="mv-prod-info">
+      <img id="mvprev-img" class="mv-prod-img" src="" alt="" style="display:none">
+      <div><div id="mvprev-nm" class="mv-prod-nm"></div><div id="mvprev-meta" class="mv-prod-pr"></div></div>
+    </div>
+    <div class="form-grid" style="padding-top:0">
+      <label class="form-label">Quantidade<input type="number" class="input-field" id="mvq" value="1" min="1" oninput="mvUpd()" style="margin-top:4px"></label>
+      <label class="form-label">Pagamento<select class="input-field" id="mvpg" style="margin-top:4px"><option>PIX</option><option>Cartão de Crédito</option><option>Cartão de Débito</option><option>Dinheiro</option></select></label>
+    </div>
+    <div class="summary-box modal-summary"><div class="summary-row"><span>Total</span><strong id="mvt">R$ 0,00</strong></div></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mv')">Cancelar</button><button class="btn btn-primary" onclick="saveMV()">Confirmar venda</button></div>
+  </div></div>
+
+  <div class="modal" id="mp"><div class="modal-box" style="max-width:560px">
+    <div class="modal-header"><h3>Produto</h3><button class="modal-close" onclick="closeMod('mp')">✕</button></div>
+    <input type="hidden" id="pe-id">
+    <span class="modal-section-label">Informações básicas</span>
+    <div class="form-grid">
+      <label class="form-label">Emoji / Ícone<input type="text" class="input-field" id="pe-em" maxlength="2" placeholder="💄" style="margin-top:4px"></label>
+      <label class="form-label">Categoria<select class="input-field" id="pe-cat" style="margin-top:4px"><option value="pele">Skincare</option><option value="corpo">Corpo</option><option value="maquiagem">Maquiagem</option><option value="fragrancias">Fragrâncias</option></select></label>
+      <label class="form-label full">Nome do produto<input type="text" class="input-field" id="pe-nm" placeholder="Ex: Sérum Vitamina C" style="margin-top:4px"></label>
+      <label class="form-label full">Descrição<textarea class="input-field" rows="2" id="pe-desc" placeholder="Descreva o produto brevemente…" style="margin-top:4px"></textarea></label>
+    </div>
+    <span class="modal-section-label">Preços &amp; Estoque</span>
+    <div class="form-grid">
+      <label class="form-label">Preço (R$)<input type="number" class="input-field" id="pe-pr" step="0.01" placeholder="0,00" style="margin-top:4px"></label>
+      <label class="form-label">Preço promocional<input type="number" class="input-field" id="pe-pd" step="0.01" placeholder="Opcional" style="margin-top:4px"></label>
+      <label class="form-label">Estoque<input type="number" class="input-field" id="pe-st" value="0" min="0" style="margin-top:4px"></label>
+      <label class="form-label">Destaque<select class="input-field" id="pe-dt" style="margin-top:4px"><option value="">Nenhum</option><option value="new">Novo</option><option value="sale">Promoção</option></select></label>
+    </div>
+    <span class="modal-section-label">Imagem &amp; Extras</span>
+    <div class="form-grid">
+      <label class="form-label full">URL da foto<input type="url" class="input-field" id="pe-img" placeholder="https://…" style="margin-top:4px"></label>
+      <label class="form-label full">Características <small style="opacity:.6">(separar por vírgula)</small><input type="text" class="input-field" id="pe-feats" placeholder="Vitamina C, Anti-manchas, FPS 30" style="margin-top:4px"></label>
+      <label class="form-label">Order Bump<select class="input-field" id="pe-bump" style="margin-top:4px"><option value="">Nenhum</option></select></label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mp')">Cancelar</button><button class="btn btn-primary" onclick="saveProd()">Salvar produto</button></div>
+  </div></div>
+
+  <div class="modal" id="mc"><div class="modal-box">
+    <div class="modal-header"><h3>Novo Cliente</h3><button class="modal-close" onclick="closeMod('mc')">✕</button></div>
+    <div class="form-grid">
+      <label class="form-label full">Nome completo *<input type="text" class="input-field" id="nc-nm" placeholder="Nome da cliente" style="margin-top:4px"></label>
+      <label class="form-label">WhatsApp<input type="tel" class="input-field" id="nc-tel" placeholder="(11) 99999-9999" style="margin-top:4px"></label>
+      <label class="form-label">E-mail<input type="email" class="input-field" id="nc-em" placeholder="email@exemplo.com" style="margin-top:4px"></label>
+      <label class="form-label">Cidade<input type="text" class="input-field" id="nc-ci" placeholder="São Paulo" style="margin-top:4px"></label>
+      <label class="form-label">Estado<input type="text" class="input-field" id="nc-es" maxlength="2" placeholder="SP" style="margin-top:4px"></label>
+      <label class="form-label">Aniversário<input type="date" class="input-field" id="nc-an" style="margin-top:4px"></label>
+      <label class="form-label">Tipo de pele<select class="input-field" id="nc-pe" style="margin-top:4px"><option>Normal</option><option>Seca</option><option>Oleosa</option><option>Mista</option><option>Sensível</option></select></label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mc')">Cancelar</button><button class="btn btn-primary" onclick="saveCli()">Cadastrar cliente</button></div>
+  </div></div>
+
+  <div class="modal" id="mt"><div class="modal-box">
+    <div class="modal-header"><h3>Novo Lançamento</h3><button class="modal-close" onclick="closeMod('mt')">✕</button></div>
+    <div class="form-grid">
+      <div class="form-label full" style="flex-direction:column;gap:6px">
+        <span class="fl-lbl">Tipo</span>
+        <div class="pay-chips">
+          <button class="pay-chip on" onclick="selTrTp(this,'receita')" type="button">↑ Receita</button>
+          <button class="pay-chip" onclick="selTrTp(this,'despesa')" type="button">↓ Despesa</button>
+        </div>
+        <input type="hidden" id="tr-tp" value="receita">
+      </div>
+      <label class="form-label full">Descrição<input type="text" class="input-field" id="tr-ds" placeholder="Ex: Pedido #001, Reposição de estoque…" style="margin-top:4px"></label>
+      <label class="form-label">Valor (R$)<input type="number" class="input-field" id="tr-vl" step="0.01" placeholder="0,00" style="margin-top:4px"></label>
+      <label class="form-label">Data<input type="date" class="input-field" id="tr-dt" style="margin-top:4px"></label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mt')">Cancelar</button><button class="btn btn-primary" onclick="saveTr()">Salvar</button></div>
+  </div></div>
+
+  <script src="./app.js" defer></script>
+  <a href="https://grupolima.com.br" target="_blank" rel="noopener" class="gl-badge">// feito por GrupoLima</a>
+  <div class="sidebar-overlay" id="sov" onclick="closeSidebar()"></div>
+  <script>
+  function openSidebar() {
+    document.querySelector('.erp-sidebar').classList.add('open');
+    document.getElementById('sov').classList.add('on');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.querySelector('.erp-sidebar').classList.remove('open');
+    document.getElementById('sov').classList.remove('on');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.addEventListener('click', () => { if (window.innerWidth <= 768) closeSidebar(); });
+  });
+  </script>
+</body>
+</html>

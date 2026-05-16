@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milena Lima Beauty</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./store.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+  <script src="./supabase.js" defer></script>
+</head>
+<body>
+  <div id="site-intro" class="site-intro">
+    <div class="site-intro-inner">
+      <p class="site-intro-eyebrow">Coleção 2026</p>
+      <div class="site-intro-brand">Milena Lima <em>Beauty</em></div>
+      <div class="site-intro-rule"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <div id="store" class="page page-store">
+    <div class="urgency-banner">Frete <em>GRÁTIS</em> em compras acima de R$ 150 · Consultoria personalizada inclusa em cada pedido</div>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#">Milena Lima <span>Beauty</span></a>
+        <button class="mob-nav-toggle" onclick="openMobNav()" aria-label="Menu">☰</button>
+        <nav class="main-nav">
+          <a href="#produtos" onclick="goto('produtos'); return false;">Produtos</a>
+          <a href="#skincare" onclick="goto('skincare'); return false;">Skincare</a>
+          <a href="#rotina" onclick="goto('rotina'); return false;">Rotinas</a>
+          <a href="#contato" onclick="goto('contato'); return false;">Contato</a>
+        </nav>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="toggleCart()">Carrinho <span class="cpill" id="cnt">0</span></button>
+        </div>
+      </div>
+    </header>
+    <div class="mob-nav-drawer" id="mob-nav" onclick="e => { if(e.target===this) closeMobNav() }">
+      <div class="mob-nav-panel">
+        <button class="mob-nav-close" onclick="closeMobNav()">✕</button>
+        <button class="mob-nav-link" onclick="closeMobNav(); goto('produtos')">Produtos</button>
+        <button class="mob-nav-link" onclick="closeMobNav(); goto('skincare')">Skincare</button>
+        <button class="mob-nav-link" onclick="closeMobNav(); goto('rotina')">Rotinas</button>
+        <button class="mob-nav-link" onclick="closeMobNav(); goto('contato')">Contato</button>
+      </div>
+    </div>
+
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-inner">
+          <div class="hero-left">
+            <p class="hero-kicker"><span class="kicker-line"></span>Consultora Oficial Mary Kay</p>
+            <h1 class="hero-headline">
+              <span class="hl-line">Beleza que</span>
+              <span class="hl-line">transforma.</span>
+              <span class="hl-line">Cuidado que</span>
+              <span class="hl-line">permanece.</span>
+            </h1>
+            <p class="hero-sub">Produtos de alta performance para pele, corpo e bem-estar. Consultoria personalizada, feita para você.</p>
+            <div class="hero-actions">
+              <button class="btn btn-editorial" onclick="goto('produtos')">Descobrir produtos</button>
+              <button class="btn btn-ghost-editorial" onclick="goto('skincare')">Guia de skincare</button>
+            </div>
+            <div class="hero-proof">
+              <span class="proof-stars">★★★★★</span>
+              <p class="proof-text"><strong>+500 clientes</strong> &middot; Avaliação 4.9/5</p>
+            </div>
+          </div>
+          <div class="hero-right">
+            <div class="hero-gallery" id="hero-gallery"></div>
+          </div>
+        </div>
+        <div class="hero-scroll-hint" onclick="goto('telao')">
+          <span class="scroll-hint-text">Role para descobrir os produtos</span>
+          <span class="scroll-hint-chevrons">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+      </section>
+
+      <section class="telao" id="telao">
+        <div class="telao-track" id="telao-track"></div>
+        <div class="telao-nav">
+          <button class="telao-arrow" onclick="telaoNav(-1)">←</button>
+          <div class="telao-dots" id="telao-dots"></div>
+          <button class="telao-arrow" onclick="telaoNav(1)">→</button>
+        </div>
+      </section>
+
+      <div class="marquee"><div class="marquee-track">
+        <span>Skincare · Maquiagem · Corpo &amp; Banho · Fragrâncias · Autocuidado · Mary Kay · Consultoria ·</span>
+        <span>Skincare · Maquiagem · Corpo &amp; Banho · Fragrâncias · Autocuidado · Mary Kay · Consultoria ·</span>
+      </div></div>
+
+      <div class="benefits-strip">
+        <div class="container benefits-grid">
+          <div class="benefit-item reveal">
+            <span class="benefit-icon benefit-icon--line"></span>
+            <div><div class="benefit-title">Entrega para todo o Brasil</div><div class="benefit-desc">Rápido e com rastreamento</div></div>
+          </div>
+          <div class="benefit-item reveal">
+            <span class="benefit-icon benefit-icon--line"></span>
+            <div><div class="benefit-title">Parcelamento em até 12x</div><div class="benefit-desc">Sem juros no cartão</div></div>
+          </div>
+          <div class="benefit-item reveal">
+            <span class="benefit-icon benefit-icon--line"></span>
+            <div><div class="benefit-title">100% Originais Mary Kay</div><div class="benefit-desc">Garantia de autenticidade</div></div>
+          </div>
+          <div class="benefit-item reveal">
+            <span class="benefit-icon benefit-icon--line"></span>
+            <div><div class="benefit-title">Consultoria personalizada</div><div class="benefit-desc">Atendimento exclusivo grátis</div></div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section products" id="produtos">
+        <div class="container section-header">
+          <div>
+            <p class="section-eyebrow">Curadoria</p>
+            <h2 class="section-title">Produtos em <em>destaque</em></h2>
+          </div>
+          <div class="section-controls">
+            <div class="filters">
+              <button class="filter-btn on" onclick="filP('todos', this)">Todos</button>
+              <button class="filter-btn" onclick="filP('pele', this)">Skincare</button>
+              <button class="filter-btn" onclick="filP('corpo', this)">Corpo</button>
+              <button class="filter-btn" onclick="filP('maquiagem', this)">Maquiagem</button>
+              <button class="filter-btn" onclick="filP('fragrancias', this)">Fragrâncias</button>
+            </div>
+            <div class="pgrid-ctrl">
+              <button class="pgrid-arrow" onclick="carouselNav(-1)" aria-label="Anterior">&#8592;</button>
+              <button class="pgrid-arrow" onclick="carouselNav(1)"  aria-label="Próximo">&#8594;</button>
+            </div>
+          </div>
+        </div>
+        <div class="pgrid" id="pgrid"></div>
+        <div class="pgrid-foot">
+          <div class="pgrid-bar-track"><div class="pgrid-bar-fill" id="pgrid-bar-fill"></div></div>
+          <span class="pgrid-drag-hint" id="pgrid-drag-hint">← arraste para explorar →</span>
+        </div>
+      </section>
+
+      <section class="section products-feat" id="novidades">
+        <div class="container section-header">
+          <div>
+            <p class="section-eyebrow">Seleção especial</p>
+            <h2 class="section-title">Novidades &amp; <em>Promoções</em></h2>
+          </div>
+        </div>
+        <div class="pgrid-feat" id="pgrid-feat"></div>
+      </section>
+
+      <section class="section section-guide" id="skincare">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <p class="section-eyebrow">Bem-estar &amp; autocuidado</p>
+              <h2 class="section-title">Os <em>fundamentos</em></h2>
+            </div>
+          </div>
+          <div class="guide-list">
+            <div class="guide-row reveal">
+              <span class="guide-num">01</span>
+              <div class="guide-body">
+                <h3 class="guide-title">Hidratação &amp; Proteção</h3>
+                <p class="guide-text">Os dois pilares inegociáveis de qualquer rotina. Pele hidratada e protegida envelhece com mais elegância e responde com mais eficácia aos ativos de tratamento.</p>
+              </div>
+              <ul class="guide-steps">
+                <li>Sérum hidratante pela manhã</li>
+                <li>FPS 50 como último passo</li>
+                <li>Hidratante corporal após o banho</li>
+              </ul>
+            </div>
+            <div class="guide-row reveal">
+              <span class="guide-num">02</span>
+              <div class="guide-body">
+                <h3 class="guide-title">Tratamento &amp; Correção</h3>
+                <p class="guide-text">Ativos como vitamina C, ácidos e peptídeos trabalham em camadas mais profundas. A consistência diária é o único segredo para resultados visíveis e duradouros.</p>
+              </div>
+              <ul class="guide-steps">
+                <li>Vitamina C pela manhã, sobre pele limpa</li>
+                <li>Esfoliação suave 1–2× por semana</li>
+                <li>Sérum regenerador à noite</li>
+              </ul>
+            </div>
+            <div class="guide-row reveal">
+              <span class="guide-num">03</span>
+              <div class="guide-body">
+                <h3 class="guide-title">Ritual &amp; Sensorialidade</h3>
+                <p class="guide-text">O autocuidado vai além dos resultados. Uma rotina intencional — com texturas, aromas e momentos reservados para si — eleva a experiência e o bem-estar de dentro para fora.</p>
+              </div>
+              <ul class="guide-steps">
+                <li>Esfoliante corporal 2× por semana</li>
+                <li>Fragrância como toque final</li>
+                <li>Massagem facial com óleo noturno</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-newsletter" id="contato">
+        <div class="container newsletter-card">
+          <div>
+            <p class="section-eyebrow text-center">Newsletter</p>
+            <h2 class="section-title">Dicas direto <em>para você</em></h2>
+            <p class="section-text">Receba receitas de beleza, lançamentos Mary Kay e promoções exclusivas.</p>
+          </div>
+          <div class="newsletter-form">
+            <input type="email" class="input-field" placeholder="seu@email.com">
+            <button class="btn btn-primary" onclick="showToast('Inscrita com sucesso ✓')">Inscrever</button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <div class="container footer-grid">
+          <div class="footer-brand">
+            <div class="footer-title">Milena Lima <span>Beauty</span></div>
+            <p class="footer-text">Consultora oficial Mary Kay. Beleza, autoestima e bem-estar para mulheres que se dedicam ao próprio cuidado.</p>
+          </div>
+          <div class="footer-list">
+            <div class="footer-heading">Produtos</div>
+            <ul><li><a href="#">Skincare</a></li><li><a href="#">Maquiagem</a></li><li><a href="#">Corpo &amp; Banho</a></li><li><a href="#">Fragrâncias</a></li></ul>
+          </div>
+          <div class="footer-list">
+            <div class="footer-heading">Cuidado</div>
+            <ul><li><a href="#">Guia de Skincare</a></li><li><a href="#">Rotinas</a></li><li><a href="#">Autocuidado</a></li><li><a href="#">Blog</a></li></ul>
+          </div>
+          <div class="footer-list">
+            <div class="footer-heading">Contato</div>
+            <ul><li><a href="#">WhatsApp</a></li><li><a href="#">Instagram</a></li><li><a href="#">E-mail</a></li><li><a href="#">Agendamento</a></li></ul>
+          </div>
+        </div>
+        <div class="footer-copyright">© 2026 Milena Lima Beauty · Consultora Oficial Mary Kay<button class="footer-admin" onclick="window.location.href='login.html'" title="Área restrita">⚙</button></div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="bump-panel" id="bump-panel">
+    <div class="bump-inner">
+      <div class="bump-product">
+        <div class="bump-em" id="bump-em"></div>
+        <div class="bump-info">
+          <span class="bump-label">Frequentemente comprado junto</span>
+          <span class="bump-nm" id="bump-nm"></span>
+          <span class="bump-pr" id="bump-pr"></span>
+        </div>
+      </div>
+      <div class="bump-actions">
+        <button class="bump-add" onclick="addBump()">+ Adicionar</button>
+        <button class="bump-dismiss" onclick="dismissBump()">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cbg" id="cbg" onclick="toggleCart()"></div>
+  <aside class="cart-panel" id="cpanel">
+    <div class="cart-header"><h3>Carrinho</h3><button class="cart-close" onclick="toggleCart()">✕</button></div>
+    <div class="cart-body" id="cbody"></div>
+    <div class="cart-footer" id="cfoot">
+      <div class="cart-row"><span>Subtotal</span><span id="csub">R$ 0</span></div>
+      <div class="cart-row"><span>Frete</span><span class="text-success">Grátis</span></div>
+      <div class="cart-row cart-total"><span>Total</span><span id="ctot">R$ 0</span></div>
+      <button class="btn btn-primary btn-block" onclick="checkout()">Finalizar via WhatsApp</button>
+    </div>
+  </aside>
+
+  <div id="login" class="page page-login">
+    <div class="login-card" id="login-card">
+      <span class="login-monogram">✦</span>
+      <div class="login-brand">Milena Lima <span>Beauty</span></div>
+      <p class="login-eyebrow">Área restrita</p>
+      <div class="login-divider"></div>
+      <form class="login-form" onsubmit="doLogin(event)">
+        <label class="login-label" for="login-em">E-mail</label>
+        <div class="login-input-wrap" style="margin-bottom:14px">
+          <input type="email" id="login-em" class="login-input" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <label class="login-label" for="login-pw">Senha</label>
+        <div class="login-input-wrap">
+          <input type="password" id="login-pw" class="login-input" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="login-eye" onclick="togglePw()" tabindex="-1">◉</button>
+        </div>
+        <p class="login-error" id="login-err">E-mail ou senha incorretos. Tente novamente.</p>
+        <button type="submit" class="btn btn-editorial login-btn">Entrar no painel</button>
+      </form>
+      <button class="login-back" onclick="closeLogin()">← Voltar à loja</button>
+    </div>
+  </div>
+
+  <div class="mkt-card" id="mkt-card">
+    <button class="mkt-close" onclick="dismissMkt()" aria-label="Fechar">✕</button>
+    <span class="mkt-avatar">✦</span>
+    <p class="mkt-title">Oi, está aí?</p>
+    <p class="mkt-text">Temos produtos incríveis esperando por você — dá uma olhada!</p>
+    <button class="mkt-cta" onclick="mktGo()">Ver produtos →</button>
+  </div>
+
+  <script src="./app.js" defer></script>
+  <script src="./store.js" defer></script>
+  <a href="https://grupolima.com.br" target="_blank" rel="noopener" class="gl-badge">// feito por GrupoLima</a>
+</body>
+</html>

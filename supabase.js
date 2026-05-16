@@ -1,0 +1,185 @@
+/* =====================================================
+   supabase.js — Cliente Supabase + camada de dados
+   Preencha SUPABASE_URL e SUPABASE_ANON_KEY abaixo
+   ===================================================== */
+
+const SUPABASE_URL      = 'https://aksgxwucgkajznhxyciz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrc2d4d3VjZ2thanpuaHh5Y2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTIyMjAsImV4cCI6MjA5NDQyODIyMH0.ggBOday3Mktl_Oc5pGG6rs-VG3iwDYc3GWNsGcH__5k';
+
+// Inicializa o cliente (null se o SDK não estiver disponível)
+let _sbClient = null;
+try {
+  if (typeof supabase !== 'undefined') {
+    _sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch(e) {
+  console.warn('[supabase.js] Cliente não pôde ser inicializado:', e.message);
+}
+
+// Expõe para app.js verificar disponibilidade
+window._sbClient = _sbClient;
+
+/* ── Autenticação ───────────────────────────────────── */
+const SBAuth = {
+  async signIn(email, password) {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const { data, error } = await _sbClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+  },
+  async signOut() {
+    if (!_sbClient) return;
+    const { error } = await _sbClient.auth.signOut();
+    if (error) throw error;
+  },
+  async getSession() {
+    if (!_sbClient) return null;
+    const { data } = await _sbClient.auth.getSession();
+    return data?.session ?? null;
+  },
+  onChange(cb) {
+    if (!_sbClient) return { data: { subscription: { unsubscribe: () => {} } } };
+    return _sbClient.auth.onAuthStateChange(cb);
+  }
+};
+
+/* ── Produtos ───────────────────────────────────────── */
+const SBProds = {
+  async list() {
+    const { data, error } = await _sbClient.from('products').select('*').order('id');
+    if (error) throw error;
+    return data.map(_rowToProduct);
+  },
+  async upsert(p) {
+    const { error } = await _sbClient.from('products').upsert(_productToRow(p));
+    if (error) throw error;
+  },
+  async delete(id) {
+    const { error } = await _sbClient.from('products').delete().eq('id', id);
+    if (error) throw error;
+  },
+  async updateStock(id, st) {
+    const { error } = await _sbClient.from('products').update({ st }).eq('id', id);
+    if (error) throw error;
+  }
+};
+
+/* ── Clientes ───────────────────────────────────────── */
+const SBClis = {
+  async list() {
+    const { data, error } = await _sbClient.from('clients').select('*').order('id');
+    if (error) throw error;
+    return data.map(_rowToClient);
+  },
+  async upsert(c) {
+    const { error } = await _sbClient.from('clients').upsert(_clientToRow(c));
+    if (error) throw error;
+  },
+  async update(id, patch) {
+    const { error } = await _sbClient.from('clients').update(patch).eq('id', id);
+    if (error) throw error;
+  }
+};
+
+/* ── Pedidos ────────────────────────────────────────── */
+const SBPeds = {
+  async list() {
+    const { data, error } = await _sbClient.from('orders').select('*').order('id');
+    if (error) throw error;
+    return data.map(_rowToOrder);
+  },
+  async upsert(ped) {
+    const { error } = await _sbClient.from('orders').upsert(_orderToRow(ped));
+    if (error) throw error;
+  },
+  async updateStatus(id, st) {
+    const { error } = await _sbClient.from('orders').update({ st }).eq('id', id);
+    if (error) throw error;
+  }
+};
+
+/* ── Transações ─────────────────────────────────────── */
+const SBTrans = {
+  async list() {
+    const { data, error } = await _sbClient.from('transactions').select('*').order('id');
+    if (error) throw error;
+    return data.map(_rowToTrans);
+  },
+  async upsert(t) {
+    const { error } = await _sbClient.from('transactions').upsert(_transToRow(t));
+    if (error) throw error;
+  }
+};
+
+/* ── Configurações ──────────────────────────────────── */
+const SBSettings = {
+  async get() {
+    const { data, error } = await _sbClient.from('store_settings').select('data').eq('id', 1).single();
+    if (error) throw error;
+    return data?.data ?? null;
+  },
+  async set(settings) {
+    const { error } = await _sbClient.from('store_settings')
+      .upsert({ id: 1, data: settings, updated_at: new Date().toISOString() });
+    if (error) throw error;
+  }
+};
+
+/* ── Mapeamento rows ↔ objetos JS ───────────────────── */
+function _rowToProduct(r) {
+  return {
+    id: r.id, em: r.em, nm: r.nm, cat: r.cat,
+    pr: Number(r.pr), pd: r.pd != null ? Number(r.pd) : null,
+    st: r.st, dt: r.dt || '', img: r.img || '',
+    bump: r.bump ?? null,
+    desc:  r.description || '',
+    feats: r.feats || []
+  };
+}
+
+function _productToRow(p) {
+  return {
+    id: p.id, em: p.em, nm: p.nm, cat: p.cat,
+    pr: p.pr, pd: p.pd ?? null,
+    st: p.st, dt: p.dt || '', img: p.img || '',
+    bump: p.bump ?? null,
+    description: p.desc || '',
+    feats: p.feats || []
+  };
+}
+
+function _rowToClient(r) {
+  return {
+    id: r.id, nm: r.nm, tel: r.tel || '', em: r.em || '',
+    ci: r.ci || '', es: r.es || '',
+    an: r.an || '', pe: r.pe || 'Normal',
+    gasto: Number(r.gasto || 0),
+    ult: r.ult || ''
+  };
+}
+
+function _clientToRow(c) {
+  return {
+    id: c.id, nm: c.nm, tel: c.tel, em: c.em,
+    ci: c.ci, es: c.es,
+    an: c.an || null, pe: c.pe,
+    gasto: c.gasto || 0,
+    ult: c.ult || null
+  };
+}
+
+function _rowToOrder(r) {
+  return { id: r.id, cid: r.cid, prod: r.prod, q: r.q, tot: Number(r.tot), pag: r.pag, st: r.st, dt: r.dt };
+}
+
+function _orderToRow(ped) {
+  return { id: ped.id, cid: ped.cid, prod: ped.prod, q: ped.q, tot: ped.tot, pag: ped.pag, st: ped.st, dt: ped.dt };
+}
+
+function _rowToTrans(r) {
+  return { id: r.id, tp: r.tp, ds: r.ds, vl: Number(r.vl), dt: r.dt };
+}
+
+function _transToRow(t) {
+  return { id: t.id, tp: t.tp, ds: t.ds, vl: t.vl, dt: t.dt };
+}
