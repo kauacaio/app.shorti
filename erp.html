@@ -210,12 +210,90 @@
     .nv-total { display: flex; align-items: center; justify-content: space-between; background: #F4F4F5; border-radius: 10px; padding: 14px 16px; margin: 14px 0; }
     .nv-total-lbl { font-size: 13px; font-weight: 500; color: #52525B; }
     .nv-total-val { font-size: 22px; font-weight: 600; color: #18181B; letter-spacing: -.04em; }
+    .nv-total-sub { font-size: 11px; color: #71717A; margin-top: 2px; }
+    .parc-section { display: none; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #F0F0F1; }
+    .parc-section.on { display: flex; }
+    .dtpag-row { margin-top: 10px; }
+    /* ── Carrinho interno Nova Venda ─────────────────── */
+    .nv-add-btn { width: 100%; height: 38px; border-radius: 8px; border: 1.5px dashed #D4D4D8; background: #FAFAFA; color: #52525B; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .14s; margin: 10px 0 8px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .nv-add-btn:hover { border-color: #18181B; color: #18181B; background: #F4F4F5; }
+    .nv-add-btn:active { transform: scale(.98); }
+    .nv-cart { border: 1px solid #E4E4E7; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+    .nv-cart:empty { display: none; }
+    .nv-cart-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #F0F0F1; background: #fff; }
+    .nv-cart-item:last-child { border-bottom: none; }
+    .nv-cart-body { flex: 1; min-width: 0; }
+    .nv-cart-nm { font-size: 13px; font-weight: 500; color: #18181B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nv-cart-meta { font-size: 11px; color: #71717A; margin-top: 1px; }
+    .nv-cart-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .nv-cart-pr { font-size: 13px; font-weight: 600; color: #18181B; }
+    .nv-cart-rm { background: none; border: none; color: #D4D4D8; font-size: 15px; cursor: pointer; padding: 2px 4px; line-height: 1; transition: color .14s; }
+    .nv-cart-rm:hover { color: #DC2626; }
+    .nv-section-sep { height: 0; border-top: 1px solid #F0F0F1; margin: 12px 0; }
     .mv-prod-info { display: none; align-items: center; gap: 10px; background: #F7F7F8; border-radius: 10px; padding: 10px 12px; margin: 4px 22px 12px; }
     .mv-prod-info.on { display: flex; }
     .mv-prod-img { width: 42px; height: 42px; object-fit: cover; border-radius: 7px; flex-shrink: 0; }
     .mv-prod-nm { font-size: 13px; font-weight: 500; color: #18181B; }
     .mv-prod-pr { font-size: 12px; color: #71717A; margin-top: 2px; }
     .modal-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #A1A1AA; padding: 14px 22px 4px; display: block; }
+
+    /* ── Cupom Fiscal ────────────────────────────────── */
+    .cupom-box { max-width: 400px !important; background: #FDFCFB; padding: 0 !important; border-radius: 18px; overflow: hidden; }
+    .cupom-sheet {
+      padding: 36px 32px 24px;
+      font-family: 'DM Sans', system-ui, sans-serif;
+    }
+    .cupom-sym { font-size: 18px; color: #C4897A; display: block; text-align: center; margin-bottom: 10px; }
+    .cupom-brand {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px; font-weight: 300; color: #1A1714;
+      text-align: center; letter-spacing: .04em; margin: 0;
+    }
+    .cupom-brand em { color: #C4897A; font-style: italic; }
+    .cupom-consult { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: #8C8078; text-align: center; margin: 5px 0 18px; }
+    .cupom-divider { height: 0.5px; background: rgba(26,23,20,.12); margin: 0; }
+    .cupom-divider-dashed { height: 0; border-top: 1px dashed rgba(26,23,20,.12); margin: 0; }
+    .cupom-mid {
+      text-align: center; padding: 16px 0 12px;
+    }
+    .cupom-tag { font-size: 8.5px; letter-spacing: .24em; text-transform: uppercase; color: #B4A99A; }
+    .cupom-num { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 300; color: #1A1714; line-height: 1; margin: 4px 0 2px; }
+    .cupom-datetime { font-size: 11px; color: #8C8078; }
+    .cupom-section { padding: 12px 0; }
+    .cupom-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; }
+    .cupom-lbl { font-size: 12px; color: #8C8078; }
+    .cupom-val { font-size: 12px; color: #1A1714; font-weight: 500; text-align: right; max-width: 55%; }
+    .cupom-prod-row { padding: 12px 0 10px; }
+    .cupom-prod-nm { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 400; color: #1A1714; line-height: 1.15; }
+    .cupom-prod-meta { font-size: 11px; color: #8C8078; margin-top: 3px; }
+    .cupom-total-area { padding: 14px 0 4px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .cupom-total-lbl { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #5C5248; font-weight: 600; }
+    .cupom-total-val { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 300; color: #1A1714; line-height: 1; }
+    .cupom-parc-note { font-size: 11px; color: #C4897A; text-align: right; margin-top: 3px; }
+    .cupom-status { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; border-radius: 4px; padding: 3px 9px; margin-top: 10px; }
+    .cupom-status-confirm { background: #DCFCE7; color: #166534; }
+    .cupom-status-pend    { background: #FEF9C3; color: #92400E; }
+    .cupom-thanks { text-align: center; padding: 18px 0 6px; }
+    .cupom-thanks-msg { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; font-style: italic; color: #5C5248; line-height: 1.65; margin: 0 0 8px; }
+    .cupom-thanks-foot { font-size: 9.5px; color: #B4A99A; letter-spacing: .04em; }
+    .cupom-actions-bar {
+      display: flex; gap: 8px; padding: 16px 24px 20px;
+      border-top: 0.5px solid rgba(26,23,20,.08);
+      background: #FAFAF9;
+    }
+    .cupom-btn { flex: 1; height: 38px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; border: 1px solid #D4D4D8; background: #fff; color: #52525B; transition: all .14s; font-family: 'Inter', system-ui, sans-serif; }
+    .cupom-btn:hover { border-color: #18181B; color: #18181B; }
+    .cupom-btn-wa { border-color: #25D366; color: #16A34A; background: #F0FDF4; }
+    .cupom-btn-wa:hover { background: #25D366; color: #fff; border-color: #25D366; }
+    .cupom-btn-main { background: #18181B; border-color: #18181B; color: #fff; }
+    .cupom-btn-main:hover { background: #111; }
+
+    @media print {
+      body > *:not(#cupom) { display: none !important; }
+      #cupom { display: block !important; position: static !important; background: transparent !important; padding: 0 !important; }
+      #cupom > .modal-box { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; }
+      .cupom-actions-bar { display: none !important; }
+    }
 
     /* ── Responsive ──────────────────────────────────── */
     @media (max-width: 768px) {
@@ -328,7 +406,7 @@
               <button class="btn btn-primary" onclick="openMod('mv')">+ Novo</button>
             </div>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Data</th><th>Produto</th><th>Total</th><th>Pag.</th><th>Status</th></tr></thead><tbody id="ptt"></tbody></table></div></div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Data</th><th>Produto</th><th>Total</th><th>Pagamento</th><th>Data Pgto</th><th>Status</th></tr></thead><tbody id="ptt"></tbody></table></div></div>
         </section>
 
         <section class="erp-page" id="ep-nvenda">
@@ -363,6 +441,9 @@
                   <button class="qty-btn" onclick="adjVq(1)" type="button">+</button>
                 </div>
               </div>
+              <button class="nv-add-btn" onclick="nvAddItem()" type="button">＋ Adicionar produto ao pedido</button>
+              <div id="nv-cart" class="nv-cart"></div>
+              <div class="nv-section-sep"></div>
               <div class="form-row">
                 <span class="fl-lbl">Forma de pagamento</span>
                 <div class="pay-chips">
@@ -373,9 +454,29 @@
                 </div>
                 <input type="hidden" id="vpg" value="PIX">
               </div>
+              <div class="parc-section" id="vparc-section">
+                <span class="fl-lbl">Parcelas</span>
+                <div class="pay-chips">
+                  <button class="pay-chip on" onclick="selParc(this,1)" type="button">1× à vista</button>
+                  <button class="pay-chip" onclick="selParc(this,2)" type="button">2×</button>
+                  <button class="pay-chip" onclick="selParc(this,3)" type="button">3×</button>
+                  <button class="pay-chip" onclick="selParc(this,4)" type="button">4×</button>
+                  <button class="pay-chip" onclick="selParc(this,6)" type="button">6×</button>
+                  <button class="pay-chip" onclick="selParc(this,10)" type="button">10×</button>
+                  <button class="pay-chip" onclick="selParc(this,12)" type="button">12×</button>
+                </div>
+                <input type="hidden" id="vparc" value="1">
+              </div>
+              <div class="form-row dtpag-row">
+                <span class="fl-lbl">Data de pagamento</span>
+                <input type="date" class="input-field" id="vdtpag" style="margin-top:6px">
+              </div>
               <div class="nv-total">
                 <span class="nv-total-lbl">Total a receber</span>
-                <span class="nv-total-val" id="vt">R$ 0,00</span>
+                <div style="text-align:right">
+                  <div class="nv-total-val" id="vt">R$ 0,00</div>
+                  <div class="nv-total-sub" id="vt-sub"></div>
+                </div>
               </div>
               <button class="btn btn-primary btn-block" onclick="saveV()" type="button" style="font-size:14px;padding:14px">✓ Registrar venda</button>
             </article>
@@ -529,9 +630,41 @@
       <img id="mvprev-img" class="mv-prod-img" src="" alt="" style="display:none">
       <div><div id="mvprev-nm" class="mv-prod-nm"></div><div id="mvprev-meta" class="mv-prod-pr"></div></div>
     </div>
+    <div class="form-grid" style="padding-top:0;padding-bottom:0">
+      <label class="form-label full">Quantidade<input type="number" class="input-field" id="mvq" value="1" min="1" style="margin-top:4px"></label>
+    </div>
+    <div style="padding:6px 22px 10px">
+      <button class="nv-add-btn" onclick="mvAddItem()" type="button">＋ Adicionar produto</button>
+      <div id="mv-cart" class="nv-cart"></div>
+    </div>
+    <div style="height:1px;background:#F0F0F1;margin:0 0 10px"></div>
     <div class="form-grid" style="padding-top:0">
-      <label class="form-label">Quantidade<input type="number" class="input-field" id="mvq" value="1" min="1" oninput="mvUpd()" style="margin-top:4px"></label>
-      <label class="form-label">Pagamento<select class="input-field" id="mvpg" style="margin-top:4px"><option>PIX</option><option>Cartão de Crédito</option><option>Cartão de Débito</option><option>Dinheiro</option></select></label>
+      <div class="form-label full" style="flex-direction:column;gap:6px">
+        <span class="fl-lbl">Pagamento</span>
+        <div class="pay-chips" style="margin-top:2px">
+          <button class="pay-chip on" onclick="selMvPay(this,'PIX')" type="button">PIX</button>
+          <button class="pay-chip" onclick="selMvPay(this,'Cartão de Crédito')" type="button">Crédito</button>
+          <button class="pay-chip" onclick="selMvPay(this,'Cartão de Débito')" type="button">Débito</button>
+          <button class="pay-chip" onclick="selMvPay(this,'Dinheiro')" type="button">Dinheiro</button>
+        </div>
+        <input type="hidden" id="mvpg" value="PIX">
+      </div>
+    </div>
+    <div class="parc-section" id="mvparc-section">
+      <span class="fl-lbl" style="padding:0 22px">Parcelas</span>
+      <div class="pay-chips" style="padding:0 22px">
+        <button class="pay-chip on" onclick="selMvParc(this,1)" type="button">1× à vista</button>
+        <button class="pay-chip" onclick="selMvParc(this,2)" type="button">2×</button>
+        <button class="pay-chip" onclick="selMvParc(this,3)" type="button">3×</button>
+        <button class="pay-chip" onclick="selMvParc(this,4)" type="button">4×</button>
+        <button class="pay-chip" onclick="selMvParc(this,6)" type="button">6×</button>
+        <button class="pay-chip" onclick="selMvParc(this,10)" type="button">10×</button>
+        <button class="pay-chip" onclick="selMvParc(this,12)" type="button">12×</button>
+      </div>
+      <input type="hidden" id="mvparc" value="1">
+    </div>
+    <div class="form-grid" style="padding-top:8px">
+      <label class="form-label full">Data de pagamento<input type="date" class="input-field" id="mvdtpag" style="margin-top:4px"></label>
     </div>
     <div class="summary-box modal-summary"><div class="summary-row"><span>Total</span><strong id="mvt">R$ 0,00</strong></div></div>
     <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mv')">Cancelar</button><button class="btn btn-primary" onclick="saveMV()">Confirmar venda</button></div>
@@ -595,8 +728,26 @@
     <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mt')">Cancelar</button><button class="btn btn-primary" onclick="saveTr()">Salvar</button></div>
   </div></div>
 
+  <!-- ── Cupom Fiscal ─────────────────────────────── -->
+  <div class="modal" id="cupom">
+    <div class="modal-box cupom-box">
+      <div class="cupom-sheet" id="cupom-inner"></div>
+      <div class="cupom-actions-bar">
+        <button class="cupom-btn" onclick="closeMod('cupom')">Fechar</button>
+        <button class="cupom-btn cupom-btn-wa" onclick="whatsappCupom()">📲 WhatsApp</button>
+        <button class="cupom-btn cupom-btn-main" onclick="window.print()">🖨 Imprimir</button>
+      </div>
+    </div>
+  </div>
+
   <script src="./app.js" defer></script>
-  <a href="https://grupolima.com.br" target="_blank" rel="noopener" class="gl-badge">// feito por GrupoLima</a>
+  <a href="grupolima.html" class="gl-badge">
+    <span class="gl-badge-bars">
+      <span class="gl-badge-bar"></span>
+      <span class="gl-badge-bar"></span>
+    </span>
+    <span class="gl-badge-text">GrupoLima</span>
+  </a>
   <div class="sidebar-overlay" id="sov" onclick="closeSidebar()"></div>
   <script>
   function openSidebar() {

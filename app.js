@@ -117,6 +117,10 @@ function openMod(id) {
     const s1 = $('mvc'), s2 = $('mvp');
     if (s1) s1.innerHTML = DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
     if (s2) { s2.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pr)}</option>`).join(''); mvUpd(); }
+    if ($('mvdtpag') && !$('mvdtpag').value) $('mvdtpag').value = td();
+    if ($('mvpg')) { $('mvpg').value = 'PIX'; mvPayChg('PIX'); }
+    _mvCart = [];
+    mvRenderCart();
   }
   if (id === 'mp') {
     const currentId = parseInt($('pe-id')?.value) || 0;
@@ -170,7 +174,9 @@ function rDashLow() {
 function rPeds() {
   $('ptt').innerHTML = [...DB.peds].reverse().map(p => {
     const c = DB.clis.find(x => x.id === p.cid);
-    return `<tr><td>#${p.id}</td><td>${c ? c.nm : '—'}</td><td>${fdt(p.dt)}</td><td>${p.prod} ×${p.q}</td><td>${brl(p.tot)}</td><td>${p.pag}</td><td><select class="fi small-select" onchange="updPS(${p.id}, this.value)">${['Pendente','Confirmado','Enviado','Entregue'].map(s => `<option ${s === p.st ? 'selected' : ''}>${s}</option>`).join('')}</select></td></tr>`;
+    const dtpagStr = p.dtpag ? fdt(p.dtpag) : fdt(p.dt);
+    const dtpagClass = p.dtpag && p.dtpag > td() ? 'style="color:#D97706;font-weight:500"' : '';
+    return `<tr><td>#${p.id}</td><td>${c ? c.nm : '—'}</td><td>${fdt(p.dt)}</td><td>${p.prod} ×${p.q}</td><td>${brl(p.tot)}</td><td>${p.pag}</td><td ${dtpagClass}>${dtpagStr}</td><td><select class="fi small-select" onchange="updPS(${p.id}, this.value)">${['Pendente','Confirmado','Enviado','Entregue'].map(s => `<option ${s === p.st ? 'selected' : ''}>${s}</option>`).join('')}</select></td></tr>`;
   }).join('');
 }
 
@@ -241,16 +247,119 @@ function rFin() {
   rFlxChart();
 }
 
+let _nvCart = [];
+let _mvCart = [];
+
 function rNV() {
   const vc = $('vc'), vp = $('vp');
   if (vc) vc.innerHTML = DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
   if (vp) { vp.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pr)}</option>`).join(''); vUpd(); }
+  if ($('vdtpag') && !$('vdtpag').value) $('vdtpag').value = td();
+  _nvCart = [];
+  nvRenderCart();
+  const vhj = $('vhj');
+  if (vhj) {
+    const hoje = DB.peds.filter(p => p.dt === td()).reverse();
+    if (!hoje.length) {
+      vhj.innerHTML = '<p class="small-note">Nenhuma venda hoje.</p>';
+    } else {
+      vhj.innerHTML = hoje.map(p => {
+        const c = DB.clis.find(x => x.id === p.cid);
+        const itensStr = p.itens ? p.itens.map(i => `${i.em || ''} ${i.nm} ×${i.q}`).join(', ') : `${p.prod} ×${p.q}`;
+        return `<div class="history-item"><strong>#${p.id}</strong> · ${c ? c.nm : '—'}<br>${itensStr} · ${brl(p.tot)}</div>`;
+      }).join('');
+    }
+  }
+}
+
+/* ── Carrinho Nova Venda ─────────────────────────── */
+function nvAddItem() {
+  const pid = parseInt($('vp')?.value);
+  const q   = parseInt($('vq')?.value) || 1;
+  if (!pid || !q) return;
+  const p = DB.prods.find(x => x.id === pid);
+  if (!p) return;
+  const ex = _nvCart.find(x => x.pid === pid);
+  if (ex) { ex.q += q; ex.sub = ex.pr * ex.q; }
+  else _nvCart.push({ pid, nm: p.nm, em: p.em || '', q, pr: p.pr, sub: p.pr * q });
+  if ($('vq')) $('vq').value = 1;
+  vUpd();
+  nvRenderCart();
+  const btn = document.querySelector('.nv-add-btn');
+  if (btn) { btn.textContent = '✓ Adicionado!'; setTimeout(() => { btn.textContent = '＋ Adicionar produto ao pedido'; }, 900); }
+}
+
+function nvRemItem(pid) {
+  _nvCart = _nvCart.filter(x => x.pid !== pid);
+  nvRenderCart();
+}
+
+function nvRenderCart() {
+  const el = $('nv-cart');
+  if (!el) return;
+  if (!_nvCart.length) {
+    el.innerHTML = '';
+    if ($('vt')) $('vt').textContent = 'R$ 0,00';
+    if ($('vt-sub')) $('vt-sub').textContent = '';
+    return;
+  }
+  el.innerHTML = _nvCart.map(i => `
+    <div class="nv-cart-item">
+      <div class="nv-cart-body">
+        <div class="nv-cart-nm">${i.em} ${i.nm}</div>
+        <div class="nv-cart-meta">${i.q}× · ${brl(i.pr)} cada</div>
+      </div>
+      <div class="nv-cart-right">
+        <span class="nv-cart-pr">${brl(i.sub)}</span>
+        <button class="nv-cart-rm" onclick="nvRemItem(${i.pid})" type="button">✕</button>
+      </div>
+    </div>`).join('');
+  const tot  = _nvCart.reduce((a, b) => a + b.sub, 0);
+  const parc = parseInt($('vparc')?.value) || 1;
+  if ($('vt')) $('vt').textContent = brl(tot);
+  if ($('vt-sub')) $('vt-sub').textContent = parc > 1 ? `${parc}× de ${brl(tot / parc)}` : '';
+}
+
+/* ── Carrinho Modal mv ───────────────────────────── */
+function mvAddItem() {
+  const pid = parseInt($('mvp')?.value);
+  const q   = parseInt($('mvq')?.value) || 1;
+  if (!pid || !q) return;
+  const p = DB.prods.find(x => x.id === pid);
+  if (!p) return;
+  const ex = _mvCart.find(x => x.pid === pid);
+  if (ex) { ex.q += q; ex.sub = ex.pr * ex.q; }
+  else _mvCart.push({ pid, nm: p.nm, em: p.em || '', q, pr: p.pr, sub: p.pr * q });
+  if ($('mvq')) $('mvq').value = 1;
+  mvRenderCart();
+}
+
+function mvRemItem(pid) {
+  _mvCart = _mvCart.filter(x => x.pid !== pid);
+  mvRenderCart();
+}
+
+function mvRenderCart() {
+  const el = $('mv-cart');
+  if (!el) return;
+  if (!_mvCart.length) { el.innerHTML = ''; if ($('mvt')) $('mvt').textContent = 'R$ 0,00'; return; }
+  el.innerHTML = _mvCart.map(i => `
+    <div class="nv-cart-item">
+      <div class="nv-cart-body">
+        <div class="nv-cart-nm">${i.em} ${i.nm}</div>
+        <div class="nv-cart-meta">${i.q}× · ${brl(i.pr)} cada</div>
+      </div>
+      <div class="nv-cart-right">
+        <span class="nv-cart-pr">${brl(i.sub)}</span>
+        <button class="nv-cart-rm" onclick="mvRemItem(${i.pid})" type="button">✕</button>
+      </div>
+    </div>`).join('');
+  const tot = _mvCart.reduce((a, b) => a + b.sub, 0);
+  if ($('mvt')) $('mvt').textContent = brl(tot);
 }
 
 function vUpd() {
   const p = DB.prods.find(x => x.id === parseInt($('vp')?.value));
-  const q = parseInt($('vq')?.value) || 1;
-  if ($('vt')) $('vt').textContent = p ? brl(p.pr * q) : 'R$ 0,00';
   const prev = $('vprev');
   if (!prev) return;
   if (!p) { prev.style.display = 'none'; return; }
@@ -267,40 +376,41 @@ function vUpd() {
 }
 
 function saveV() {
-  const pid = parseInt($('vp')?.value);
-  const q = parseInt($('vq')?.value) || 1;
-  const cid = parseInt($('vc')?.value);
-  const pag = $('vpg')?.value;
-  const p = DB.prods.find(x => x.id === pid);
+  if (!_nvCart.length) { showToast('Adicione ao menos um produto'); return; }
+  const cid  = parseInt($('vc')?.value);
+  const pag  = $('vpg')?.value;
+  const parc = parseInt($('vparc')?.value) || 1;
+  const dtpag = $('vdtpag')?.value || td();
   const c = DB.clis.find(x => x.id === cid);
-  if (!p || !c) return;
-  const tot = p.pr * q;
-  const id = DB.nid.ped++;
-  const ped = { id, cid, prod: p.nm, q, tot, pag, st: 'Confirmado', dt: td() };
-  const tr  = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: td() };
+  if (!c) { showToast('Selecione um cliente'); return; }
+  const tot  = _nvCart.reduce((a, b) => a + b.sub, 0);
+  const id   = DB.nid.ped++;
+  const pagLabel = parc > 1 ? `${pag} ${parc}×` : pag;
+  const isPending = dtpag > td();
+  const itens = _nvCart.map(i => ({ pid: i.pid, nm: i.nm, em: i.em, q: i.q, pr: i.pr, sub: i.sub }));
+  const prodLabel = itens.length === 1 ? itens[0].nm : `${itens.length} produtos`;
+  const ped = { id, cid, itens, prod: prodLabel, q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag, st: isPending ? 'Pendente' : 'Confirmado', dt: td() };
+  const tr  = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
   DB.peds.push(ped);
   DB.trans.push(tr);
   c.gasto += tot;
   c.ult = td();
-  p.st = Math.max(0, p.st - q);
+  itens.forEach(item => {
+    const p = DB.prods.find(x => x.id === item.pid);
+    if (p) { p.st = Math.max(0, p.st - item.q); sbSync(() => SBProds.updateStock(item.pid, p.st)); }
+  });
   sbSync(() => SBPeds.upsert(ped));
   sbSync(() => SBTrans.upsert(tr));
   sbSync(() => SBClis.update(cid, { gasto: c.gasto, ult: c.ult }));
-  sbSync(() => SBProds.updateStock(pid, p.st));
+  _nvCart = [];
+  nvRenderCart();
   renderAll();
-  showToast(`Venda registrada — ${brl(tot)}`);
-  const el = $('vhj');
-  if (el) {
-    const note = el.querySelector('.small-note');
-    if (note) note.remove();
-    el.insertAdjacentHTML('afterbegin', `<div class="history-item"><strong>#${id}</strong> · ${c.nm}<br>${p.em} ${p.nm} ×${q} · ${brl(tot)}</div>`);
-  }
+  showToast(`Venda registrada — ${brl(tot)}${parc > 1 ? ` · ${parc}× de ${brl(tot/parc)}` : ''}`);
+  showCupom(ped, c, null);
 }
 
 function mvUpd() {
   const p = DB.prods.find(x => x.id === parseInt($('mvp')?.value));
-  const q = parseInt($('mvq')?.value) || 1;
-  if ($('mvt')) $('mvt').textContent = p ? brl(p.pr * q) : 'R$ 0,00';
   const prev = $('mvprev');
   if (!prev) return;
   if (!p) { prev.classList.remove('on'); return; }
@@ -321,6 +431,41 @@ function selPay(btn, val) {
   if ($('vpg')) $('vpg').value = val;
   btn.closest('.pay-chips').querySelectorAll('.pay-chip').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
+  const ps = $('vparc-section');
+  if (ps) {
+    ps.classList.toggle('on', val === 'Cartão de Crédito');
+    if (val !== 'Cartão de Crédito') {
+      if ($('vparc')) $('vparc').value = '1';
+      ps.querySelectorAll('.pay-chip').forEach((b, i) => b.classList.toggle('on', i === 0));
+    }
+  }
+  nvRenderCart();
+}
+function selParc(btn, val) {
+  if ($('vparc')) $('vparc').value = val;
+  btn.closest('.pay-chips').querySelectorAll('.pay-chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  nvRenderCart();
+}
+function selMvParc(btn, val) {
+  if ($('mvparc')) $('mvparc').value = val;
+  btn.closest('.pay-chips').querySelectorAll('.pay-chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function mvPayChg(val) {
+  const ps = $('mvparc-section');
+  if (!ps) return;
+  ps.classList.toggle('on', val === 'Cartão de Crédito');
+  if (val !== 'Cartão de Crédito') {
+    if ($('mvparc')) $('mvparc').value = '1';
+    ps.querySelectorAll('.pay-chip').forEach((b, i) => b.classList.toggle('on', i === 0));
+  }
+}
+function selMvPay(btn, val) {
+  if ($('mvpg')) $('mvpg').value = val;
+  btn.closest('.pay-chips').querySelectorAll('.pay-chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  mvPayChg(val);
 }
 function selTrTp(btn, val) {
   if ($('tr-tp')) $('tr-tp').value = val;
@@ -329,29 +474,135 @@ function selTrTp(btn, val) {
 }
 
 function saveMV() {
-  const pid = parseInt($('mvp')?.value);
-  const q = parseInt($('mvq')?.value) || 1;
-  const cid = parseInt($('mvc')?.value);
-  const pag = $('mvpg')?.value;
-  const p = DB.prods.find(x => x.id === pid);
+  if (!_mvCart.length) { showToast('Adicione ao menos um produto'); return; }
+  const cid   = parseInt($('mvc')?.value);
+  const pag   = $('mvpg')?.value;
+  const parc  = parseInt($('mvparc')?.value) || 1;
+  const dtpag = $('mvdtpag')?.value || td();
   const c = DB.clis.find(x => x.id === cid);
-  if (!p || !c) return;
-  const tot = p.pr * q;
-  const id = DB.nid.ped++;
-  const mped = { id, cid, prod: p.nm, q, tot, pag, st: 'Confirmado', dt: td() };
-  const mtr  = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: td() };
+  if (!c) { showToast('Selecione um cliente'); return; }
+  const tot       = _mvCart.reduce((a, b) => a + b.sub, 0);
+  const id        = DB.nid.ped++;
+  const pagLabel  = parc > 1 ? `${pag} ${parc}×` : pag;
+  const isPending = dtpag > td();
+  const itens     = _mvCart.map(i => ({ pid: i.pid, nm: i.nm, em: i.em, q: i.q, pr: i.pr, sub: i.sub }));
+  const prodLabel = itens.length === 1 ? itens[0].nm : `${itens.length} produtos`;
+  const mped = { id, cid, itens, prod: prodLabel, q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag, st: isPending ? 'Pendente' : 'Confirmado', dt: td() };
+  const mtr  = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
   DB.peds.push(mped);
   DB.trans.push(mtr);
   c.gasto += tot;
   c.ult = td();
-  p.st = Math.max(0, p.st - q);
+  itens.forEach(item => {
+    const p = DB.prods.find(x => x.id === item.pid);
+    if (p) { p.st = Math.max(0, p.st - item.q); sbSync(() => SBProds.updateStock(item.pid, p.st)); }
+  });
   sbSync(() => SBPeds.upsert(mped));
   sbSync(() => SBTrans.upsert(mtr));
   sbSync(() => SBClis.update(cid, { gasto: c.gasto, ult: c.ult }));
-  sbSync(() => SBProds.updateStock(pid, p.st));
+  _mvCart = [];
   renderAll();
   closeMod('mv');
-  showToast(`Pedido #${id} criado — ${brl(tot)}`);
+  showToast(`Pedido #${id} criado — ${brl(tot)}${parc > 1 ? ` · ${parc}× de ${brl(tot/parc)}` : ''}`);
+  showCupom(mped, c, null);
+}
+
+/* ── Cupom Fiscal ────────────────────────────────── */
+let _cupomPed = null, _cupomCli = null, _cupomProd = null;
+
+function showCupom(ped, cli, prod) {
+  _cupomPed = ped; _cupomCli = cli; _cupomProd = prod;
+  const inner = $('cupom-inner');
+  if (!inner) return;
+
+  const now = new Date();
+  const hora = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const parcNote = ped.parc > 1 ? `${ped.parc}× de ${brl(ped.tot / ped.parc)}` : '';
+  const dtpagFmt = ped.dtpag ? fdt(ped.dtpag) : fdt(ped.dt);
+  const isPending = ped.dtpag && ped.dtpag > td();
+  const statusHtml = isPending
+    ? `<span class="cupom-status cupom-status-pend">Aguardando pagamento</span>`
+    : `<span class="cupom-status cupom-status-confirm">Pagamento confirmado</span>`;
+
+  inner.innerHTML = `
+    <span class="cupom-sym">✦</span>
+    <div class="cupom-brand">Milena Lima <em>Beauty</em></div>
+    <div class="cupom-consult">Consultora Oficial Mary Kay</div>
+    <div class="cupom-divider"></div>
+
+    <div class="cupom-mid">
+      <div class="cupom-tag">Comprovante de Venda</div>
+      <div class="cupom-num">#${String(ped.id).padStart(3,'0')}</div>
+      <div class="cupom-datetime">${fdt(ped.dt)} · ${hora}</div>
+    </div>
+
+    <div class="cupom-divider-dashed"></div>
+    <div class="cupom-section">
+      <div class="cupom-row"><span class="cupom-lbl">Cliente</span><span class="cupom-val">${cli.nm}</span></div>
+    </div>
+
+    <div class="cupom-divider-dashed"></div>
+    ${(() => {
+      if (ped.itens && ped.itens.length) {
+        return ped.itens.map((i, idx) => `
+          <div class="cupom-prod-row">
+            <div class="cupom-prod-nm">${i.em || ''} ${i.nm}</div>
+            <div class="cupom-prod-meta">${i.q} unidade${i.q > 1 ? 's' : ''} &middot; ${brl(i.pr)} cada &middot; ${brl(i.sub)}</div>
+          </div>${idx < ped.itens.length - 1 ? '<div class="cupom-divider-dashed" style="margin:4px 0"></div>' : ''}`).join('');
+      }
+      return `<div class="cupom-prod-row">
+        <div class="cupom-prod-nm">${prod?.em || ''} ${ped.prod}</div>
+        <div class="cupom-prod-meta">${ped.q} unidade${ped.q > 1 ? 's' : ''}${prod?.pr ? ' &middot; ' + brl(prod.pr) + ' cada' : ''}</div>
+      </div>`;
+    })()}
+
+    <div class="cupom-divider-dashed"></div>
+    <div class="cupom-section">
+      <div class="cupom-row"><span class="cupom-lbl">Pagamento</span><span class="cupom-val">${ped.pag}</span></div>
+      <div class="cupom-row"><span class="cupom-lbl">Data de pagamento</span><span class="cupom-val">${dtpagFmt}</span></div>
+    </div>
+
+    <div class="cupom-divider"></div>
+    <div class="cupom-total-area">
+      <span class="cupom-total-lbl">Total</span>
+      <div style="text-align:right">
+        <div class="cupom-total-val">${brl(ped.tot)}</div>
+        ${parcNote ? `<div class="cupom-parc-note">${parcNote}</div>` : ''}
+      </div>
+    </div>
+    <div style="text-align:right">${statusHtml}</div>
+
+    <div class="cupom-thanks">
+      <p class="cupom-thanks-msg">"Obrigada pela sua escolha.<br>Você merece o melhor!"</p>
+      <p class="cupom-thanks-foot">milena.lima · Mary Kay · Qualquer dúvida, chame no WhatsApp 💗</p>
+    </div>
+  `;
+
+  openMod('cupom');
+}
+
+function whatsappCupom() {
+  if (!_cupomPed || !_cupomCli) return;
+  const ped = _cupomPed, cli = _cupomCli;
+  const parcNote = ped.parc > 1 ? `\n✦ Parcelas: ${ped.parc}× de ${brl(ped.tot / ped.parc)}` : '';
+  const dtpagFmt = ped.dtpag ? fdt(ped.dtpag) : fdt(ped.dt);
+  const phone = (cli.tel || '').replace(/\D/g,'');
+  const prodLines = ped.itens && ped.itens.length
+    ? ped.itens.map(i => `   • ${i.em || ''} ${i.nm} ×${i.q} — ${brl(i.sub)}`).join('\n')
+    : `   • ${ped.prod} ×${ped.q}`;
+  const msg =
+    `✨ *Milena Lima Beauty*\n_Consultora Oficial Mary Kay_\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `*Comprovante de Venda · #${String(ped.id).padStart(3,'0')}*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `👤 *Cliente:* ${cli.nm}\n` +
+    `📦 *Produtos:*\n${prodLines}\n` +
+    `💰 *Total:* ${brl(ped.tot)}${parcNote}\n` +
+    `💳 *Pagamento:* ${ped.pag}\n` +
+    `📅 *Data pgto:* ${dtpagFmt}\n\n` +
+    `_Obrigada pela sua compra! Qualquer dúvida, estou aqui_ 💗`;
+  const num = phone || (DB.settings?.whatsapp || '').replace(/\D/g,'');
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function saveProd() {

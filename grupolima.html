@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GrupoLima</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #07101F;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Fundo ───────────────────────────────────────── */
+    .gl-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 90% 70% at -10% 110%, rgba(27,68,184,.28) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 110%  -5%, rgba(27,68,184,.18) 0%, transparent 60%),
+        #07101F;
+    }
+
+    /* ── Grade técnica ───────────────────────────────── */
+    .gl-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(36,81,224,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(36,81,224,.07) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+
+    /* ── Stage central ───────────────────────────────── */
+    .gl-stage {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    /* ── Ícone (duas barras diagonais do logo) ───────── */
+    .gl-icon {
+      display: flex;
+      align-items: flex-end;
+      gap: 7px;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp .7s .15s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+    .gl-bar {
+      background: #1B44B8;
+      border-radius: 3px;
+      transform: skewX(-14deg);
+    }
+
+    .gl-bar:nth-child(1) { width: 11px; height: 48px; opacity: .55; }
+    .gl-bar:nth-child(2) { width: 14px; height: 60px; }
+
+    /* ── Wordmark ────────────────────────────────────── */
+    .gl-wordmark {
+      font-size: clamp(46px, 9.5vw, 96px);
+      font-weight: 900;
+      letter-spacing: -.025em;
+      line-height: 1;
+      color: #fff;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeUp .85s .35s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+    .gl-wordmark .accent { color: #2451E0; }
+
+    /* ── Subtítulo / tagline ─────────────────────────── */
+    .gl-sub {
+      margin-top: 16px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.25);
+      opacity: 0;
+      animation: fadeUp .75s .6s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+    /* ── Divisor ─────────────────────────────────────── */
+    .gl-rule {
+      width: 36px;
+      height: 3px;
+      background: #2451E0;
+      border-radius: 2px;
+      margin: 44px auto;
+      opacity: 0;
+      animation: fadeIn .7s .85s forwards;
+    }
+
+    /* ── Citação ─────────────────────────────────────── */
+    .gl-quote-wrap {
+      max-width: 620px;
+      opacity: 0;
+      animation: fadeUp .9s 1s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+    .gl-quote {
+      font-size: clamp(17px, 2.8vw, 25px);
+      font-weight: 300;
+      line-height: 1.65;
+      color: rgba(255,255,255,.6);
+      font-style: italic;
+    }
+
+    .gl-quote strong {
+      font-weight: 700;
+      font-style: normal;
+      color: #fff;
+    }
+
+    .gl-attr {
+      margin-top: 22px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: #2451E0;
+    }
+
+    /* ── Botão voltar ────────────────────────────────── */
+    .gl-back {
+      margin-top: 56px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      color: rgba(255,255,255,.2);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 6px;
+      padding: 10px 20px;
+      transition: color .2s, border-color .2s;
+      opacity: 0;
+      animation: fadeUp .8s 1.5s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+    .gl-back:hover { color: rgba(255,255,255,.65); border-color: rgba(255,255,255,.25); }
+    .gl-back::before { content: '←'; }
+
+    /* ── Rodapé fixo ─────────────────────────────────── */
+    .gl-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      border-top: 1px solid rgba(36,81,224,.12);
+    }
+
+    .gl-footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gl-footer-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .gl-footer-bar {
+      background: #1B44B8;
+      border-radius: 1px;
+      transform: skewX(-14deg);
+    }
+
+    .gl-footer-bar:nth-child(1) { width: 4px; height: 14px; opacity: .5; }
+    .gl-footer-bar:nth-child(2) { width: 5px; height: 18px; }
+
+    .gl-footer-nm {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.25);
+    }
+
+    .gl-footer-copy {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.1);
+    }
+
+    /* ── Keyframes ───────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* ── Mobile ──────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .gl-stage { padding: 40px 20px; }
+      .gl-quote { font-size: 16px; }
+      .gl-footer { padding: 12px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="gl-bg"></div>
+  <div class="gl-grid"></div>
+
+  <div class="gl-stage">
+
+    <div class="gl-icon">
+      <div class="gl-bar"></div>
+      <div class="gl-bar"></div>
+    </div>
+
+    <div class="gl-wordmark">Grupo<span class="accent">Lima</span></div>
+    <div class="gl-sub">Mais que um grupo</div>
+
+    <div class="gl-rule"></div>
+
+    <div class="gl-quote-wrap">
+      <p class="gl-quote">
+        "A imaginação é mais importante que o conhecimento,<br>
+        pois o conhecimento é limitado e a imaginação é <strong>INFINITA.</strong>"
+      </p>
+      <p class="gl-attr">— GrupoLima · Est. 2024</p>
+    </div>
+
+    <a href="javascript:history.back()" class="gl-back">Voltar</a>
+
+  </div>
+
+  <footer class="gl-footer">
+    <div class="gl-footer-brand">
+      <div class="gl-footer-bars">
+        <div class="gl-footer-bar"></div>
+        <div class="gl-footer-bar"></div>
+      </div>
+      <span class="gl-footer-nm">GrupoLima</span>
+    </div>
+    <span class="gl-footer-copy">© 2026 GrupoLima</span>
+  </footer>
+
+</body>
+</html>
