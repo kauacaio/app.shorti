@@ -121,7 +121,7 @@ function openMod(id) {
   if (id === 'mv') {
     const s1 = $('mvc'), s2 = $('mvp');
     if (s1) s1.innerHTML = DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
-    if (s2) { s2.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pr)}</option>`).join(''); mvUpd(); }
+    if (s2) { s2.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pd ?? p.pr)}${p.pd ? ' 🏷' : ''}</option>`).join(''); mvUpd(); }
     if ($('mvdtpag')) $('mvdtpag').value = td();
     if ($('mvpg')) { $('mvpg').value = 'PIX'; mvPayChg('PIX'); }
     _mvCart = [];
@@ -359,7 +359,7 @@ let _mvCart = [];
 function rNV() {
   const vc = $('vc'), vp = $('vp');
   if (vc) vc.innerHTML = DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
-  if (vp) { vp.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pr)}</option>`).join(''); vUpd(); }
+  if (vp) { vp.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pd ?? p.pr)}${p.pd ? ' 🏷' : ''}</option>`).join(''); vUpd(); }
   if ($('vdtpag')) $('vdtpag').value = td();
   _nvCart = [];
   nvRenderCart();
@@ -386,8 +386,9 @@ function nvAddItem() {
   const p = DB.prods.find(x => x.id === pid);
   if (!p) return;
   const ex = _nvCart.find(x => x.pid === pid);
+  const preco = p.pd ?? p.pr;
   if (ex) { ex.q += q; ex.sub = ex.pr * ex.q; }
-  else _nvCart.push({ pid, nm: p.nm, em: p.em || '', q, pr: p.pr, sub: p.pr * q });
+  else _nvCart.push({ pid, nm: p.nm, em: p.em || '', q, pr: preco, sub: preco * q });
   if ($('vq')) $('vq').value = 1;
   vUpd();
   nvRenderCart();
@@ -434,8 +435,9 @@ function mvAddItem() {
   const p = DB.prods.find(x => x.id === pid);
   if (!p) return;
   const ex = _mvCart.find(x => x.pid === pid);
+  const mpreco = p.pd ?? p.pr;
   if (ex) { ex.q += q; ex.sub = ex.pr * ex.q; }
-  else _mvCart.push({ pid, nm: p.nm, em: p.em || '', q, pr: p.pr, sub: p.pr * q });
+  else _mvCart.push({ pid, nm: p.nm, em: p.em || '', q, pr: mpreco, sub: mpreco * q });
   if ($('mvq')) $('mvq').value = 1;
   mvRenderCart();
 }
@@ -495,22 +497,26 @@ function saveV() {
   const isPending = dtpag > td();
   const itens = _nvCart.map(i => ({ pid: i.pid, nm: i.nm, em: i.em, q: i.q, pr: i.pr, sub: i.sub }));
   const prodLabel = itens.length === 1 ? itens[0].nm : `${itens.length} produtos`;
-  const ped = { id, cid, itens, prod: prodLabel, q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag, st: isPending ? 'Pendente' : 'Confirmado', dt: td() };
-  const tr  = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+  const isFiado = pag === 'Fiado';
+  const ped = { id, cid, itens, prod: prodLabel, q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag, st: isFiado ? 'Pendente' : (isPending ? 'Pendente' : 'Confirmado'), dt: td() };
   DB.peds.push(ped);
-  DB.trans.push(tr);
   c.gasto += tot;
   c.ult = td();
+  if (!isFiado) {
+    const tr = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+    DB.trans.push(tr);
+    sbSync(() => SBTrans.upsert(tr));
+  }
   itens.forEach(item => {
     const p = DB.prods.find(x => x.id === item.pid);
     if (p) { p.st = Math.max(0, p.st - item.q); sbSync(() => SBProds.updateStock(item.pid, p.st)); }
   });
   sbSync(() => SBPeds.upsert(ped));
-  sbSync(() => SBTrans.upsert(tr));
   sbSync(() => SBClis.update(cid, { gasto: c.gasto, ult: c.ult }));
   _nvCart = [];
   nvRenderCart();
   renderAll();
+  rReceber();
   showToast(`Venda registrada — ${brl(tot)}${parc > 1 ? ` · ${parc}× de ${brl(tot/parc)}` : ''}`);
   showCupom(ped, c, null);
 }
@@ -593,21 +599,25 @@ function saveMV() {
   const isPending = dtpag > td();
   const itens     = _mvCart.map(i => ({ pid: i.pid, nm: i.nm, em: i.em, q: i.q, pr: i.pr, sub: i.sub }));
   const prodLabel = itens.length === 1 ? itens[0].nm : `${itens.length} produtos`;
-  const mped = { id, cid, itens, prod: prodLabel, q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag, st: isPending ? 'Pendente' : 'Confirmado', dt: td() };
-  const mtr  = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+  const isFiado = pag === 'Fiado';
+  const mped = { id, cid, itens, prod: prodLabel, q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag, st: isFiado ? 'Pendente' : (isPending ? 'Pendente' : 'Confirmado'), dt: td() };
   DB.peds.push(mped);
-  DB.trans.push(mtr);
   c.gasto += tot;
   c.ult = td();
+  if (!isFiado) {
+    const mtr = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+    DB.trans.push(mtr);
+    sbSync(() => SBTrans.upsert(mtr));
+  }
   itens.forEach(item => {
     const p = DB.prods.find(x => x.id === item.pid);
     if (p) { p.st = Math.max(0, p.st - item.q); sbSync(() => SBProds.updateStock(item.pid, p.st)); }
   });
   sbSync(() => SBPeds.upsert(mped));
-  sbSync(() => SBTrans.upsert(mtr));
   sbSync(() => SBClis.update(cid, { gasto: c.gasto, ult: c.ult }));
   _mvCart = [];
   renderAll();
+  rReceber();
   closeMod('mv');
   showToast(`Pedido #${id} criado — ${brl(tot)}${parc > 1 ? ` · ${parc}× de ${brl(tot/parc)}` : ''}`);
   showCupom(mped, c, null);
