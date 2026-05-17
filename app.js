@@ -159,12 +159,13 @@ function renderAll() {
 }
 
 function rMet() {
-  const rec = DB.trans.filter(t => t.tp === 'receita').reduce((a, b) => a + b.vl, 0);
-  const est = DB.prods.reduce((a, b) => a + b.st, 0);
+  const fat     = DB.peds.reduce((a, b) => a + b.tot, 0);
+  const aReceber = DB.peds.filter(p => p.pag === 'Fiado').reduce((a, b) => a + b.tot, 0);
+  const est     = DB.prods.reduce((a, b) => a + b.st, 0);
   $('mgrid').innerHTML = `
-    <article class="summary-card"><div>Faturamento</div><div class="summary-value">${brl(rec)}</div><div class="summary-meta mup">↑ +12% este mês</div></article>
-    <article class="summary-card"><div>Pedidos</div><div class="summary-value">${DB.peds.length}</div><div class="summary-meta mup">↑ +8% este mês</div></article>
-    <article class="summary-card"><div>Clientes</div><div class="summary-value">${DB.clis.length}</div><div class="summary-meta">+3 novos este mês</div></article>
+    <article class="summary-card"><div>Faturamento</div><div class="summary-value">${brl(fat)}</div><div class="summary-meta ${aReceber > 0 ? 'mdn' : 'mup'}">${aReceber > 0 ? `${brl(aReceber)} a receber` : '↑ todas as vendas'}</div></article>
+    <article class="summary-card"><div>Pedidos</div><div class="summary-value">${DB.peds.length}</div><div class="summary-meta">${DB.peds.filter(p => p.pag === 'Fiado').length} fiado</div></article>
+    <article class="summary-card"><div>Clientes</div><div class="summary-value">${DB.clis.length}</div><div class="summary-meta">cadastrados</div></article>
     <article class="summary-card"><div>Em estoque</div><div class="summary-value">${est}</div><div class="summary-meta">${DB.prods.filter(p => p.st <= 3).length} com estoque baixo</div></article>`;
 }
 
@@ -337,12 +338,13 @@ function rKat() {
 }
 
 function rFin() {
-  const rec = DB.trans.filter(t => t.tp === 'receita').reduce((a, b) => a + b.vl, 0);
-  const des = DB.trans.filter(t => t.tp === 'despesa').reduce((a, b) => a + b.vl, 0);
+  const rec    = DB.trans.filter(t => t.tp === 'receita').reduce((a, b) => a + b.vl, 0);
+  const des    = DB.trans.filter(t => t.tp === 'despesa').reduce((a, b) => a + b.vl, 0);
+  const fat    = DB.peds.reduce((a, b) => a + b.tot, 0);
   $('f-r').textContent = brl(rec);
   $('f-d').textContent = brl(des);
   $('f-l').textContent = brl(rec - des);
-  $('f-t').textContent = brl(DB.peds.length ? rec / DB.peds.length : 0);
+  $('f-t').textContent = brl(DB.peds.length ? fat / DB.peds.length : 0);
   $('ftt').innerHTML = [...DB.trans].reverse().slice(0, 8).map(t => `
     <tr>
       <td>${fdt(t.dt)}</td>
