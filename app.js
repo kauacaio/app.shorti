@@ -107,14 +107,16 @@ function epage(id, el) {
   if (pg) pg.classList.add('on');
   if (el) el.classList.add('on');
   else document.querySelectorAll('.nav-link').forEach(l => { if (l.getAttribute('onclick')?.includes("'" + id + "'")) l.classList.add('on'); });
-  const tt = { dashboard: 'Dashboard', receber: 'A Receber', solicita: 'Solicitações', nvenda: 'Nova Venda', estoque: 'Estoque', clientes: 'Clientes', financeiro: 'Financeiro', catalogo: 'Catálogo', relatorios: 'Relatórios', loja: 'Configurar Loja' };
+  const tt = { dashboard: 'Dashboard', receber: 'A Receber', historico: 'Histórico de Vendas', solicita: 'Solicitações', nvenda: 'Nova Venda', estoque: 'Estoque', clientes: 'Clientes', financeiro: 'Financeiro', catalogo: 'Catálogo', extrato: 'Extrato Mensal', relatorios: 'Relatórios', loja: 'Configurar Loja' };
   $('etitle').textContent = tt[id] || id;
   if (id === 'financeiro') rFin();
   if (id === 'relatorios') rRel();
   if (id === 'nvenda') rNV();
   if (id === 'loja') rLoja();
-  if (id === 'receber') rReceber();
+  if (id === 'receber')  rReceber();
+  if (id === 'historico') rHistorico();
   if (id === 'solicita') rSolic();
+  if (id === 'extrato')  rExtrato();
 }
 
 function openMod(id) {
@@ -143,6 +145,248 @@ function closeMod(id) {
 }
 
 /* ── Render ERP ──────────────────────────────────── */
+/* ── Extrato Mensal ──────────────────────────────── */
+let _extY = 0, _extM = 0;
+
+function _extInit() {
+  if (_extY) return;
+  // Default to last closed month (previous month)
+  const prev = new Date();
+  prev.setDate(1);
+  prev.setMonth(prev.getMonth() - 1);
+  _extY = prev.getFullYear();
+  _extM = prev.getMonth() + 1;
+}
+
+function extNavMes(d) {
+  _extM += d;
+  if (_extM > 12) { _extM = 1;  _extY++; }
+  if (_extM < 1)  { _extM = 12; _extY--; }
+  const now = new Date();
+  if (_extY > now.getFullYear() || (_extY === now.getFullYear() && _extM > now.getMonth() + 1)) {
+    _extM -= d;
+    if (_extM > 12) { _extM = 1;  _extY++; }
+    if (_extM < 1)  { _extM = 12; _extY--; }
+    return;
+  }
+  rExtrato();
+}
+
+function rExtrato() {
+  _extInit();
+  const mnNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const mStr = `${_extY}-${String(_extM).padStart(2,'0')}`;
+  const mesNm = `${mnNames[_extM - 1]} ${_extY}`;
+  const nowRef = new Date();
+  const isPreview = (_extY === nowRef.getFullYear() && _extM === nowRef.getMonth() + 1);
+
+  if ($('ext-month-label')) {
+    $('ext-month-label').innerHTML = isPreview
+      ? `${mesNm} <span class="ext-preview-badge">Prévia</span>`
+      : mesNm;
+  }
+  if ($('ext-subtitle')) {
+    $('ext-subtitle').textContent = isPreview
+      ? 'Prévia do mês atual — dados em tempo real'
+      : 'Demonstrativo financeiro completo';
+  }
+  const noteEl = $('ext-preview-note');
+  if (noteEl) noteEl.style.display = isPreview ? 'flex' : 'none';
+
+  const pedsMes   = DB.peds.filter(p => p.dt?.startsWith(mStr));
+  const transMes  = DB.trans.filter(t => t.dt?.startsWith(mStr));
+  const recMes    = transMes.filter(t => t.tp === 'receita').reduce((a,b) => a+b.vl, 0);
+  const desMes    = transMes.filter(t => t.tp === 'despesa').reduce((a,b) => a+b.vl, 0);
+  const fatMes    = pedsMes.reduce((a,b) => a+b.tot, 0);
+  const fiadoMes  = pedsMes.filter(p => p.pag === 'Fiado').reduce((a,b) => a+b.tot, 0);
+  const lucro     = recMes - desMes;
+  const pct       = fatMes > 0 ? Math.round((recMes / fatMes) * 100) : 0;
+  const tkMed     = pedsMes.length ? fatMes / pedsMes.length : 0;
+
+  /* KPIs */
+  if ($('ext-kpis')) $('ext-kpis').innerHTML = `
+    <div class="ext-kpi kpi-rose" data-icon="✦">
+      <div class="ext-kpi-label">Faturamento</div>
+      <div class="ext-kpi-value">${brl(fatMes)}</div>
+      <div class="ext-kpi-sub" style="color:#C4897A">${pedsMes.length} pedido${pedsMes.length !== 1 ? 's' : ''}</div>
+    </div>
+    <div class="ext-kpi kpi-sage" data-icon="✓">
+      <div class="ext-kpi-label">Recebido</div>
+      <div class="ext-kpi-value">${brl(recMes)}</div>
+      <div class="ext-kpi-sub" style="color:#6B9E7A">${pct}% do faturamento</div>
+    </div>
+    <div class="ext-kpi kpi-amber" data-icon="⏳">
+      <div class="ext-kpi-label">A Receber</div>
+      <div class="ext-kpi-value">${brl(fiadoMes)}</div>
+      <div class="ext-kpi-sub" style="color:#D97706">${pedsMes.filter(p => p.pag==='Fiado').length} fiado${pedsMes.filter(p => p.pag==='Fiado').length !== 1 ? 's' : ''}</div>
+    </div>
+    <div class="ext-kpi kpi-slate" data-icon="◈">
+      <div class="ext-kpi-label">Ticket Médio</div>
+      <div class="ext-kpi-value">${brl(tkMed)}</div>
+      <div class="ext-kpi-sub" style="color:${lucro >= 0 ? '#6B9E7A' : '#dc2626'}">Lucro ${brl(lucro)}</div>
+    </div>`;
+
+  /* Barra de progresso */
+  if ($('ext-prog-pct'))  $('ext-prog-pct').textContent  = pct + '%';
+  if ($('ext-prog-fill')) $('ext-prog-fill').style.width = pct + '%';
+  if ($('ext-prog-rec'))  $('ext-prog-rec').textContent  = `${brl(recMes)} recebido`;
+  if ($('ext-prog-pend')) $('ext-prog-pend').textContent = fiadoMes > 0 ? `${brl(fiadoMes)} a receber` : 'Tudo recebido ✓';
+
+  /* Pedidos do mês */
+  if ($('ext-ped-count')) $('ext-ped-count').textContent = `${pedsMes.length} pedido${pedsMes.length !== 1 ? 's' : ''}`;
+  if ($('ext-peds-tb')) {
+    if (!pedsMes.length) {
+      $('ext-peds-tb').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:22px;color:#94a3b8;font-size:13px">Nenhum pedido em ${mesNm}</td></tr>`;
+    } else {
+      $('ext-peds-tb').innerHTML = [...pedsMes].reverse().map(p => {
+        const c = DB.clis.find(x => x.id === p.cid);
+        const stCl = { Pendente:'xb-gold', Confirmado:'xb-blue', Enviado:'xb-gray', Entregue:'xb-green' };
+        const pagCl = p.pag === 'Fiado' ? 'style="color:#d97706;font-weight:600"' : '';
+        return `<tr>
+          <td style="color:#94a3b8">#${p.id}</td>
+          <td style="font-weight:500">${c ? c.nm : '—'}</td>
+          <td>${p.prod}</td>
+          <td style="font-weight:600">${brl(p.tot)}</td>
+          <td ${pagCl}>${p.pag}</td>
+          <td><span class="xb ${stCl[p.st]||'xb-gray'}">${p.st}</span></td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  /* Top clientes */
+  if ($('ext-top-clis')) {
+    const cliMap = {};
+    pedsMes.forEach(p => { cliMap[p.cid] = (cliMap[p.cid] || 0) + p.tot; });
+    const sorted = Object.entries(cliMap).sort((a,b) => b[1]-a[1]).slice(0,5);
+    $('ext-top-clis').innerHTML = !sorted.length
+      ? '<p style="font-size:13px;color:#94a3b8;padding:8px 0">Nenhum cliente este mês</p>'
+      : sorted.map(([cid,tot],i) => {
+          const c = DB.clis.find(x => x.id === parseInt(cid));
+          return `<div class="ext-rank-item">
+            <div class="ext-rank-pos ${i===0?'top1':''}">${i+1}</div>
+            <div class="ext-rank-nm">${c ? c.nm : `#${cid}`}</div>
+            <div class="ext-rank-val">${brl(tot)}</div>
+          </div>`;
+        }).join('');
+  }
+
+  /* Top produtos */
+  if ($('ext-top-prods')) {
+    const prodMap = {};
+    pedsMes.forEach(p => {
+      if (p.itens) p.itens.forEach(i => { prodMap[i.nm] = (prodMap[i.nm] || 0) + i.sub; });
+      else prodMap[p.prod] = (prodMap[p.prod] || 0) + p.tot;
+    });
+    const sorted = Object.entries(prodMap).sort((a,b) => b[1]-a[1]).slice(0,5);
+    $('ext-top-prods').innerHTML = !sorted.length
+      ? '<p style="font-size:13px;color:#94a3b8;padding:8px 0">Nenhum produto este mês</p>'
+      : sorted.map(([nm,tot],i) => `
+          <div class="ext-rank-item">
+            <div class="ext-rank-pos ${i===0?'top1':''}">${i+1}</div>
+            <div class="ext-rank-nm">${nm}</div>
+            <div class="ext-rank-val">${brl(tot)}</div>
+          </div>`).join('');
+  }
+
+  /* Lançamentos financeiros */
+  if ($('ext-trans-count')) $('ext-trans-count').textContent = `${transMes.length} lançamento${transMes.length !== 1 ? 's' : ''}`;
+  if ($('ext-trans-tb')) {
+    if (!transMes.length) {
+      $('ext-trans-tb').innerHTML = `<tr><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;font-size:13px">Nenhum lançamento em ${mesNm}</td></tr>`;
+    } else {
+      $('ext-trans-tb').innerHTML = [...transMes].reverse().map(t => `
+        <tr>
+          <td style="color:#94a3b8">${fdt(t.dt)}</td>
+          <td>${t.ds}</td>
+          <td><span class="xb ${t.tp==='receita'?'xb-green':'xb-red'}">${t.tp==='receita'?'Receita':'Despesa'}</span></td>
+          <td class="${t.tp==='receita'?'revenue':'expense'}" style="font-weight:600">${t.tp==='receita'?'+':'-'} ${brl(t.vl)}</td>
+        </tr>`).join('');
+    }
+  }
+
+  /* Rodapé */
+  const now = new Date();
+  const dtStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  if ($('ext-gen-dt'))    $('ext-gen-dt').textContent    = dtStr;
+  if ($('ext-footer-mes')) $('ext-footer-mes').textContent = mesNm;
+}
+
+/* ── Banner dashboard ────────────────────────────── */
+function initBanner() {
+  // Banner references the last closed month (previous month)
+  const prev = new Date();
+  prev.setDate(1);
+  prev.setMonth(prev.getMonth() - 1);
+  const prevY = prev.getFullYear();
+  const prevM = prev.getMonth() + 1;
+  const key = `mlb_banner_${prevY}_${prevM}`;
+  if (localStorage.getItem(key)) return;
+  const mStr = `${prevY}-${String(prevM).padStart(2,'0')}`;
+  const temDados = DB.peds.some(p => p.dt?.startsWith(mStr)) || DB.trans.some(t => t.dt?.startsWith(mStr));
+  if (!temDados) return;
+  const mnNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const el = $('dash-banner');
+  if (!el) return;
+  if ($('dash-banner-mes')) $('dash-banner-mes').textContent = `${mnNames[prevM - 1]} ${prevY}`;
+  el.style.display = 'flex';
+}
+
+function dismissBanner() {
+  const prev = new Date();
+  prev.setDate(1);
+  prev.setMonth(prev.getMonth() - 1);
+  const key = `mlb_banner_${prev.getFullYear()}_${prev.getMonth() + 1}`;
+  localStorage.setItem(key, '1');
+  const el = $('dash-banner');
+  if (el) { el.style.opacity = '0'; el.style.transform = 'translateY(-8px)'; el.style.transition = 'opacity .3s, transform .3s'; setTimeout(() => el.style.display = 'none', 300); }
+}
+
+/* ── Popup extrato fechado ───────────────────────── */
+function showExtPopup() {
+  const prev = new Date();
+  prev.setDate(1);
+  prev.setMonth(prev.getMonth() - 1);
+  const prevY = prev.getFullYear();
+  const prevM = prev.getMonth() + 1;
+  const popKey = `mlb_popup_${prevY}_${prevM}`;
+  if (localStorage.getItem(popKey)) return;
+  const mStr = `${prevY}-${String(prevM).padStart(2,'0')}`;
+  const pedsMes  = DB.peds.filter(p => p.dt?.startsWith(mStr));
+  const transMes = DB.trans.filter(t => t.dt?.startsWith(mStr));
+  if (!pedsMes.length && !transMes.length) return;
+  const fat = pedsMes.reduce((a,b) => a + b.tot, 0);
+  const rec = transMes.filter(t => t.tp === 'receita').reduce((a,b) => a + b.vl, 0);
+  const mnNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const el = $('ext-popup');
+  if (!el) return;
+  if ($('ext-popup-month')) $('ext-popup-month').textContent = `${mnNames[prevM - 1]} ${prevY}`;
+  if ($('ext-popup-stats')) $('ext-popup-stats').innerHTML = `
+    <div class="ext-popup-stat">
+      <div class="ext-popup-stat-lbl">Faturamento</div>
+      <div class="ext-popup-stat-val">${brl(fat)}</div>
+    </div>
+    <div class="ext-popup-stat">
+      <div class="ext-popup-stat-lbl">Pedidos</div>
+      <div class="ext-popup-stat-val">${pedsMes.length}</div>
+    </div>`;
+  setTimeout(() => {
+    el.style.display = 'block';
+    el.classList.remove('closing');
+  }, 700);
+}
+
+function dismissPopup() {
+  const el = $('ext-popup');
+  if (!el) return;
+  el.classList.add('closing');
+  setTimeout(() => { el.style.display = 'none'; el.classList.remove('closing'); }, 300);
+  const prev = new Date();
+  prev.setDate(1);
+  prev.setMonth(prev.getMonth() - 1);
+  localStorage.setItem(`mlb_popup_${prev.getFullYear()}_${prev.getMonth() + 1}`, '1');
+}
+
 function renderAll() {
   rMet();
   rDashRec();
@@ -228,6 +472,77 @@ function receberPed(id) {
     sbSync(() => SBPeds.upsert(p));
     sbSync(() => SBTrans.upsert(t));
   });
+}
+
+/* ── Histórico de Vendas ─────────────────────────── */
+let _hvSt = '';
+
+function rHistorico() { hvUpd(); }
+
+function hvSt(el, st) {
+  _hvSt = st;
+  document.querySelectorAll('.hv-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  hvUpd();
+}
+
+function hvClear() {
+  _hvSt = '';
+  if ($('hv-busca')) $('hv-busca').value = '';
+  if ($('hv-de'))    $('hv-de').value    = '';
+  if ($('hv-ate'))   $('hv-ate').value   = '';
+  if ($('hv-pag'))   $('hv-pag').value   = '';
+  document.querySelectorAll('.hv-chip').forEach((c, i) => c.classList.toggle('on', i === 0));
+  hvUpd();
+}
+
+function hvUpd() {
+  const busca = ($('hv-busca')?.value || '').toLowerCase().trim();
+  const de    = $('hv-de')?.value    || '';
+  const ate   = $('hv-ate')?.value   || '';
+  const pag   = ($('hv-pag')?.value  || '').toLowerCase();
+
+  let peds = [...DB.peds].reverse();
+
+  if (busca) peds = peds.filter(p => {
+    const c = DB.clis.find(x => x.id === p.cid);
+    return (c?.nm || '').toLowerCase().includes(busca) || p.prod.toLowerCase().includes(busca);
+  });
+  if (de)    peds = peds.filter(p => p.dt >= de);
+  if (ate)   peds = peds.filter(p => p.dt <= ate);
+  if (pag)   peds = peds.filter(p => p.pag.toLowerCase().includes(pag));
+  if (_hvSt) peds = peds.filter(p => p.st === _hvSt);
+
+  const tot   = peds.reduce((a, b) => a + b.tot, 0);
+  const tkMed = peds.length ? tot / peds.length : 0;
+  const kpis  = $('hv-kpis');
+  if (kpis) kpis.innerHTML = `
+    <article class="summary-card"><div>Vendas</div><div class="summary-value">${peds.length}</div><div class="summary-meta">${peds.filter(p => p.pag === 'Fiado').length} fiado</div></article>
+    <article class="summary-card"><div>Total</div><div class="summary-value">${brl(tot)}</div><div class="summary-meta">no filtro atual</div></article>
+    <article class="summary-card"><div>Ticket médio</div><div class="summary-value">${brl(tkMed)}</div><div class="summary-meta">por pedido</div></article>`;
+
+  const tb = $('hvtt');
+  if (!tb) return;
+  if (!peds.length) {
+    tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:22px;color:#94a3b8;font-size:13px">Nenhuma venda encontrada</td></tr>`;
+    return;
+  }
+  const stCl = { Pendente: 'xb-gold', Confirmado: 'xb-blue', Enviado: 'xb-gray', Entregue: 'xb-green' };
+  tb.innerHTML = peds.map(p => {
+    const c = DB.clis.find(x => x.id === p.cid);
+    return `<tr>
+      <td>#${p.id}</td>
+      <td>${fdt(p.dt)}</td>
+      <td>${c ? c.nm : '—'}</td>
+      <td>${p.prod}</td>
+      <td>${brl(p.tot)}</td>
+      <td>${p.pag}</td>
+      <td><span class="xb ${stCl[p.st] || 'xb-gray'}">${p.st}</span></td>
+      <td><select class="fi small-select" onchange="updPS(${p.id}, this.value);hvUpd()">
+        ${['Pendente','Confirmado','Enviado','Entregue'].map(x => `<option${x === p.st ? ' selected' : ''}>${x}</option>`).join('')}
+      </select></td>
+    </tr>`;
+  }).join('');
 }
 
 /* ── Solicitações (pedidos para Mary Kay) ────────── */
@@ -330,7 +645,7 @@ function rKat() {
         : p.em}</td>
       <td class="cell-strong">${p.nm}</td>
       <td>${cNm[p.cat]}</td>
-      <td>${brl(p.pr)}</td>
+      <td>${p.pd ? `<span style="text-decoration:line-through;color:#94a3b8;font-size:11px">${brl(p.pr)}</span> <strong style="color:#16a34a">${brl(p.pd)}</strong>` : brl(p.pr)}</td>
       <td>${p.pd ? brl(p.pd) : '—'}</td>
       <td>${p.dt ? `<span class="xb ${p.dt === 'new' ? 'xb-green' : 'xb-gold'}">${p.dt === 'new' ? 'Novo' : 'Promoção'}</span>` : '—'}</td>
       <td class="table-actions"><button class="eb small" onclick="editP(${p.id})">Editar</button><button class="eb small" onclick="delP(${p.id})">Excluir</button></td>
@@ -387,6 +702,7 @@ function nvAddItem() {
   if (!pid || !q) return;
   const p = DB.prods.find(x => x.id === pid);
   if (!p) return;
+  if (p.st === 0) { showToast(`⚠ ${p.nm} está sem estoque`); return; }
   const ex = _nvCart.find(x => x.pid === pid);
   const preco = p.pd ?? p.pr;
   if (ex) { ex.q += q; ex.sub = ex.pr * ex.q; }
@@ -436,6 +752,7 @@ function mvAddItem() {
   if (!pid || !q) return;
   const p = DB.prods.find(x => x.id === pid);
   if (!p) return;
+  if (p.st === 0) { showToast(`⚠ ${p.nm} está sem estoque`); return; }
   const ex = _mvCart.find(x => x.pid === pid);
   const mpreco = p.pd ?? p.pr;
   if (ex) { ex.q += q; ex.sub = ex.pr * ex.q; }
@@ -777,11 +1094,13 @@ function editP(id) {
 }
 
 function delP(id) {
-  if (!confirm('Excluir produto?')) return;
-  DB.prods = DB.prods.filter(x => x.id !== id);
-  renderAll();
-  showToast('Produto excluído');
-  sbSync(() => SBProds.delete(id));
+  const p = DB.prods.find(x => x.id === id);
+  askConfirm(`Excluir "${p?.nm || 'este produto'}"?\n\nEsta ação não pode ser desfeita.`, () => {
+    DB.prods = DB.prods.filter(x => x.id !== id);
+    renderAll();
+    showToast('Produto excluído');
+    sbSync(() => SBProds.delete(id));
+  });
 }
 
 function newCli() {
@@ -867,8 +1186,22 @@ function savePedEdit() {
     oldCli.gasto = Math.max(0, (oldCli.gasto || 0) - p.tot + tot);
     sbSync(() => SBClis.update(p.cid, { gasto: oldCli.gasto }));
   }
+  const wasfiado = p.pag === 'Fiado';
+  const nowFiado = pag === 'Fiado';
   const tr = DB.trans.find(t => t.ds === `Pedido #${id}`);
-  if (tr) { tr.vl = tot; tr.dt = dtpag; sbSync(() => SBTrans.upsert(tr)); }
+  if (wasfiado && !nowFiado) {
+    // Fiado → Pago: criar transação de receita
+    const newTr = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+    DB.trans.push(newTr);
+    sbSync(() => SBTrans.upsert(newTr));
+  } else if (!wasfiado && nowFiado && tr) {
+    // Pago → Fiado: remover transação existente
+    DB.trans = DB.trans.filter(t => t.ds !== `Pedido #${id}`);
+    sbSync(() => _sbClient?.from('transactions').delete().eq('id', tr.id));
+  } else if (tr) {
+    // Pago → Pago: atualizar valor/data da transação existente
+    tr.vl = tot; tr.dt = dtpag; sbSync(() => SBTrans.upsert(tr));
+  }
   Object.assign(p, { cid, pag: pagLabel, parc, dtpag, tot, st });
   sbSync(() => SBPeds.upsert(p));
   renderAll();
@@ -946,7 +1279,7 @@ function rDashCharts() {
 
   if (cf) {
     const { ym, lb } = _lastMonths(6);
-    const data = ym.map(m => DB.trans.filter(t => t.tp === 'receita' && t.dt?.startsWith(m)).reduce((a, b) => a + b.vl, 0));
+    const data = ym.map(m => DB.peds.filter(p => p.dt?.startsWith(m)).reduce((a, b) => a + b.tot, 0));
     _c.fat = new Chart(cf, { type: 'bar', data: { labels: lb, datasets: [{ data, backgroundColor: 'rgba(36,96,90,.95)', borderRadius: 6, label: 'R$' }] }, options: { ...ca } });
   }
 
@@ -1004,11 +1337,11 @@ function rRel() {
     if ($('ratt')) {
       $('ratt').innerHTML = ym.map(m => {
         const pedsMes = DB.peds.filter(p => p.dt?.startsWith(m));
-        const r = DB.trans.filter(t => t.tp === 'receita' && t.dt?.startsWith(m)).reduce((a, b) => a + b.vl, 0);
-        const n = new Set(pedsMes.map(p => p.cid)).size;
+        const fat = pedsMes.reduce((a, b) => a + b.tot, 0);
+        const n   = new Set(pedsMes.map(p => p.cid)).size;
         const qtd = pedsMes.length;
         const [y, mo] = m.split('-');
-        return `<tr><td>${mnNames[parseInt(mo) - 1]} ${y}</td><td>${qtd}</td><td>${brl(r)}</td><td>${brl(qtd ? r / qtd : 0)}</td><td>${n}</td><td><span class="xb ${r > 0 ? 'xb-green' : 'xb-gray'}">${r > 0 ? 'Com vendas' : 'Sem vendas'}</span></td></tr>`;
+        return `<tr><td>${mnNames[parseInt(mo) - 1]} ${y}</td><td>${qtd}</td><td>${brl(fat)}</td><td>${brl(qtd ? fat / qtd : 0)}</td><td>${n}</td><td><span class="xb ${fat > 0 ? 'xb-green' : 'xb-gray'}">${fat > 0 ? 'Com vendas' : 'Sem vendas'}</span></td></tr>`;
       }).join('');
     }
   }, 80);
@@ -1074,6 +1407,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await initDB();
   renderAll();
+  initBanner();
+  showExtPopup();
 
   // Fechar modal clicando no backdrop
   document.querySelectorAll('.modal').forEach(m => {
