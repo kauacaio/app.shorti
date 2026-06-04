@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Scanner — ERP</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #0A0A0F; color: #fff; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+
+    /* ── Status bar ── */
+    #status-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: env(safe-area-inset-top, 12px) 16px 10px;
+      padding-top: max(env(safe-area-inset-top), 12px);
+      background: linear-gradient(to bottom, rgba(10,10,15,.95) 0%, transparent 100%);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: #fff; }
+    .brand-sym { color: #F59E0B; font-size: 16px; }
+    #conn-pill {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11.5px; font-weight: 600;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px; padding: 5px 10px;
+      transition: background .3s, border-color .3s;
+    }
+    #conn-pill.connected { background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.4); }
+    #conn-pill.error     { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.4); }
+    #conn-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #6B7280; transition: background .3s;
+    }
+    #conn-pill.connected #conn-dot { background: #22C55E; animation: dotPulse 1.8s ease-in-out infinite; }
+    #conn-pill.error     #conn-dot { background: #EF4444; }
+    @keyframes dotPulse {
+      0%,100% { opacity: 1; } 50% { opacity: .4; }
+    }
+    #conn-text { color: #9CA3AF; }
+    #conn-pill.connected #conn-text { color: #86EFAC; }
+    #conn-pill.error     #conn-text { color: #FCA5A5; }
+
+    /* ── Camera view ── */
+    #reader {
+      position: fixed; inset: 0;
+      background: #000;
+    }
+    #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+    #reader canvas { display: none !important; }
+
+    /* Scan frame overlay */
+    #scan-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 10;
+    }
+    .overlay-strip {
+      position: absolute; left: 0; right: 0;
+      background: rgba(10,10,15,.65);
+    }
+    #overlay-top    { top: 0; height: 28%; }
+    #overlay-bottom { bottom: 0; height: 35%; }
+    #overlay-left   { top: 28%; height: 37%; left: 0; width: 8%; }
+    #overlay-right  { top: 28%; height: 37%; right: 0; width: 8%; }
+
+    /* Corners */
+    .scan-corner {
+      position: absolute; width: 24px; height: 24px;
+      border-color: #2563EB; border-style: solid;
+    }
+    #c-tl { top: 28%; left: 8%; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+    #c-tr { top: 28%; right: 8%; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+    #c-bl { top: 65%; left: 8%; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+    #c-br { top: 65%; right: 8%; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+    /* Scan line */
+    #scan-line {
+      position: absolute; left: 8%; right: 8%; height: 2px;
+      background: linear-gradient(90deg, transparent, #2563EB, #60A5FA, #2563EB, transparent);
+      top: 28%; animation: scanLine 2s ease-in-out infinite; border-radius: 1px;
+      box-shadow: 0 0 8px #2563EB;
+    }
+    @keyframes scanLine {
+      0%,100% { top: 28%; opacity: .8; }
+      50%      { top: 64%; opacity: 1; }
+    }
+
+    /* ── Bottom result panel ── */
+    #result-panel {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+      padding: 0 16px max(env(safe-area-inset-bottom), 16px);
+      background: linear-gradient(to top, rgba(10,10,15,.98) 70%, transparent);
+      padding-top: 28px;
+    }
+
+    /* Hint text */
+    #scan-hint {
+      text-align: center; font-size: 12.5px; color: #6B7280;
+      margin-bottom: 14px; line-height: 1.4;
+    }
+
+    /* Last code card */
+    #last-code {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 14px; padding: 14px 16px;
+      display: none; margin-bottom: 10px;
+      animation: slideUp .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    #last-code.visible { display: block; }
+    @keyframes slideUp {
+      from { transform: translateY(14px); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+    .last-code-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #6B7280; margin-bottom: 5px; }
+    #last-code-val {
+      font-size: 17px; font-weight: 700; color: #fff; font-family: 'Courier New', monospace;
+      letter-spacing: .05em; word-break: break-all;
+    }
+    #last-code-sent { font-size: 11px; color: #22C55E; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+
+    /* Count */
+    #scan-count { text-align: center; font-size: 11.5px; color: #4B5563; padding-top: 6px; }
+    #count-num  { color: #9CA3AF; font-weight: 600; }
+
+    /* Error/loading states */
+    #error-view {
+      position: fixed; inset: 0; z-index: 200;
+      background: #0A0A0F;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 32px;
+    }
+    #error-view.show { display: flex; }
+    .err-icon  { font-size: 48px; margin-bottom: 16px; }
+    .err-title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .err-msg   { font-size: 13px; color: #6B7280; line-height: 1.6; max-width: 280px; }
+    .err-btn   {
+      margin-top: 22px; padding: 12px 24px;
+      background: #2563EB; color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de status -->
+  <div id="status-bar">
+    <div class="brand">
+      <span class="brand-sym">✦</span>
+      <span>ERP Scanner</span>
+    </div>
+    <div id="conn-pill">
+      <div id="conn-dot"></div>
+      <span id="conn-text">Conectando...</span>
+    </div>
+  </div>
+
+  <!-- Câmera -->
+  <div id="reader"></div>
+
+  <!-- Overlay + frame -->
+  <div id="scan-overlay">
+    <div class="overlay-strip" id="overlay-top"></div>
+    <div class="overlay-strip" id="overlay-bottom"></div>
+    <div class="overlay-strip" id="overlay-left"></div>
+    <div class="overlay-strip" id="overlay-right"></div>
+    <div class="scan-corner" id="c-tl"></div>
+    <div class="scan-corner" id="c-tr"></div>
+    <div class="scan-corner" id="c-bl"></div>
+    <div class="scan-corner" id="c-br"></div>
+    <div id="scan-line"></div>
+  </div>
+
+  <!-- Painel inferior -->
+  <div id="result-panel">
+    <p id="scan-hint">Aponte a câmera para o código de barras</p>
+    <div id="last-code">
+      <div class="last-code-label">Último código enviado</div>
+      <div id="last-code-val">—</div>
+      <div id="last-code-sent">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Enviado para o PC
+      </div>
+    </div>
+    <div id="scan-count">Códigos enviados: <span id="count-num">0</span></div>
+  </div>
+
+  <!-- View de erro -->
+  <div id="error-view">
+    <div class="err-icon" id="err-icon">📡</div>
+    <div class="err-title" id="err-title">Sem sessão</div>
+    <div class="err-msg" id="err-msg">Abra esta página pelo QR code gerado no ERP do computador.</div>
+    <button class="err-btn" onclick="location.reload()">Tentar novamente</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script>
+    /* ── Config ── (mesmas credenciais do supabase.js) */
+    const SB_URL = 'https://aksgxwucgkajznhxyciz.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrc2d4d3VjZ2thanpuaHh5Y2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTIyMjAsImV4cCI6MjA5NDQyODIyMH0.ggBOday3Mktl_Oc5pGG6rs-VG3iwDYc3GWNsGcH__5k';
+
+    const sessionId = new URLSearchParams(location.search).get('s');
+
+    function showError(icon, title, msg) {
+      document.getElementById('err-icon').textContent = icon;
+      document.getElementById('err-title').textContent = title;
+      document.getElementById('err-msg').textContent = msg;
+      document.getElementById('error-view').classList.add('show');
+    }
+
+    if (!sessionId) { showError('🔗', 'Sem sessão', 'Abra esta página pelo QR code gerado no computador.'); }
+    else { init(); }
+
+    function playBeepMobile() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sine'; o.frequency.value = 1760;
+        g.gain.setValueAtTime(.3, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .12);
+        o.start(); o.stop(ctx.currentTime + .14);
+      } catch(e) {}
+    }
+
+    async function init() {
+      /* Conectar ao Supabase */
+      let client;
+      try {
+        client = supabase.createClient(SB_URL, SB_KEY);
+      } catch(e) {
+        showError('❌', 'Erro de conexão', 'Não foi possível inicializar o cliente Supabase: ' + e.message);
+        return;
+      }
+
+      const pill     = document.getElementById('conn-pill');
+      const connText = document.getElementById('conn-text');
+
+      /* Criar canal broadcast */
+      const channel = client.channel(`erp-scan-${sessionId}`, {
+        config: { broadcast: { self: false } }
+      });
+
+      channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          pill.className = 'connected';
+          connText.textContent = 'Conectado';
+          /* Avisar o PC que o celular está conectado */
+          await channel.send({ type: 'broadcast', event: 'phone-connected', payload: {} });
+          startCamera(channel);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          pill.className = 'error';
+          connText.textContent = 'Erro';
+          showError('📡', 'Sem conexão', 'Verifique a internet e tente novamente.');
+        }
+      });
+    }
+
+    let _scanCool = false;
+    let _count    = 0;
+
+    function startCamera(channel) {
+      const scanner = new Html5Qrcode('reader');
+      const cfg = {
+        fps: 15,
+        qrbox: { width: 260, height: 180 },
+        aspectRatio: window.innerHeight / window.innerWidth,
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      };
+      if (typeof Html5QrcodeSupportedFormats !== 'undefined') {
+        cfg.formatsToSupport = [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+        ];
+      }
+
+      scanner.start(
+        { facingMode: 'environment' },
+        cfg,
+        async (code) => {
+          if (_scanCool) return;
+          _scanCool = true;
+
+          const clean = code.replace(/\D/g, '') || code;
+
+          /* Feedback */
+          playBeepMobile();
+          if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+
+          /* Atualizar UI */
+          _count++;
+          document.getElementById('last-code-val').textContent = clean;
+          const lc = document.getElementById('last-code');
+          lc.classList.remove('visible');
+          void lc.offsetWidth;
+          lc.classList.add('visible');
+          document.getElementById('count-num').textContent = _count;
+
+          /* Enviar ao PC */
+          await channel.send({
+            type: 'broadcast',
+            event: 'barcode',
+            payload: { code: clean }
+          });
+
+          setTimeout(() => { _scanCool = false; }, 1800);
+        },
+        () => {}
+      ).catch(err => {
+        showError('📷', 'Câmera bloqueada',
+          'Permita o acesso à câmera nas configurações do navegador e recarregue a página.');
+      });
+    }
+  </script>
+</body>
+</html>

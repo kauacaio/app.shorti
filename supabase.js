@@ -1,23 +1,33 @@
 /* =====================================================
    supabase.js — Cliente Supabase + camada de dados
    Preencha SUPABASE_URL e SUPABASE_ANON_KEY abaixo
+
+   MODO LOCAL: adicione ?local à URL para testar sem
+   tocar no banco real. Dados ficam no localStorage.
+   Ex: erp.html?local
    ===================================================== */
 
 const SUPABASE_URL      = 'https://aksgxwucgkajznhxyciz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrc2d4d3VjZ2thanpuaHh5Y2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTIyMjAsImV4cCI6MjA5NDQyODIyMH0.ggBOday3Mktl_Oc5pGG6rs-VG3iwDYc3GWNsGcH__5k';
 
-// Inicializa o cliente (null se o SDK não estiver disponível)
+/* ── Detecta modo local (?local na URL) ────────────── */
+const _localMode = new URLSearchParams(location.search).has('local');
+window._localMode = _localMode;
+
+// Inicializa o cliente (null se SDK indisponível ou modo local)
 let _sbClient = null;
-try {
-  if (typeof supabase !== 'undefined') {
-    _sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (!_localMode) {
+  try {
+    if (typeof supabase !== 'undefined') {
+      _sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch(e) {
+    console.warn('[supabase.js] Cliente não pôde ser inicializado:', e.message);
   }
-} catch(e) {
-  console.warn('[supabase.js] Cliente não pôde ser inicializado:', e.message);
 }
 
-// Expõe para app.js verificar disponibilidade
-window._sbClient = _sbClient;
+// Em modo local expõe um objeto sentinela (truthy) para initDB() rodar
+window._sbClient = _localMode ? { _local: true } : _sbClient;
 
 /* ── Autenticação ───────────────────────────────────── */
 const SBAuth = {
@@ -227,4 +237,95 @@ function _rowToSolic(r) {
 
 function _solicToRow(s) {
   return { id: s.id, nm: s.nm, q: s.q, pr: s.pr ?? null, obs: s.obs || '', st: s.st, dt: s.dt };
+}
+
+/* ── Modo local: substitui Supabase por localStorage ── */
+if (_localMode) {
+
+  /* Helpers de persistência */
+  const _LS = {
+    get(k, def = []) {
+      try { return JSON.parse(localStorage.getItem('mlb_local_' + k)) ?? def; } catch { return def; }
+    },
+    set(k, v) { localStorage.setItem('mlb_local_' + k, JSON.stringify(v)); },
+    upsert(k, item, mapFn) {
+      const arr = _LS.get(k);
+      const i = arr.findIndex(x => x.id === item.id);
+      if (i >= 0) arr[i] = item; else arr.push(item);
+      _LS.set(k, arr);
+    },
+    del(k, id) { _LS.set(k, _LS.get(k).filter(x => x.id !== id)); },
+  };
+
+  /* Produtos */
+  SBProds.list        = async () => _LS.get('prods').map(_rowToProduct);
+  SBProds.upsert      = async p  => _LS.upsert('prods', _productToRow(p));
+  SBProds.delete      = async id => _LS.del('prods', id);
+  SBProds.updateStock = async (id, st) => {
+    const rows = _LS.get('prods');
+    const r = rows.find(x => x.id === id);
+    if (r) { r.st = st; _LS.set('prods', rows); }
+  };
+
+  /* Clientes */
+  SBClis.list   = async () => _LS.get('clis').map(_rowToClient);
+  SBClis.upsert = async c  => _LS.upsert('clis', _clientToRow(c));
+  SBClis.delete = async id => _LS.del('clis', id);
+
+  /* Pedidos */
+  SBPeds.list   = async () => _LS.get('peds').map(_rowToOrder);
+  SBPeds.upsert = async p  => _LS.upsert('peds', _orderToRow(p));
+  SBPeds.delete = async id => _LS.del('peds', id);
+
+  /* Transações */
+  SBTrans.list   = async () => _LS.get('trans').map(_rowToTrans);
+  SBTrans.upsert = async t  => _LS.upsert('trans', _transToRow(t));
+  SBTrans.delete = async id => _LS.del('trans', id);
+
+  /* Solicitações */
+  SBSolics.list         = async () => _LS.get('solics').map(_rowToSolic);
+  SBSolics.upsert       = async s  => _LS.upsert('solics', _solicToRow(s));
+  SBSolics.delete       = async id => _LS.del('solics', id);
+  SBSolics.updateStatus = async (id, st) => {
+    const rows = _LS.get('solics');
+    const r = rows.find(x => x.id === id);
+    if (r) { r.st = st; _LS.set('solics', rows); }
+  };
+
+  /* Configurações */
+  SBSettings.get = async () => { const s = _LS.get('settings', null); return s ? s.data : null; };
+  SBSettings.set = async s  => _LS.set('settings', { data: s });
+
+  /* Auth — sessão local sempre válida */
+  SBAuth.getSession = async () => ({ user: { email: 'local@teste.dev' } });
+  SBAuth.signOut    = async () => {
+    if (confirm('Sair do modo local?')) window.location.replace('login.html');
+  };
+  SBAuth.onChange = () => ({ data: { subscription: { unsubscribe: () => {} } } });
+
+  /* Badge visual "MODO LOCAL" */
+  document.addEventListener('DOMContentLoaded', () => {
+    const b = document.createElement('div');
+    b.id = 'local-mode-badge';
+    b.title = 'Modo local ativo — dados salvos no localStorage, sem sincronizar com o banco real';
+    b.innerHTML = '🧪 LOCAL';
+    b.style.cssText = [
+      'position:fixed', 'bottom:72px', 'right:12px', 'z-index:9999',
+      'background:#F59E0B', 'color:#fff', 'font-size:11px', 'font-weight:700',
+      'padding:5px 10px', 'border-radius:8px', 'letter-spacing:.04em',
+      'box-shadow:0 2px 8px rgba(0,0,0,.18)', 'cursor:default',
+      'font-family:Inter,system-ui,sans-serif',
+    ].join(';');
+    document.body.appendChild(b);
+
+    /* Botão de reset dos dados locais */
+    b.addEventListener('click', () => {
+      if (confirm('Limpar todos os dados do modo local?')) {
+        ['prods','clis','peds','trans','solics','settings'].forEach(k =>
+          localStorage.removeItem('mlb_local_' + k)
+        );
+        location.reload();
+      }
+    });
+  });
 }

@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>ERPbyGRUPOLIMA — Milena Lima Beauty</title>
+  <title>Shorti-ERP</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./erp.css">
@@ -15,6 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" defer></script>
   <script src="./supabase.js" defer></script>
 </head>
 <body>
@@ -430,11 +431,27 @@
               <p class="page-subtitle">Produtos para pedir à Mary Kay</p>
             </div>
             <div class="table-controls">
-              <input type="text" class="input-field small" placeholder="Buscar…" oninput="srch('stt', this.value)">
-              <button class="btn btn-primary" onclick="openMod('msolic')">+ Solicitação</button>
+              <input type="text" class="input-field small" id="solic-busca" placeholder="Buscar…" oninput="rSolic()">
+              <button class="btn btn-primary" onclick="newSolic()">+ Solicitação</button>
             </div>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th>Preço est.</th><th>Obs.</th><th>Data</th><th>Status / Ações</th></tr></thead><tbody id="stt"></tbody></table></div></div>
+
+          <!-- Filtros de status -->
+          <div class="est-chips-row" style="margin-bottom:14px;gap:6px">
+            <button class="hv-chip on solic-fc" onclick="solcFtr(this,'')">Todos</button>
+            <button class="hv-chip solic-fc" onclick="solcFtr(this,'Pendente')">Pendente</button>
+            <button class="hv-chip solic-fc" onclick="solcFtr(this,'Solicitado')">Solicitado</button>
+            <button class="hv-chip solic-fc" onclick="solcFtr(this,'Recebido')">Recebido</button>
+          </div>
+
+          <div class="card data-card">
+            <div class="table-shell">
+              <table>
+                <thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th>Preço est.</th><th>Obs.</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody id="stt"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <section class="erp-page" id="ep-nvenda">
@@ -642,18 +659,17 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
               </button>
             </div>
-            <div class="est-chips-row">
+            <div class="est-chips-row est-chips-combined">
               <button class="hv-chip on est-cat-chip" onclick="estCat(this,'')">Todos</button>
               <button class="hv-chip est-cat-chip" onclick="estCat(this,'pele')">Skincare</button>
               <button class="hv-chip est-cat-chip" onclick="estCat(this,'maquiagem')">Maquiagem</button>
               <button class="hv-chip est-cat-chip" onclick="estCat(this,'corpo')">Corpo</button>
               <button class="hv-chip est-cat-chip" onclick="estCat(this,'fragrancias')">Fragrâncias</button>
-            </div>
-            <div class="est-chips-row" style="border-left:1px solid var(--bd);padding-left:12px">
-              <button class="hv-chip on est-st-chip" onclick="estSt(this,'')">Todos status</button>
+              <span class="est-chips-sep"></span>
+              <button class="hv-chip on est-st-chip" onclick="estSt(this,'')">Todos</button>
               <button class="hv-chip est-st-chip" onclick="estSt(this,'ok')">OK</button>
-              <button class="hv-chip est-st-chip" onclick="estSt(this,'baixo')">Baixo</button>
-              <button class="hv-chip est-st-chip" onclick="estSt(this,'esgotado')">Esgotado</button>
+              <button class="hv-chip est-st-chip est-chip-low" onclick="estSt(this,'baixo')">Baixo</button>
+              <button class="hv-chip est-st-chip est-chip-out" onclick="estSt(this,'esgotado')">Esgotado</button>
             </div>
           </div>
 
@@ -705,9 +721,12 @@
               <h2>Clientes</h2>
               <p class="page-subtitle">Cadastro e histórico</p>
             </div>
-            <button class="btn btn-primary" onclick="newCli()">+ Cliente</button>
+            <div class="table-controls">
+              <input type="text" class="input-field small" id="cli-busca" placeholder="Buscar cliente…" oninput="rClis()">
+              <button class="btn btn-primary" onclick="newCli()">+ Cliente</button>
+            </div>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th><th>Ações</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
+          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Cliente</th><th>Contato</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th><th>Ações</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
         </section>
 
         <section class="erp-page" id="ep-financeiro">
@@ -746,78 +765,109 @@
         </section>
 
         <section class="erp-page" id="ep-extrato">
-          <!-- Cabeçalho do extrato -->
-          <div class="ext-header">
-            <div class="ext-header-left">
-              <div class="ext-logo-mark">✦</div>
-              <div>
-                <h2 class="ext-title">Extrato Mensal</h2>
-                <p class="ext-subtitle" id="ext-subtitle">Demonstrativo financeiro completo</p>
+
+          <!-- ── Documento financeiro ─────────────────── -->
+          <div class="ext-doc">
+
+            <!-- Barra da marca Shorti (escura, fina) -->
+            <div class="ext-topbar">
+              <div class="ext-tb-brand">
+                <span class="ext-tb-sym">✦</span>
+                <span class="ext-tb-name">Shorti</span>
+                <span class="ext-tb-pipe"></span>
+                <span class="ext-tb-sub">Sistema de Gestão GrupoLima</span>
               </div>
-            </div>
-            <div class="ext-header-right">
               <div class="ext-month-nav">
                 <button class="ext-nav-btn" onclick="extNavMes(-1)">‹</button>
                 <div class="ext-month-label" id="ext-month-label">—</div>
                 <button class="ext-nav-btn" onclick="extNavMes(1)">›</button>
               </div>
-              <button class="btn btn-outline" onclick="window.print()" style="font-size:12px;padding:7px 14px">🖨 Imprimir</button>
             </div>
-          </div>
 
-          <!-- KPIs principais -->
-          <div class="ext-kpis" id="ext-kpis"></div>
+            <!-- Corpo do documento -->
+            <div class="ext-body">
 
-          <!-- Aviso de prévia (mês atual) -->
-          <div id="ext-preview-note" class="ext-preview-note" style="display:none">
-            <span class="ext-preview-note-icon">⏳</span>
-            <span>Este é o mês atual em andamento. Os valores são uma <strong>prévia</strong> e podem mudar até o fechamento do mês.</span>
-          </div>
-
-          <!-- Barra de progresso recebimento -->
-          <div class="ext-progress-card" id="ext-progress-card">
-            <div class="ext-prog-header">
-              <span class="ext-prog-label">Recebimento do mês</span>
-              <span class="ext-prog-pct" id="ext-prog-pct">0%</span>
-            </div>
-            <div class="ext-prog-bar"><div class="ext-prog-fill" id="ext-prog-fill" style="width:0%"></div></div>
-            <div class="ext-prog-leg">
-              <span id="ext-prog-rec">R$ 0,00 recebido</span>
-              <span id="ext-prog-pend">R$ 0,00 a receber</span>
-            </div>
-          </div>
-
-          <!-- Linha com pedidos do mês + top clientes -->
-          <div class="card-grid-wide" style="margin-bottom:14px">
-            <article class="data-card">
-              <div class="card-header">
-                <span class="card-title">Pedidos do mês</span>
-                <span id="ext-ped-count" style="font-size:12px;color:#71717A"></span>
+              <!-- Cabeçalho do documento -->
+              <div class="ext-doc-hd">
+                <div class="ext-doc-hd-left">
+                  <h2 class="ext-doc-title">Extrato Mensal</h2>
+                  <p class="ext-doc-meta">
+                    <strong>Milena Lima Beauty</strong>
+                    <span>Consultora Oficial Mary Kay</span>
+                    <span id="ext-subtitle">Demonstrativo financeiro completo</span>
+                  </p>
+                </div>
+                <button class="ext-print-btn" onclick="window.print()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  Imprimir
+                </button>
               </div>
-              <div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th></tr></thead><tbody id="ext-peds-tb"></tbody></table></div>
-            </article>
-            <article class="data-card" style="min-width:0">
-              <div class="card-title">Top clientes</div>
-              <div id="ext-top-clis"></div>
-              <div class="card-title" style="margin-top:18px;padding-top:16px;border-top:1px solid #F4F4F5">Produtos vendidos</div>
-              <div id="ext-top-prods"></div>
-            </article>
-          </div>
+
+              <!-- Aviso de prévia -->
+              <div id="ext-preview-note" class="ext-preview-note" style="display:none">
+                <span class="ext-preview-note-icon">⏳</span>
+                <span>Mês atual em andamento — valores são uma <strong>prévia</strong> e podem mudar até o fechamento.</span>
+              </div>
+
+              <!-- Strip de KPIs -->
+              <div class="ext-kpis" id="ext-kpis"></div>
+
+              <!-- Barra de recebimento -->
+              <div class="ext-progress-card" id="ext-progress-card">
+                <div class="ext-prog-header">
+                  <span class="ext-prog-label">Recebimento do mês</span>
+                  <span class="ext-prog-pct" id="ext-prog-pct">0%</span>
+                </div>
+                <div class="ext-prog-bar"><div class="ext-prog-fill" id="ext-prog-fill" style="width:0%"></div></div>
+                <div class="ext-prog-leg">
+                  <span id="ext-prog-rec">R$ 0,00 recebido</span>
+                  <span id="ext-prog-pend">R$ 0,00 a receber</span>
+                </div>
+              </div>
+
+              <!-- Pedidos + Top clientes/produtos -->
+              <div class="card-grid-wide" style="margin-bottom:14px">
+                <article class="data-card">
+                  <div class="card-header">
+                    <span class="card-title">Pedidos do mês</span>
+                    <span id="ext-ped-count" style="font-size:12px;color:#71717A"></span>
+                  </div>
+                  <div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th></tr></thead><tbody id="ext-peds-tb"></tbody></table></div>
+                </article>
+                <article class="data-card" style="min-width:0">
+                  <div class="card-title">Top clientes</div>
+                  <div id="ext-top-clis"></div>
+                  <div class="card-title" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--bd)">Produtos vendidos</div>
+                  <div id="ext-top-prods"></div>
+                </article>
+              </div>
 
           <!-- Lançamentos financeiros do mês -->
-          <article class="data-card" style="margin-bottom:14px">
-            <div class="card-header">
-              <span class="card-title">Lançamentos financeiros</span>
-              <span id="ext-trans-count" style="font-size:12px;color:#71717A"></span>
-            </div>
-            <div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ext-trans-tb"></tbody></table></div>
-          </article>
+              <!-- Lançamentos financeiros -->
+              <article class="data-card" style="margin-bottom:14px">
+                <div class="card-header">
+                  <span class="card-title">Lançamentos financeiros</span>
+                  <span id="ext-trans-count" style="font-size:12px;color:#71717A"></span>
+                </div>
+                <div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ext-trans-tb"></tbody></table></div>
+              </article>
 
-          <!-- Rodapé técnico -->
-          <div class="ext-footer">
-            <span>Milena Lima Beauty · Gerado em <span id="ext-gen-dt"></span></span>
-            <span id="ext-footer-mes"></span>
-          </div>
+              <!-- Rodapé -->
+              <div class="ext-footer">
+                <div class="ext-footer-brand">
+                  <span class="ext-ft-sym">✦</span>
+                  <span class="ext-ft-name">Shorti</span>
+                  <span class="ext-ft-sep">·</span>
+                  <span class="ext-ft-sub">Sistema de Gestão GrupoLima</span>
+                </div>
+                <div class="ext-footer-right">
+                  <span>Gerado em <span id="ext-gen-dt"></span></span>
+                  <span id="ext-footer-mes"></span>
+                </div>
+              </div><!-- /ext-footer -->
+
+            </div><!-- /ext-body -->
+          </div><!-- /ext-doc -->
         </section>
 
         <section class="erp-page" id="ep-relatorios">
@@ -1140,6 +1190,60 @@
     <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mc')">Cancelar</button><button class="btn btn-primary" onclick="saveCli()" id="mc-save-btn">Cadastrar cliente</button></div>
   </div></div>
 
+  <!-- ── Modal perfil largo do cliente ────────────── -->
+  <div class="modal" id="mcp">
+    <div class="modal-box mcp-wide">
+
+      <!-- Hero colorido — renderizado pelo JS via openCliProfile -->
+      <div class="mcp-hero" id="mcp-hero">
+        <button class="mcp-close" onclick="closeMod('mcp')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="mcp-hero-left">
+          <div class="mcp-avatar-big" id="mcp-avatar-big"></div>
+          <div>
+            <div class="mcp-nm" id="mcp-nm"></div>
+            <div class="mcp-hero-sub" id="mcp-hero-sub"></div>
+          </div>
+        </div>
+        <div class="mcp-hero-stats" id="mcp-stats"></div>
+      </div>
+
+      <!-- Corpo: contato + histórico -->
+      <div class="mcp-body">
+
+        <!-- Sidebar: detalhes de contato -->
+        <div class="mcp-sidebar">
+          <div class="mcp-sidebar-hd">Detalhes</div>
+          <div class="mcp-info" id="mcp-info"></div>
+          <div class="mcp-tags" id="mcp-tags"></div>
+        </div>
+
+        <!-- Main: histórico de compras -->
+        <div class="mcp-main">
+          <div class="mcp-main-hd">
+            <span class="mcp-section-title">Histórico de compras</span>
+            <span class="mcp-hist-count" id="mcp-hist-count"></span>
+          </div>
+          <div class="mcp-hist-list" id="mcp-hist-list"></div>
+          <div class="mcp-hist-summary" id="mcp-hist-summary"></div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="mcp-del-btn">Excluir</button>
+        <button class="btn btn-outline" id="mcp-edit-btn">Editar dados</button>
+        <button class="btn btn-primary" id="mcp-sale-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova venda
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <div class="modal" id="mt"><div class="modal-box">
     <div class="modal-header"><h3>Novo Lançamento</h3><button class="modal-close" onclick="closeMod('mt')">✕</button></div>
     <div class="form-grid">
@@ -1185,6 +1289,7 @@
       </div>
       <div class="modal-actions">
         <button class="btn btn-outline" onclick="closeMod('mconf')">Cancelar</button>
+        <button class="btn btn-outline" id="mconf-alt" style="display:none"></button>
         <button class="btn" id="mconf-ok">Confirmar</button>
       </div>
     </div>
@@ -1209,32 +1314,69 @@
     <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('med')">Cancelar</button><button class="btn btn-primary" onclick="savePedEdit()">Salvar alterações</button></div>
   </div></div>
 
-  <!-- Modal nova solicitação -->
+  <!-- Modal solicitação (criar e editar) -->
   <div class="modal" id="msolic"><div class="modal-box" style="max-width:420px">
-    <div class="modal-header"><h3>Nova Solicitação</h3><button class="modal-close" onclick="closeMod('msolic')">✕</button></div>
+    <div class="modal-header">
+      <h3 id="msolic-title">Nova Solicitação</h3>
+      <button class="modal-close" onclick="closeMod('msolic')">✕</button>
+    </div>
+    <input type="hidden" id="sl-id">
     <div class="form-grid">
       <label class="form-label full">Produto *<input type="text" class="input-field" id="sl-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px"></label>
       <label class="form-label">Quantidade<input type="number" class="input-field" id="sl-q" value="1" min="1" style="margin-top:4px"></label>
       <label class="form-label">Preço estimado (R$)<input type="number" class="input-field" id="sl-pr" step="0.01" placeholder="Opcional" style="margin-top:4px"></label>
       <label class="form-label full">Observações<input type="text" class="input-field" id="sl-obs" placeholder="Ex: cor, tamanho, código Mary Kay…" style="margin-top:4px"></label>
+      <div class="form-label full" id="sl-status-row" style="display:none;flex-direction:column;gap:6px">
+        <span class="fl-lbl">Status</span>
+        <div class="pay-chips">
+          <button class="pay-chip" onclick="slSetSt(this,'Pendente')" type="button">⏳ Pendente</button>
+          <button class="pay-chip" onclick="slSetSt(this,'Solicitado')" type="button">📦 Solicitado</button>
+          <button class="pay-chip" onclick="slSetSt(this,'Recebido')" type="button">✅ Recebido</button>
+        </div>
+        <input type="hidden" id="sl-st" value="Pendente">
+      </div>
     </div>
-    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('msolic')">Cancelar</button><button class="btn btn-primary" onclick="saveSolic()">Criar solicitação</button></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeMod('msolic')">Cancelar</button>
+      <button class="btn btn-primary" id="msolic-save-btn" onclick="saveSolic()">Criar solicitação</button>
+    </div>
   </div></div>
 
   <!-- ── Scanner de código de barras — redesign ───────── -->
   <div class="modal" id="mscanner" style="padding:0;background:rgba(0,0,0,.96)">
     <div class="scn-wrap">
 
-      <!-- Topo: badge do modo + fechar -->
+      <!-- Topo: badge do modo + botão celular + fechar -->
       <div class="scn-top">
         <span class="scn-mode-badge" id="scan-title">Escanear produto</span>
-        <button class="scn-close" onclick="closeScanner()" aria-label="Fechar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="scn-phone-btn" id="scn-phone-toggle" onclick="togglePhoneScanner()" title="Usar câmera do celular">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            Celular
+          </button>
+          <button class="scn-close" onclick="closeScanner()" aria-label="Fechar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Instrução -->
       <p class="scn-hint" id="scan-sub">Centralize o código de barras no quadro</p>
+
+      <!-- ── Painel QR code (Scanner por celular) ── -->
+      <div class="scn-phone-panel" id="scn-phone-panel" style="display:none">
+        <div class="scn-qr-wrap">
+          <canvas id="scn-qr-canvas" width="200" height="200"></canvas>
+          <img id="scn-qr-img" width="200" height="200" alt="QR Code" style="display:none;border-radius:6px">
+        </div>
+        <p id="scn-qr-url" style="display:none;font-size:10px;color:rgba(255,255,255,.3);word-break:break-all;text-align:center;padding:0 8px;margin-top:4px"></p>
+        <div class="scn-phone-status" id="scn-phone-status">
+          <span class="scn-phone-dot" id="scn-phone-dot"></span>
+          <span id="scn-phone-status-txt">Aguardando celular...</span>
+        </div>
+        <p class="scn-phone-hint-txt">Escaneie o QR code com seu celular<br>para usar a câmera do celular como scanner</p>
+        <button class="scn-disconnect-btn" onclick="disconnectPhone()" title="Encerrar sessão do celular">✕ Desconectar</button>
+      </div>
 
       <!-- Câmera + frame -->
       <div class="scn-camera-wrap">
@@ -1294,19 +1436,28 @@
   <div class="sale-success" id="sale-success">
     <div class="ss-card">
 
-      <!-- Área de animação: cofre + moedas -->
+      <!-- Animação: moedas → cofre → checkmark badge -->
       <div class="ss-anim">
-        <!-- Moedas que voam para o cofre (6) -->
-        <div class="ss-coin c1">$</div>
-        <div class="ss-coin c2">$</div>
-        <div class="ss-coin c3">$</div>
-        <div class="ss-coin c4">$</div>
-        <div class="ss-coin c5">$</div>
-        <div class="ss-coin c6">$</div>
-
-        <!-- Cofre -->
+        <!-- Moedas que voam para o cofre -->
+        <div class="ss-coin c1">R$</div>
+        <div class="ss-coin c2">R$</div>
+        <div class="ss-coin c3">R$</div>
+        <div class="ss-coin c4">R$</div>
+        <div class="ss-coin c5">R$</div>
+        <div class="ss-coin c6">R$</div>
+        <!-- Anéis que pulsam quando cofre treme -->
+        <div class="ss-ring r1"></div>
+        <div class="ss-ring r2"></div>
+        <!-- Partículas que explodem após o badge aparecer -->
+        <div class="ss-particle p1">✦</div>
+        <div class="ss-particle p2">✦</div>
+        <div class="ss-particle p3">✦</div>
+        <div class="ss-particle p4">✦</div>
+        <div class="ss-particle p5">✦</div>
+        <div class="ss-particle p6">✦</div>
+        <!-- Cofre central -->
         <div class="ss-vault">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="3"/>
             <circle cx="12" cy="12" r="4"/>
             <line x1="12" y1="8" x2="12" y2="6"/>
@@ -1314,22 +1465,18 @@
             <line x1="12" y1="16" x2="12" y2="18"/>
             <line x1="16" y1="12" x2="18" y2="12"/>
           </svg>
+          <!-- Badge de checkmark aparece depois que as moedas entram -->
+          <div class="ss-check-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
         </div>
-
-        <!-- Faíscas -->
-        <div class="ss-spark sp1"></div>
-        <div class="ss-spark sp2"></div>
-        <div class="ss-spark sp3"></div>
-        <div class="ss-spark sp4"></div>
       </div>
 
-      <!-- Texto -->
       <div class="ss-label">Venda registrada!</div>
       <div class="ss-client" id="ss-client">—</div>
       <div class="ss-total" id="ss-total">R$ 0,00</div>
       <div class="ss-sub"   id="ss-sub"></div>
 
-      <!-- Ações -->
       <div class="ss-actions">
         <button class="ss-btn-sec" onclick="closeSaleSuccess()">Fechar</button>
         <button class="ss-btn-sec" onclick="ssCupom()">

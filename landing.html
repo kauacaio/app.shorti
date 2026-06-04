@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Milena Lima Beauty — Consultora Oficial Mary Kay. Consultoria personalizada de skincare e beleza.">
+  <title>Milena Lima Beauty</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #0A0806;
+      --cream:  #F5EFE8;
+      --stone:  #8C8078;
+      --rose:   #C4897A;
+      --rose-lt:#F0E8E4;
+      --white:  #FDFCFB;
+      --serif:  'Cormorant Garamond', Georgia, serif;
+      --sans:   'Inter', system-ui, sans-serif;
+      --ease:   cubic-bezier(.16,1,.3,1);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--ink);
+      color: var(--cream);
+      overflow-x: hidden;
+    }
+    ::selection { background: var(--rose); color: #fff; }
+
+    /* ── NAV ───────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 22px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: padding .4s var(--ease), background .4s;
+    }
+    nav.compact {
+      padding: 14px 48px;
+      background: rgba(10,8,6,.88);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .nav-brand {
+      font-family: var(--serif);
+      font-size: 18px; font-weight: 400;
+      color: var(--cream); letter-spacing: .04em;
+      text-decoration: none;
+    }
+    .nav-brand em { font-style: italic; color: var(--rose); }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a {
+      font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(245,239,232,.5); text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--cream); }
+    .nav-cta {
+      font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--cream); background: none;
+      border: 1px solid rgba(245,239,232,.25);
+      border-radius: 999px; padding: 9px 22px; cursor: pointer;
+      transition: background .2s, border-color .2s;
+      font-family: var(--sans);
+    }
+    .nav-cta:hover { background: rgba(245,239,232,.08); border-color: rgba(245,239,232,.5); }
+
+    /* ── HERO ──────────────────────────────────────── */
+    .hero {
+      min-height: 100svh;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 72px;
+      position: relative; overflow: hidden;
+    }
+    .hero-grain {
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      opacity: .6;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+      background-size: 256px;
+    }
+    .hero-glow {
+      position: absolute; z-index: 0; pointer-events: none;
+      width: 640px; height: 640px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(196,137,122,.12) 0%, transparent 70%);
+      right: -120px; top: 10%;
+      animation: glowDrift 18s ease-in-out infinite alternate;
+    }
+    @keyframes glowDrift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(-40px,60px) scale(1.06); }
+    }
+
+    .hero-content { position: relative; z-index: 2; max-width: 900px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-size: 10px; letter-spacing: .28em; text-transform: uppercase;
+      color: var(--rose); margin-bottom: 32px;
+      opacity: 0; animation: fadeUp .8s var(--ease) .2s forwards;
+    }
+    .hero-eyebrow::before {
+      content: ''; display: block;
+      width: 28px; height: 1px; background: var(--rose);
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(52px, 7.5vw, 108px);
+      font-weight: 300; line-height: 1.0;
+      letter-spacing: -.01em;
+      color: var(--cream);
+    }
+    .h1-line {
+      display: block; overflow: hidden;
+      opacity: 0; animation: wordUp .9s var(--ease) both;
+    }
+    .h1-line:nth-child(1) { animation-delay: .35s; }
+    .h1-line:nth-child(2) { animation-delay: .5s; font-style: italic; color: var(--rose); }
+    .h1-line:nth-child(3) { animation-delay: .65s; }
+    @keyframes wordUp {
+      from { opacity:0; transform: translateY(100%); }
+      to   { opacity:1; transform: none; }
+    }
+
+    .hero-sub {
+      margin-top: 28px; max-width: 480px;
+      font-size: 15px; font-weight: 300; line-height: 1.75;
+      color: rgba(245,239,232,.5);
+      opacity: 0; animation: fadeUp .8s var(--ease) .9s forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(14px); }
+      to   { opacity:1; transform: none; }
+    }
+
+    .hero-actions {
+      margin-top: 40px; display: flex; gap: 14px; align-items: center;
+      opacity: 0; animation: fadeUp .8s var(--ease) 1.05s forwards;
+    }
+    .btn-hero-primary {
+      background: var(--cream); color: var(--ink);
+      border: none; border-radius: 999px;
+      padding: 14px 32px; font-size: 13px; font-weight: 500;
+      letter-spacing: .04em; cursor: pointer; font-family: var(--sans);
+      transition: background .2s, transform .2s;
+    }
+    .btn-hero-primary:hover { background: #fff; transform: translateY(-2px); }
+    .btn-hero-ghost {
+      background: none; color: rgba(245,239,232,.55);
+      border: 1px solid rgba(245,239,232,.18);
+      border-radius: 999px; padding: 14px 32px;
+      font-size: 13px; font-weight: 400; letter-spacing: .04em;
+      cursor: pointer; font-family: var(--sans);
+      transition: color .2s, border-color .2s;
+    }
+    .btn-hero-ghost:hover { color: var(--cream); border-color: rgba(245,239,232,.45); }
+
+    .hero-scroll {
+      position: absolute; bottom: 36px; right: 48px; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      opacity: 0; animation: fadeUp .6s var(--ease) 1.6s forwards;
+      cursor: pointer;
+    }
+    .hero-scroll-label {
+      font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+      color: rgba(245,239,232,.3); writing-mode: vertical-rl;
+    }
+    .hero-scroll-line {
+      width: 1px; height: 60px;
+      background: linear-gradient(to bottom, rgba(245,239,232,.25), transparent);
+      animation: scrollLine 2.4s ease-in-out 2s infinite;
+    }
+    @keyframes scrollLine {
+      0%,100% { transform: scaleY(1); transform-origin: top; opacity: .4; }
+      50%      { transform: scaleY(.4); transform-origin: bottom; opacity: .8; }
+    }
+
+    /* ── SEÇÃO: FRASE ─────────────────────────────── */
+    .phrase-section {
+      background: var(--ink); padding: 120px 48px;
+      display: flex; justify-content: center;
+    }
+    .phrase-inner { max-width: 860px; width: 100%; }
+    .phrase-number {
+      font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--rose); margin-bottom: 24px;
+    }
+    .phrase-text {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3.8vw, 54px);
+      font-weight: 300; line-height: 1.2;
+      color: var(--cream);
+    }
+    .phrase-text em { font-style: italic; color: var(--rose); }
+    .phrase-text strong {
+      font-weight: 600; font-style: normal;
+      color: #fff;
+    }
+
+    /* ── SEÇÃO: VERDADES ──────────────────────────── */
+    .verdades-section {
+      background: #100E0B;
+      padding: 80px 48px;
+    }
+    .verdades-grid {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 0; max-width: 1200px; margin: 0 auto;
+      border: 1px solid rgba(245,239,232,.07);
+      border-radius: 16px; overflow: hidden;
+    }
+    .verdade {
+      padding: 36px 32px;
+      border-right: 1px solid rgba(245,239,232,.07);
+      transition: background .25s;
+    }
+    .verdade:last-child { border-right: none; }
+    .verdade:hover { background: rgba(245,239,232,.03); }
+    .verdade-num {
+      font-family: var(--serif); font-size: 48px; font-weight: 300;
+      color: rgba(196,137,122,.3); line-height: 1; margin-bottom: 20px;
+    }
+    .verdade-title {
+      font-size: 14px; font-weight: 500; color: var(--cream);
+      margin-bottom: 10px; line-height: 1.3;
+    }
+    .verdade-desc { font-size: 12.5px; color: rgba(245,239,232,.4); line-height: 1.7; }
+
+    /* ── SEÇÃO: MANIFESTO ─────────────────────────── */
+    .manifesto-section {
+      background: var(--rose);
+      padding: 100px 48px;
+      text-align: center;
+    }
+    .manifesto-label {
+      font-size: 10px; letter-spacing: .24em; text-transform: uppercase;
+      color: rgba(255,255,255,.6); margin-bottom: 28px;
+    }
+    .manifesto-quote {
+      font-family: var(--serif);
+      font-size: clamp(28px, 4vw, 58px);
+      font-weight: 300; line-height: 1.15;
+      color: #fff; max-width: 780px; margin: 0 auto 28px;
+    }
+    .manifesto-quote em { font-style: italic; }
+    .manifesto-author {
+      font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+    }
+
+    /* ── SEÇÃO: RITUAL ────────────────────────────── */
+    .ritual-section {
+      background: var(--ink); padding: 120px 48px;
+    }
+    .ritual-header {
+      max-width: 1200px; margin: 0 auto 60px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .ritual-eyebrow {
+      font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--rose); margin-bottom: 12px;
+    }
+    .ritual-title {
+      font-family: var(--serif);
+      font-size: clamp(32px, 3.5vw, 52px);
+      font-weight: 300; color: var(--cream); line-height: 1.1;
+    }
+    .ritual-title em { font-style: italic; color: var(--rose); }
+    .ritual-list {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .ritual-row {
+      display: grid; grid-template-columns: 64px 1fr 280px;
+      gap: 40px; align-items: start;
+      padding: 44px 0;
+      border-top: 1px solid rgba(245,239,232,.08);
+      transition: background .2s;
+    }
+    .ritual-row:hover { background: rgba(245,239,232,.02); border-radius: 12px; padding-left: 16px; padding-right: 16px; margin: 0 -16px; }
+    .ritual-num {
+      font-family: var(--serif); font-size: 52px; font-weight: 300;
+      color: rgba(196,137,122,.25); line-height: 1; padding-top: 4px;
+    }
+    .ritual-body { }
+    .ritual-row-title {
+      font-family: var(--serif); font-size: 24px; font-weight: 400;
+      color: var(--cream); margin-bottom: 12px;
+    }
+    .ritual-row-text {
+      font-size: 14px; color: rgba(245,239,232,.45);
+      line-height: 1.75; max-width: 520px;
+    }
+    .ritual-steps {
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+    }
+    .ritual-steps li {
+      font-size: 12.5px; color: rgba(245,239,232,.35);
+      padding-left: 16px; position: relative;
+    }
+    .ritual-steps li::before {
+      content: '—'; position: absolute; left: 0; color: var(--rose); opacity: .6;
+    }
+
+    /* ── SEÇÃO: DEPOIMENTOS ───────────────────────── */
+    .testimonials-section {
+      background: #100E0B; padding: 100px 48px;
+    }
+    .testimonials-header {
+      max-width: 1200px; margin: 0 auto 48px;
+    }
+    .testimonials-grid {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+    }
+    .tcard {
+      background: rgba(245,239,232,.04);
+      border: 1px solid rgba(245,239,232,.07);
+      border-radius: 16px; padding: 32px 28px;
+      display: flex; flex-direction: column; gap: 24px;
+      transition: background .2s, border-color .2s;
+    }
+    .tcard:hover { background: rgba(245,239,232,.06); border-color: rgba(245,239,232,.12); }
+    .tcard-featured {
+      background: var(--rose);
+      border-color: var(--rose);
+    }
+    .tcard-featured:hover { background: #bc7f70; }
+    .tcard-text {
+      font-family: var(--serif); font-size: 18px; font-weight: 300;
+      color: rgba(245,239,232,.85); line-height: 1.6; font-style: italic; flex: 1;
+    }
+    .tcard-featured .tcard-text { color: #fff; }
+    .tcard-author { display: flex; align-items: center; gap: 12px; }
+    .tcard-avatar {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      background: var(--rose); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 600;
+    }
+    .tcard-featured .tcard-avatar { background: rgba(255,255,255,.2); }
+    .tcard-name { font-size: 13px; font-weight: 500; color: var(--cream); }
+    .tcard-featured .tcard-name { color: #fff; }
+    .tcard-meta { font-size: 11px; color: rgba(245,239,232,.35); margin-top: 1px; }
+    .tcard-featured .tcard-meta { color: rgba(255,255,255,.55); }
+
+    /* ── SEÇÃO: CONSULTA ──────────────────────────── */
+    .cta-section { background: var(--ink); padding: 120px 48px; }
+    .cta-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+      align-items: center;
+    }
+    .cta-eyebrow {
+      font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+      color: rgba(245,239,232,.3); margin-bottom: 16px;
+    }
+    .cta-title {
+      font-family: var(--serif);
+      font-size: clamp(36px, 4.5vw, 68px);
+      font-weight: 300; color: var(--cream); line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .cta-title em { font-style: italic; color: var(--rose); }
+    .cta-text { font-size: 14px; color: rgba(245,239,232,.45); line-height: 1.8; }
+    .cta-right { display: flex; flex-direction: column; gap: 14px; }
+    .btn-whats {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #25D366; color: #fff;
+      border: none; border-radius: 12px; padding: 18px 28px;
+      font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--sans);
+      transition: background .2s, transform .2s;
+    }
+    .btn-whats:hover { background: #1db954; transform: translateY(-2px); }
+    .cta-or {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 11px; color: rgba(245,239,232,.2); letter-spacing: .1em;
+    }
+    .cta-or::before, .cta-or::after {
+      content: ''; flex: 1; height: 1px; background: rgba(245,239,232,.1);
+    }
+    .input-dark {
+      width: 100%; background: rgba(245,239,232,.06);
+      border: 1px solid rgba(245,239,232,.12); border-radius: 10px;
+      padding: 14px 18px; color: var(--cream); font-family: var(--sans); font-size: 13px;
+      outline: none; transition: border-color .2s;
+    }
+    .input-dark::placeholder { color: rgba(245,239,232,.25); }
+    .input-dark:focus { border-color: rgba(196,137,122,.5); }
+    .btn-email {
+      background: rgba(245,239,232,.08);
+      border: 1px solid rgba(245,239,232,.14);
+      color: var(--cream); border-radius: 10px; padding: 14px 24px;
+      font-size: 13px; cursor: pointer; font-family: var(--sans);
+      transition: background .2s;
+    }
+    .btn-email:hover { background: rgba(245,239,232,.14); }
+
+    /* ── FOOTER ───────────────────────────────────── */
+    footer {
+      background: #080606; padding: 64px 48px 40px;
+      border-top: 1px solid rgba(245,239,232,.06);
+    }
+    .footer-grid {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px; padding-bottom: 48px;
+      border-bottom: 1px solid rgba(245,239,232,.06);
+      margin-bottom: 28px;
+    }
+    .footer-brand-name {
+      font-family: var(--serif); font-size: 20px; font-weight: 300;
+      color: var(--cream); margin-bottom: 14px;
+    }
+    .footer-brand-name em { font-style: italic; color: var(--rose); }
+    .footer-tagline { font-size: 13px; color: rgba(245,239,232,.3); line-height: 1.7; max-width: 240px; }
+    .footer-col-title {
+      font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(245,239,232,.3); margin-bottom: 16px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul a { font-size: 13px; color: rgba(245,239,232,.4); text-decoration: none; transition: color .2s; }
+    .footer-col ul a:hover { color: var(--cream); }
+    .footer-bottom {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: rgba(245,239,232,.2);
+    }
+    .footer-admin {
+      background: none; border: none; color: rgba(245,239,232,.15);
+      cursor: pointer; font-size: 14px; padding: 4px 8px;
+      transition: color .2s;
+    }
+    .footer-admin:hover { color: rgba(245,239,232,.5); }
+
+    /* ── REVEAL ───────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ───────────────────────────────── */
+    @media (max-width: 1024px) {
+      nav { padding: 18px 28px; }
+      nav.compact { padding: 12px 28px; }
+      .hero { padding: 0 28px 56px; }
+      .phrase-section, .verdades-section, .manifesto-section,
+      .ritual-section, .testimonials-section, .cta-section { padding-left: 28px; padding-right: 28px; }
+      footer { padding: 48px 28px 32px; }
+      .verdades-grid { grid-template-columns: repeat(2,1fr); }
+      .verdade:nth-child(2n) { border-right: none; }
+      .verdade:nth-child(n+3) { border-top: 1px solid rgba(245,239,232,.07); }
+      .testimonials-grid { grid-template-columns: 1fr 1fr; }
+      .cta-inner { grid-template-columns: 1fr; gap: 48px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .ritual-row { grid-template-columns: 48px 1fr; }
+      .ritual-steps { display: none; }
+    }
+    @media (max-width: 700px) {
+      .nav-links { display: none; }
+      h1 { font-size: clamp(40px, 11vw, 64px); }
+      .verdades-grid { grid-template-columns: 1fr; }
+      .verdade { border-right: none; border-top: 1px solid rgba(245,239,232,.07); }
+      .verdade:first-child { border-top: none; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .ritual-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVEGAÇÃO ──────────────────────────────── -->
+  <nav id="nav">
+    <a href="#" class="nav-brand">Milena Lima <em>Beauty</em></a>
+    <div class="nav-links">
+      <a href="#ritual">Ritual</a>
+      <a href="#produtos">Produtos</a>
+      <a href="#depoimentos">Depoimentos</a>
+      <a href="#consulta">Consulta</a>
+    </div>
+    <button class="nav-cta" onclick="document.getElementById('consulta').scrollIntoView({behavior:'smooth'})">Falar com Milena</button>
+  </nav>
+
+  <!-- ── HERO ───────────────────────────────────── -->
+  <section class="hero" id="inicio">
+    <div class="hero-grain"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Consultora Oficial Mary Kay</p>
+      <h1>
+        <span class="h1-line">Você adia</span>
+        <span class="h1-line">o cuidado de si</span>
+        <span class="h1-line">há tempo demais.</span>
+      </h1>
+      <p class="hero-sub">Sua pele guarda cada momento ignorado — e cada gesto de cuidado. A Milena Lima Beauty começa onde o autocuidado deixa de ser opcional.</p>
+      <div class="hero-actions">
+        <button class="btn-hero-primary" onclick="document.getElementById('consulta').scrollIntoView({behavior:'smooth'})">Descobrir minha rotina →</button>
+        <button class="btn-hero-ghost" onclick="document.getElementById('ritual').scrollIntoView({behavior:'smooth'})">Ver o ritual</button>
+      </div>
+    </div>
+    <div class="hero-scroll" onclick="document.getElementById('frase').scrollIntoView({behavior:'smooth'})">
+      <span class="hero-scroll-label">role</span>
+      <div class="hero-scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ── FRASE ──────────────────────────────────── -->
+  <section class="phrase-section" id="frase">
+    <div class="phrase-inner">
+      <p class="phrase-number reveal">— 001</p>
+      <p class="phrase-text reveal">
+        Existe uma versão de você<br>
+        que <em>se olha no espelho</em><br>
+        e <strong>se reconhece.</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── VERDADES ───────────────────────────────── -->
+  <section class="verdades-section" id="produtos">
+    <div class="verdades-grid">
+      <div class="verdade reveal">
+        <div class="verdade-num">01</div>
+        <div class="verdade-title">Produto certo, não produto caro</div>
+        <div class="verdade-desc">Cada indicação feita para sua pele, seu ritmo, sua realidade.</div>
+      </div>
+      <div class="verdade reveal">
+        <div class="verdade-num">02</div>
+        <div class="verdade-title">Sua consultora te conhece pelo nome</div>
+        <div class="verdade-desc">Não existe atendimento genérico aqui. Existe uma relação real.</div>
+      </div>
+      <div class="verdade reveal">
+        <div class="verdade-num">03</div>
+        <div class="verdade-title">100% Mary Kay originais</div>
+        <div class="verdade-desc">Garantia de autenticidade e rastreabilidade em cada produto.</div>
+      </div>
+      <div class="verdade reveal">
+        <div class="verdade-num">04</div>
+        <div class="verdade-title">Resultado ou voltamos a conversar</div>
+        <div class="verdade-desc">Consultoria grátis. Acompanhamento real. Ajuste sempre que precisar.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MANIFESTO ──────────────────────────────── -->
+  <section class="manifesto-section">
+    <p class="manifesto-label">Manifesto</p>
+    <blockquote class="manifesto-quote">
+      "Cuidar de você não é luxo.<br>
+      É a coisa mais necessária<br>
+      <em>que você pode fazer hoje."</em>
+    </blockquote>
+    <cite class="manifesto-author">— Milena Lima · Consultora Mary Kay</cite>
+  </section>
+
+  <!-- ── RITUAL ─────────────────────────────────── -->
+  <section class="ritual-section" id="ritual">
+    <div class="ritual-header">
+      <div>
+        <p class="ritual-eyebrow">Verdades que ninguém te conta</p>
+        <h2 class="ritual-title">Os <em>fundamentos</em></h2>
+      </div>
+    </div>
+    <div class="ritual-list">
+      <div class="ritual-row reveal">
+        <div class="ritual-num">01</div>
+        <div class="ritual-body">
+          <h3 class="ritual-row-title">Hidratação não é opcional</h3>
+          <p class="ritual-row-text">Não existe rotina sofisticada sem base hidratada. Pele seca não absorve ativo. Os dois primeiros passos valem mais do que qualquer sérum premium.</p>
+        </div>
+        <ul class="ritual-steps">
+          <li>Sérum hidratante pela manhã</li>
+          <li>FPS 50 como último passo</li>
+          <li>Hidratante corporal após o banho</li>
+        </ul>
+      </div>
+      <div class="ritual-row reveal">
+        <div class="ritual-num">02</div>
+        <div class="ritual-body">
+          <h3 class="ritual-row-title">Consistência bate intensidade</h3>
+          <p class="ritual-row-text">Vitamina C todos os dias vale mais do que qualquer tratamento mensal. A pele não precisa de heroísmo — precisa de você, todos os dias, com calma.</p>
+        </div>
+        <ul class="ritual-steps">
+          <li>Vitamina C pela manhã, sobre pele limpa</li>
+          <li>Esfoliação suave 1–2× por semana</li>
+          <li>Sérum regenerador à noite</li>
+        </ul>
+      </div>
+      <div class="ritual-row reveal">
+        <div class="ritual-num">03</div>
+        <div class="ritual-body">
+          <h3 class="ritual-row-title">Ritual é sobre presença</h3>
+          <p class="ritual-row-text">Cinco minutos com atenção total valem mais do que trinta apressados. O autocuidado começa quando você para — literalmente.</p>
+        </div>
+        <ul class="ritual-steps">
+          <li>Esfoliante corporal 2× por semana</li>
+          <li>Fragrância como toque final</li>
+          <li>Massagem facial com óleo noturno</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEGUNDA FRASE ───────────────────────────── -->
+  <section class="phrase-section">
+    <div class="phrase-inner">
+      <p class="phrase-number reveal">— 002</p>
+      <p class="phrase-text reveal">
+        <em>Quanto tempo faz</em><br>
+        que você não priorizou<br>
+        <strong>você mesma?</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── DEPOIMENTOS ────────────────────────────── -->
+  <section class="testimonials-section" id="depoimentos">
+    <div class="testimonials-header">
+      <p class="ritual-eyebrow">O que elas dizem</p>
+      <h2 class="ritual-title">Vozes <em>reais</em></h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="tcard reveal">
+        <p class="tcard-text">"Depois de 3 meses seguindo a rotina que a Milena montou pra mim, meu espelho virou amigo."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar">A</div>
+          <div>
+            <div class="tcard-name">Ana Paula S.</div>
+            <div class="tcard-meta">Cliente há 2 anos · Pele mista</div>
+          </div>
+        </div>
+      </div>
+      <div class="tcard tcard-featured reveal">
+        <p class="tcard-text">"Ela não me vendeu produto. Me ensinou a cuidar de mim. Isso não tem preço."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar" style="background:rgba(255,255,255,.2)">C</div>
+          <div>
+            <div class="tcard-name">Carla Mendes</div>
+            <div class="tcard-meta">Cliente há 1 ano · Pele seca</div>
+          </div>
+        </div>
+      </div>
+      <div class="tcard reveal">
+        <p class="tcard-text">"Nunca pensei que ia me importar tanto com skincare. Hoje é o momento que mais gosto no dia."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar" style="background:#059669">J</div>
+          <div>
+            <div class="tcard-name">Juliana R.</div>
+            <div class="tcard-meta">Cliente há 8 meses · Pele oleosa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONSULTA ────────────────────────────────── -->
+  <section class="cta-section" id="consulta">
+    <div class="cta-inner">
+      <div>
+        <p class="cta-eyebrow">Gratuita · Personalizada · Sem enrolação</p>
+        <h2 class="cta-title">Reserve sua<br><em>consulta.</em></h2>
+        <p class="cta-text">15 minutos que podem mudar sua relação com o espelho. A Milena entende sua pele antes de indicar qualquer produto. Sem pressão. Sem roteiro de vendas.</p>
+      </div>
+      <div class="cta-right">
+        <button class="btn-whats" onclick="window.open('https://wa.me/5511999999999?text=Oi+Milena!+Gostaria+de+agendar+uma+consulta+gratuita.')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Falar com Milena no WhatsApp
+        </button>
+        <div class="cta-or">ou receba dicas por e-mail</div>
+        <input type="email" class="input-dark" placeholder="seu@email.com">
+        <button class="btn-email" onclick="this.textContent='Inscrita ✓'; this.style.color='#25D366'">Entrar na lista</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ──────────────────────────────────── -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">Milena Lima <em>Beauty</em></div>
+        <p class="footer-tagline">Consultora oficial Mary Kay. Beleza, autoestima e bem-estar para mulheres que se dedicam ao próprio cuidado.</p>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Produtos</div>
+        <ul>
+          <li><a href="#">Skincare</a></li>
+          <li><a href="#">Maquiagem</a></li>
+          <li><a href="#">Corpo &amp; Banho</a></li>
+          <li><a href="#">Fragrâncias</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Ritual</div>
+        <ul>
+          <li><a href="#ritual">Guia de skincare</a></li>
+          <li><a href="#ritual">Rotinas</a></li>
+          <li><a href="#depoimentos">Depoimentos</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Contato</div>
+        <ul>
+          <li><a href="#">WhatsApp</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">E-mail</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Milena Lima Beauty · Consultora Oficial Mary Kay</span>
+      <button class="footer-admin" onclick="window.location.href='login.html'" title="Área restrita">⚙</button>
+    </div>
+  </footer>
+
+  <script>
+    /* Nav compact ao rolar */
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('compact', window.scrollY > 80);
+    }, { passive: true });
+
+    /* Reveal on scroll */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

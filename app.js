@@ -828,27 +828,83 @@ function hvUpd() {
 }
 
 /* ── Solicitações (pedidos para Mary Kay) ────────── */
+let _solicFtr = '';
+
+function solcFtr(btn, val) {
+  _solicFtr = val;
+  document.querySelectorAll('.solic-fc').forEach(b => b.classList.toggle('on', b === btn));
+  rSolic();
+}
+
 function rSolic() {
   const el = $('stt');
   if (!el) return;
-  const stColors = { Pendente: 'xb-gold', Solicitado: 'xb-blue', Recebido: 'xb-green' };
-  if (!DB.solics.length) {
-    el.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#71717A;font-size:13px">Nenhuma solicitação cadastrada. Clique em "+ Solicitação" para adicionar.</td></tr>';
+
+  const busca = ($('solic-busca')?.value || '').toLowerCase().trim();
+  let items = [...DB.solics].reverse();
+  if (_solicFtr) items = items.filter(s => s.st === _solicFtr);
+  if (busca)     items = items.filter(s => s.nm.toLowerCase().includes(busca) || (s.obs||'').toLowerCase().includes(busca));
+
+  const stXb = { Pendente: 'xb-gold', Solicitado: 'xb-blue', Recebido: 'xb-green' };
+
+  if (!items.length) {
+    el.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:#94A3B8;font-size:13px">
+      ${busca || _solicFtr ? 'Nenhum resultado encontrado.' : 'Nenhuma solicitação ainda. Clique em <strong>+ Solicitação</strong> para adicionar.'}
+    </td></tr>`;
     return;
   }
-  el.innerHTML = [...DB.solics].reverse().map(s => `
+
+  el.innerHTML = items.map(s => `
     <tr>
-      <td>#${s.id}</td>
+      <td style="color:#94A3B8;font-size:12px">#${String(s.id).padStart(3,'0')}</td>
       <td class="cell-strong">${s.nm}</td>
       <td>${s.q} un.</td>
       <td>${s.pr ? brl(s.pr) : '—'}</td>
-      <td>${s.obs || '—'}</td>
+      <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.obs || '—'}</td>
       <td>${fdt(s.dt)}</td>
-      <td style="display:flex;gap:6px;align-items:center">
-        <select class="fi small-select" onchange="updSolicSt(${s.id}, this.value)">${['Pendente','Solicitado','Recebido'].map(x => `<option ${x === s.st ? 'selected' : ''}>${x}</option>`).join('')}</select>
+      <td><span class="xb ${stXb[s.st] || 'xb-gray'}">${s.st}</span></td>
+      <td class="table-actions">
+        <button class="eb small" onclick="editSolic(${s.id})">Editar</button>
         <button class="eb small" onclick="delSolic(${s.id})">Excluir</button>
       </td>
     </tr>`).join('');
+}
+
+function newSolic() {
+  if ($('sl-id'))    $('sl-id').value = '';
+  if ($('sl-nm'))    $('sl-nm').value = '';
+  if ($('sl-q'))     $('sl-q').value  = '1';
+  if ($('sl-pr'))    $('sl-pr').value = '';
+  if ($('sl-obs'))   $('sl-obs').value = '';
+  if ($('sl-st'))    $('sl-st').value = 'Pendente';
+  const row = $('sl-status-row'); if (row) row.style.display = 'none';
+  slSetSt(null, 'Pendente');
+  if ($('msolic-title'))    $('msolic-title').textContent    = 'Nova Solicitação';
+  if ($('msolic-save-btn')) $('msolic-save-btn').textContent = 'Criar solicitação';
+  openMod('msolic');
+}
+
+function editSolic(id) {
+  const s = DB.solics.find(x => x.id === id);
+  if (!s) return;
+  if ($('sl-id'))  $('sl-id').value  = s.id;
+  if ($('sl-nm'))  $('sl-nm').value  = s.nm;
+  if ($('sl-q'))   $('sl-q').value   = s.q;
+  if ($('sl-pr'))  $('sl-pr').value  = s.pr || '';
+  if ($('sl-obs')) $('sl-obs').value = s.obs || '';
+  if ($('sl-st'))  $('sl-st').value  = s.st;
+  const row = $('sl-status-row'); if (row) row.style.display = 'flex';
+  slSetSt(null, s.st);
+  if ($('msolic-title'))    $('msolic-title').textContent    = 'Editar Solicitação';
+  if ($('msolic-save-btn')) $('msolic-save-btn').textContent = 'Salvar alterações';
+  openMod('msolic');
+}
+
+function slSetSt(btn, val) {
+  if ($('sl-st')) $('sl-st').value = val;
+  document.querySelectorAll('#sl-status-row .pay-chip').forEach(b => {
+    b.classList.toggle('on', b.textContent.trim().includes(val));
+  });
 }
 
 function updSolicSt(id, st) {
@@ -868,19 +924,24 @@ function delSolic(id) {
 function saveSolic() {
   const nm = $('sl-nm')?.value.trim();
   if (!nm) { showToast('Informe o produto'); return; }
-  const q   = parseInt($('sl-q')?.value) || 1;
+  const eid = $('sl-id')?.value;
+  const q   = parseInt($('sl-q')?.value)   || 1;
   const pr  = parseFloat($('sl-pr')?.value) || null;
-  const obs = $('sl-obs')?.value.trim() || '';
-  const s   = { id: DB.nid.s++, nm, q, pr, obs, st: 'Pendente', dt: td() };
-  DB.solics.push(s);
+  const obs = $('sl-obs')?.value.trim()    || '';
+  const st  = $('sl-st')?.value            || 'Pendente';
+
+  if (eid) {
+    const s = DB.solics.find(x => x.id === parseInt(eid));
+    if (s) { Object.assign(s, { nm, q, pr, obs, st }); sbSync(() => SBSolics.upsert(s)); }
+    showToast('Solicitação atualizada ✓');
+  } else {
+    const s = { id: DB.nid.s++, nm, q, pr, obs, st: 'Pendente', dt: td() };
+    DB.solics.push(s);
+    sbSync(() => SBSolics.upsert(s));
+    showToast('Solicitação criada ✓');
+  }
   rSolic();
   closeMod('msolic');
-  $('sl-nm').value = '';
-  $('sl-q').value  = '1';
-  $('sl-pr').value = '';
-  $('sl-obs').value = '';
-  showToast('Solicitação criada!');
-  sbSync(() => SBSolics.upsert(s));
 }
 
 function updPS(id, st) {
@@ -950,32 +1011,24 @@ function rEst() {
       <span class="xb xb-gray">${list.length} produto${list.length!==1?'s':''}</span>
     </div>`;
     html += list.map(p => {
-      const max    = Math.max(p.st + 3, 10);
-      const pct    = p.st === 0 ? 0 : Math.min(100, Math.round((p.st / max) * 100));
-      const barClr = p.st === 0 ? '#EF4444' : p.st <= 5 ? '#D97706' : '#059669';
-      const stCls  = p.st === 0 ? 'xb-red' : p.st <= 5 ? 'xb-gold' : 'xb-green';
-      const stLbl  = p.st === 0 ? 'Esgotado' : p.st <= 5 ? 'Baixo' : 'OK';
-      const thumb  = p.img
+      const stCls = p.st === 0 ? 'xb-red' : p.st <= 5 ? 'xb-gold' : 'xb-green';
+      const stLbl = p.st === 0 ? 'Esgotado' : p.st <= 5 ? 'Baixo' : 'OK';
+      const dotClr= p.st === 0 ? '#EF4444' : p.st <= 5 ? '#D97706' : '#059669';
+      const thumb = p.img
         ? `<div class="est-thumb"><img src="${p.img}" alt="${p.nm}"></div>`
         : `<div class="est-thumb">${p.em || '📦'}</div>`;
       return `<div class="est-row" onclick="showProdDetail(${p.id})">
         ${thumb}
-        <div class="est-row-prod">
-          <div>
-            <div class="est-row-nm">${p.nm}${p.pd?` <span style="font-size:11px;color:var(--green);font-weight:600">🏷${brl(p.pd)}</span>`:''}</div>
-            <div class="est-row-cat">${cNm[p.cat]||p.cat}</div>
+        <div class="est-row-info">
+          <div class="est-row-nm">${p.nm}${p.pd ? ` <span class="est-promo-tag">🏷 ${brl(p.pd)}</span>` : ''}</div>
+          <div class="est-row-meta">${cNm[p.cat] || p.cat} · ${brl(p.pr)}</div>
+        </div>
+        <div class="est-row-right">
+          <div class="est-qty-badge" style="color:${dotClr}">
+            <span class="est-qty-dot" style="background:${dotClr}"></span>
+            ${p.st} un.
           </div>
-        </div>
-        <div class="est-row-price">${brl(p.pr)}</div>
-        <div class="est-row-stock">
-          <div class="est-st-bar"><div class="est-st-fill" style="width:${pct}%;background:${barClr}"></div></div>
-          <span class="est-st-num">${p.st} unidades</span>
-        </div>
-        <span class="xb ${stCls}">${stLbl}</span>
-        <div class="est-row-actions" onclick="event.stopPropagation()">
-          <input type="number" value="${p.st}" min="0" class="small-input" onchange="updSt(${p.id},this.value)" title="Ajustar estoque">
-          <button class="eb" onclick="editP(${p.id})">Editar</button>
-          <button class="est-detail-btn" onclick="event.stopPropagation();showProdDetail(${p.id})">Ver mais →</button>
+          <span class="xb ${stCls}">${stLbl}</span>
         </div>
       </div>`;
     }).join('');
@@ -1131,18 +1184,145 @@ function updSt(id, v) {
   if (p) { p.st = parseInt(v) || 0; rEst(); rDashLow(); rMet(); showToast('Estoque atualizado'); sbSync(() => SBProds.updateStock(id, p.st)); }
 }
 
+/* Paleta de cores para avatar (determinística pelo nome) */
+function _cliColor(nm) {
+  const palette = ['#2563EB','#7C3AED','#059669','#D97706','#DC2626','#0891B2','#9333EA','#16A34A'];
+  let h = 0; for (let i = 0; i < nm.length; i++) h = nm.charCodeAt(i) + ((h << 5) - h);
+  return palette[Math.abs(h) % palette.length];
+}
+
 function rClis() {
-  $('ctt').innerHTML = DB.clis.map(c => `
-    <tr>
-      <td>${c.nm}</td>
-      <td>${c.tel}</td>
-      <td>${c.em}</td>
-      <td>${c.ci}/${c.es}</td>
-      <td>${c.pe}</td>
-      <td>${brl(c.gasto)}</td>
+  const busca = ($('cli-busca')?.value || '').toLowerCase().trim();
+  let clis = [...DB.clis];
+  if (busca) clis = clis.filter(c =>
+    c.nm.toLowerCase().includes(busca) ||
+    (c.tel||'').includes(busca) ||
+    (c.em||'').toLowerCase().includes(busca)
+  );
+  clis.sort((a,b) => b.gasto - a.gasto);
+
+  if (!clis.length) {
+    $('ctt').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:#94A3B8;font-size:13px">${busca ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado ainda.'}</td></tr>`;
+    return;
+  }
+
+  $('ctt').innerHTML = clis.map(c => {
+    const ini   = c.nm.trim()[0]?.toUpperCase() || '?';
+    const color = _cliColor(c.nm);
+    const tel   = c.tel ? `<a href="tel:${c.tel}" onclick="event.stopPropagation()" style="color:inherit">${c.tel}</a>` : '—';
+    return `<tr style="cursor:pointer" onclick="openCliProfile(${c.id})">
+      <td>
+        <div class="cli-row-name">
+          <span class="cli-avatar" style="background:${color}">${ini}</span>
+          <div>
+            <div class="cli-row-nm">${c.nm}</div>
+            ${c.em ? `<div class="cli-row-sub">${c.em}</div>` : ''}
+          </div>
+        </div>
+      </td>
+      <td>${tel}</td>
+      <td>${c.ci ? `${c.ci}${c.es ? '/' + c.es : ''}` : '—'}</td>
+      <td>${c.pe || '—'}</td>
+      <td style="font-weight:600">${brl(c.gasto)}</td>
       <td>${fdt(c.ult)}</td>
-      <td class="table-actions"><button class="eb small" onclick="editCli(${c.id})">Editar</button></td>
-    </tr>`).join('');
+      <td class="table-actions" onclick="event.stopPropagation()">
+        <button class="eb small" onclick="openCliProfile(${c.id})">Ver perfil</button>
+        <button class="eb small" onclick="editCli(${c.id})">Editar</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Modal perfil largo ───────────────────────────── */
+let _mcpId = null;
+
+function openCliProfile(id) {
+  const c = DB.clis.find(x => x.id === id);
+  if (!c) return;
+  _mcpId = id;
+
+  /* Avatar + Hero */
+  const color = _cliColor(c.nm);
+  const ini   = c.nm.trim()[0]?.toUpperCase() || '?';
+  const av = $('mcp-avatar-big');
+  if (av) { av.textContent = ini; av.style.background = color; }
+
+  /* Hero background sutil baseado na cor */
+  const hero = $('mcp-hero');
+  if (hero) hero.style.background = `linear-gradient(135deg, ${color}12 0%, ${color}06 100%)`;
+
+  /* Nome + subtítulo no hero */
+  if ($('mcp-nm'))       $('mcp-nm').textContent      = c.nm;
+  const locStr = [c.ci, c.es].filter(Boolean).join('/');
+  if ($('mcp-hero-sub')) $('mcp-hero-sub').textContent = [locStr, c.pe].filter(Boolean).join(' · ') || 'Cliente';
+
+  /* Detalhes de contato na sidebar */
+  const mkRow = (svg, val) => `<div class="mcp-info-row">${svg}<span class="mcp-info-val">${val}</span></div>`;
+  const phoneIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.45 19.79 19.79 0 0 1 1.58 4.81 2 2 0 0 1 3.56 2.63h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.2A16 16 0 0 0 13.8 16.1l.9-.89a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.42 17.5z"/></svg>`;
+  const emailIco = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`;
+  const locIco   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const bthIco   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+  const infoRows = [
+    c.tel ? mkRow(phoneIco, c.tel) : '',
+    c.em  ? mkRow(emailIco, c.em)  : '',
+    locStr ? mkRow(locIco, locStr)  : '',
+    c.an  ? mkRow(bthIco, fdt(c.an)) : '',
+  ].filter(Boolean).join('');
+  if ($('mcp-info')) $('mcp-info').innerHTML = infoRows || `<span style="font-size:12px;color:#94A3B8">Sem contato cadastrado</span>`;
+
+  /* Stats no hero */
+  const peds  = DB.peds.filter(p => p.cid === id);
+  const tkMed = peds.length ? c.gasto / peds.length : 0;
+  if ($('mcp-stats')) $('mcp-stats').innerHTML = `
+    <div class="mcp-stat"><div class="mcp-stat-val">${brl(c.gasto)}</div><div class="mcp-stat-lbl">Total gasto</div></div>
+    <div class="mcp-stat"><div class="mcp-stat-val">${peds.length}</div><div class="mcp-stat-lbl">Pedidos</div></div>
+    <div class="mcp-stat"><div class="mcp-stat-val">${brl(tkMed)}</div><div class="mcp-stat-lbl">Ticket médio</div></div>
+    <div class="mcp-stat"><div class="mcp-stat-val">${fdt(c.ult)}</div><div class="mcp-stat-lbl">Último pedido</div></div>`;
+
+  /* Tags */
+  const tags = [c.pe ? { t: c.pe, skin: true } : null, { t: peds.length ? 'Ativa' : 'Sem compras', skin: false }].filter(Boolean);
+  if ($('mcp-tags')) $('mcp-tags').innerHTML = tags.map(({ t, skin }) =>
+    `<span class="mcp-tag${skin ? ' mcp-tag-skin' : ''}">${t}</span>`
+  ).join('');
+
+  /* Histórico */
+  const stCl = { Pendente:'xb-gold', Confirmado:'xb-blue', Enviado:'xb-gray', Entregue:'xb-green', Recebido:'xb-green' };
+  const histEl = $('mcp-hist-list');
+  if (histEl) {
+    if (!peds.length) {
+      histEl.innerHTML = `<div class="mcp-hist-empty">Nenhuma compra registrada ainda.</div>`;
+    } else {
+      const sorted = [...peds].sort((a,b) => (b.dt||'').localeCompare(a.dt||''));
+      histEl.innerHTML = sorted.map(p => {
+        const prodNm = p.itens?.length ? p.itens.map(i => i.nm).join(', ') : (p.prod || '—');
+        const pagCls = p.pag === 'Fiado' ? 'color:#D97706;font-weight:600' : '';
+        return `<div class="mcp-hist-row">
+          <span class="mcp-hist-date">${fdt(p.dt)}</span>
+          <span class="mcp-hist-prod" title="${prodNm}">${prodNm}</span>
+          <span class="mcp-hist-val">${brl(p.tot)}</span>
+          <span class="mcp-hist-pag" style="${pagCls}">${p.pag||'—'}</span>
+          <span class="mcp-hist-st"><span class="xb ${stCl[p.st]||'xb-gray'}">${p.st||'—'}</span></span>
+        </div>`;
+      }).join('');
+    }
+  }
+  if ($('mcp-hist-count')) $('mcp-hist-count').textContent = peds.length ? `${peds.length} pedido${peds.length !== 1 ? 's' : ''}` : '';
+
+  /* Sumário */
+  const fiado = peds.filter(p => p.pag === 'Fiado').reduce((a,b) => a+b.tot, 0);
+  if ($('mcp-hist-summary')) $('mcp-hist-summary').innerHTML = fiado > 0
+    ? `<span>Total gasto: <strong>${brl(c.gasto)}</strong></span><span class="mcp-hist-fiado">⚠ Fiado em aberto: ${brl(fiado)}</span>`
+    : `<span>Total gasto: <strong>${brl(c.gasto)}</strong></span><span>Ticket médio: <strong>${brl(tkMed)}</strong></span>`;
+
+  /* Botões de ação */
+  const editBtn = $('mcp-edit-btn');
+  const delBtn  = $('mcp-del-btn');
+  const saleBtn = $('mcp-sale-btn');
+  if (editBtn) editBtn.onclick = () => { closeMod('mcp'); editCli(id); };
+  if (delBtn)  delBtn.onclick  = () => { closeMod('mcp'); delCli(id); };
+  if (saleBtn) saleBtn.onclick = () => { closeMod('mcp'); if (window.innerWidth <= 768) mobNav('nvenda'); else epage('nvenda', null); };
+
+  openMod('mcp');
 }
 
 function rKat() {
@@ -1538,6 +1718,7 @@ function showSaleSuccess(ped, cli, tot, parc) {
   _lastSalePed = ped;
   _lastSaleCli = cli;
 
+  playBeep('sale');
   const el = $('sale-success');
   if (!el) { showCupom(ped, cli, null); return; }
 
@@ -1549,11 +1730,10 @@ function showSaleSuccess(ped, cli, tot, parc) {
   if (amt) amt.textContent = brl(tot);
   if (sub) sub.textContent = parc > 1 ? `${parc}× de ${brl(tot/parc)}` : '';
 
-  /* Reseta animações reiniciando os elementos */
-  const coins = el.querySelectorAll('.ss-coin');
-  coins.forEach(c => { c.style.animation = 'none'; void c.offsetWidth; c.style.animation = ''; });
-  const vault = el.querySelector('.ss-vault');
-  if (vault) { vault.style.animation = 'none'; void vault.offsetWidth; vault.style.animation = ''; }
+  /* Reseta todas as animações para re-executar corretamente */
+  el.querySelectorAll('.ss-coin,.ss-vault,.ss-ring,.ss-particle,.ss-check-badge').forEach(e => {
+    e.style.animation = 'none'; void e.offsetWidth; e.style.animation = '';
+  });
 
   el.classList.add('on');
   document.body.style.overflow = 'hidden';
@@ -1687,68 +1867,96 @@ function showCupom(ped, cli, prod) {
   const inner = $('cupom-inner');
   if (!inner) return;
 
-  const now = new Date();
-  const hora = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  const parcNote = ped.parc > 1 ? `${ped.parc}× de ${brl(ped.tot / ped.parc)}` : '';
-  const dtpagFmt = ped.dtpag ? fdt(ped.dtpag) : fdt(ped.dt);
+  const now    = new Date();
+  const hora   = now.toTimeString().slice(0,5);
+  const numPed = String(ped.id).padStart(6, '0');
+  const dtpagFmt = fdt(ped.dtpag || ped.dt);
   const isPending = ped.dtpag && ped.dtpag > td();
-  const statusHtml = isPending
-    ? `<span class="cupom-status cupom-status-pend">Aguardando pagamento</span>`
-    : `<span class="cupom-status cupom-status-confirm">Pagamento confirmado</span>`;
+  const wRaw = (DB.settings?.whatsapp || '').replace(/\D/g, '');
+  const wFmt = wRaw.length >= 11
+    ? `(${wRaw.slice(0,2)}) ${wRaw.slice(2,7)}-${wRaw.slice(7)}`
+    : wRaw;
 
-  inner.innerHTML = `
-    <span class="cupom-sym">✦</span>
-    <div class="cupom-brand">Milena Lima <em>Beauty</em></div>
-    <div class="cupom-consult">Consultora Oficial Mary Kay</div>
-    <div class="cupom-divider"></div>
-
-    <div class="cupom-mid">
-      <div class="cupom-tag">Comprovante de Venda</div>
-      <div class="cupom-num">#${String(ped.id).padStart(3,'0')}</div>
-      <div class="cupom-datetime">${fdt(ped.dt)} · ${hora}</div>
-    </div>
-
-    <div class="cupom-divider-dashed"></div>
-    <div class="cupom-section">
-      <div class="cupom-row"><span class="cupom-lbl">Cliente</span><span class="cupom-val">${cli.nm}</span></div>
-    </div>
-
-    <div class="cupom-divider-dashed"></div>
-    ${(() => {
-      if (ped.itens && ped.itens.length) {
-        return ped.itens.map((i, idx) => `
-          <div class="cupom-prod-row">
-            <div class="cupom-prod-nm">${i.em || ''} ${i.nm}</div>
-            <div class="cupom-prod-meta">${i.q} unidade${i.q > 1 ? 's' : ''} &middot; ${brl(i.pr)} cada &middot; ${brl(i.sub)}</div>
-          </div>${idx < ped.itens.length - 1 ? '<div class="cupom-divider-dashed" style="margin:4px 0"></div>' : ''}`).join('');
-      }
-      return `<div class="cupom-prod-row">
-        <div class="cupom-prod-nm">${prod?.em || ''} ${ped.prod}</div>
-        <div class="cupom-prod-meta">${ped.q} unidade${ped.q > 1 ? 's' : ''}${prod?.pr ? ' &middot; ' + brl(prod.pr) + ' cada' : ''}</div>
+  /* Itens */
+  const itensHtml = ped.itens && ped.itens.length
+    ? ped.itens.map((i, idx) => `
+        <div class="cpt-item">
+          <div class="cpt-item-nm">${i.em ? i.em + ' ' : ''}${i.nm}</div>
+          <div class="cpt-item-det">
+            <span>${i.q} un × ${brl(i.pr)}</span>
+            <span class="cpt-item-sub">${brl(i.sub)}</span>
+          </div>
+        </div>${idx < ped.itens.length - 1 ? '<div class="cpt-sep-thin"></div>' : ''}`).join('')
+    : `<div class="cpt-item">
+        <div class="cpt-item-nm">${ped.prod}</div>
+        <div class="cpt-item-det">
+          <span>${ped.q} un${prod?.pr ? ' × ' + brl(prod.pr) : ''}</span>
+          <span class="cpt-item-sub">${brl(ped.tot)}</span>
+        </div>
       </div>`;
-    })()}
 
-    <div class="cupom-divider-dashed"></div>
-    <div class="cupom-section">
-      <div class="cupom-row"><span class="cupom-lbl">Pagamento</span><span class="cupom-val">${ped.pag}</span></div>
-      <div class="cupom-row"><span class="cupom-lbl">Data de pagamento</span><span class="cupom-val">${dtpagFmt}</span></div>
+  const parcHtml = ped.parc > 1
+    ? `<div class="cpt-row"><span>Parcelas</span><span>${ped.parc}× de ${brl(ped.tot / ped.parc)}</span></div>` : '';
+
+  inner.innerHTML = `<div class="cpt-sheet">
+
+    <div class="cpt-header">
+      <div class="cpt-logo">✦</div>
+      <div class="cpt-brand">Milena Lima <em>Beauty</em></div>
+      <div class="cpt-consult">Consultora Oficial Mary Kay</div>
+      ${wFmt ? `<div class="cpt-contact">📲 ${wFmt}</div>` : ''}
     </div>
 
-    <div class="cupom-divider"></div>
-    <div class="cupom-total-area">
-      <span class="cupom-total-lbl">Total</span>
-      <div style="text-align:right">
-        <div class="cupom-total-val">${brl(ped.tot)}</div>
-        ${parcNote ? `<div class="cupom-parc-note">${parcNote}</div>` : ''}
+    <div class="cpt-sep-solid"></div>
+
+    <div class="cpt-doc-hd">
+      <span class="cpt-doc-title">COMPROVANTE DE VENDA</span>
+      <div class="cpt-doc-meta">
+        <span>Pedido Nº ${numPed}</span>
+        <span>${fdt(ped.dt)} ${hora}</span>
       </div>
     </div>
-    <div style="text-align:right">${statusHtml}</div>
 
-    <div class="cupom-thanks">
-      <p class="cupom-thanks-msg">"Obrigada pela sua escolha.<br>Você merece o melhor!"</p>
-      <p class="cupom-thanks-foot">milena.lima · Mary Kay · Qualquer dúvida, chame no WhatsApp 💗</p>
+    <div class="cpt-sep-dashed"></div>
+
+    <div class="cpt-cli-row">
+      <span class="cpt-field-lbl">CLIENTE</span>
+      <span class="cpt-field-val">${cli.nm}</span>
     </div>
-  `;
+
+    <div class="cpt-sep-dashed"></div>
+
+    <div class="cpt-itens-hd">ITENS</div>
+    ${itensHtml}
+
+    <div class="cpt-sep-dashed"></div>
+
+    <div class="cpt-totais">
+      <div class="cpt-row cpt-row-total"><span>TOTAL</span><span>${brl(ped.tot)}</span></div>
+    </div>
+
+    <div class="cpt-sep-dashed"></div>
+
+    <div class="cpt-pgto">
+      <div class="cpt-row"><span>Pagamento</span><span>${ped.pag}</span></div>
+      ${parcHtml}
+      <div class="cpt-row"><span>Data de pagamento</span><span>${dtpagFmt}</span></div>
+    </div>
+
+    <div class="cpt-sep-solid"></div>
+
+    <div class="cpt-status ${isPending ? 'cpt-status-pend' : 'cpt-status-ok'}">
+      ${isPending ? '⏳  AGUARDANDO PAGAMENTO' : '✓  PAGAMENTO CONFIRMADO'}
+    </div>
+
+    <div class="cpt-sep-solid"></div>
+
+    <div class="cpt-footer">
+      <div class="cpt-footer-msg">"Obrigada pela sua escolha!<br>Você merece o melhor 💗"</div>
+      <div class="cpt-footer-nd">Documento sem valor fiscal</div>
+    </div>
+
+  </div>`;
 
   openMod('cupom');
 }
@@ -1877,6 +2085,11 @@ function saveProd() {
     bc: ($('pe-bc')?.value || '').replace(/\D/g,'') || null,
   };
   if (!o.nm) { showToast('Informe o nome'); return; }
+  /* Bloqueia barcode duplicado em novos produtos */
+  if (!eid && o.bc) {
+    const dup = DB.prods.find(p => p.bc && p.bc === o.bc);
+    if (dup) { showExistingProductModal(dup); return; }
+  }
   let saved;
   if (eid) {
     const p = DB.prods.find(x => x.id === parseInt(eid));
@@ -1987,6 +2200,17 @@ function saveCli() {
   showToast(eid ? 'Cliente atualizado' : 'Cliente cadastrado');
 }
 
+function delCli(id) {
+  const c = DB.clis.find(x => x.id === id);
+  if (!c) return;
+  askConfirm({ title: 'Excluir cliente?', msg: `<strong>${c.nm}</strong> será removido permanentemente.`, type: 'danger', btnLabel: 'Excluir' }, () => {
+    DB.clis = DB.clis.filter(x => x.id !== id);
+    rClis(); rNV();
+    showToast('Cliente excluído');
+    sbSync(() => SBClis.delete(id));
+  });
+}
+
 function editPed(id) {
   const p = DB.peds.find(x => x.id === id);
   if (!p) return;
@@ -2047,21 +2271,20 @@ function savePedEdit() {
 
 /* askConfirm — type: 'danger' | 'warn' | 'info' */
 function askConfirm(opts, onYes) {
-  /* compatibilidade: aceita (msg, fn) antigo */
   if (typeof opts === 'string') opts = { title:'Confirmar', msg: opts, type:'info', btnLabel:'Confirmar' };
-  const { title='Confirmar', msg='', type='info', btnLabel='Confirmar' } = opts;
+  const { title='Confirmar', msg='', type='info', btnLabel='Confirmar', altLabel, onAlt } = opts;
 
   const iconEl  = $('mconf-icon');
   const wrapEl  = $('mconf-icon-wrap');
   const titleEl = $('mconf-title');
   const msgEl   = $('mconf-msg');
   const okBtn   = $('mconf-ok');
+  const altBtn  = $('mconf-alt');
 
-  /* Ícone por tipo */
   const icons = {
-    danger: `<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`,            /* trash */
-    warn:   `<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`, /* warning */
-    info:   `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`, /* check */
+    danger: `<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`,
+    warn:   `<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+    info:   `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`,
   };
 
   if (iconEl)  iconEl.innerHTML = icons[type] || icons.info;
@@ -2074,7 +2297,36 @@ function askConfirm(opts, onYes) {
     okBtn.textContent = btnLabel;
     okBtn.onclick = () => { closeMod('mconf'); onYes(); };
   }
+  /* Botão alternativo (ex: "Fazer venda" junto com "Ver produto") */
+  if (altBtn) {
+    if (altLabel && typeof onAlt === 'function') {
+      altBtn.style.display = '';
+      altBtn.textContent = altLabel;
+      altBtn.onclick = () => { closeMod('mconf'); onAlt(); };
+    } else {
+      altBtn.style.display = 'none';
+    }
+  }
   openMod('mconf');
+}
+
+/* Mostra modal quando produto já existe pelo barcode */
+function showExistingProductModal(prod) {
+  askConfirm({
+    title: 'Produto já cadastrado',
+    msg:   `<strong>${prod.nm}</strong> já usa este código de barras.<br>O que deseja fazer?`,
+    type:  'warn',
+    btnLabel: '✏️ Ver / Editar',
+    altLabel: '🛒 Fazer venda',
+    onAlt: () => {
+      closeMod('mp');
+      if (window.innerWidth <= 768) mobNav('nvenda'); else epage('nvenda', null);
+      setTimeout(() => {
+        const vp = $('vp');
+        if (vp) { vp.value = prod.id; vUpd(); }
+      }, 200);
+    }
+  }, () => { closeMod('mp'); editP(prod.id); });
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2175,9 +2427,34 @@ function _showScanError(msg) {
   setTimeout(() => { if (si) { si.focus(); si.scrollIntoView({ behavior:'smooth', block:'center' }); } }, 400);
 }
 
+/* ── Sons do sistema ───────────────────────────────── */
+function playBeep(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (type === 'sale') {
+      [[880,0],[1175,.1],[1320,.2]].forEach(([f,t]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(.22, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + t + .18);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + .22);
+      });
+    } else {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine'; o.frequency.value = 1760;
+      g.gain.setValueAtTime(.25, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .13);
+      o.start(); o.stop(ctx.currentTime + .15);
+    }
+  } catch(e) {}
+}
+
 function onScanResult(code) {
   if (_scanCooldown) return;
   _scanCooldown = true;
+  playBeep('scan');
 
   const clean = code.replace(/\D/g, '');
 
@@ -2194,8 +2471,7 @@ function onScanResult(code) {
     closeScanner();
     const existing = DB.prods.find(p => p.bc && p.bc.replace(/\D/g,'') === clean);
     if (existing) {
-      showToast(`Produto encontrado: ${existing.nm}`);
-      editP(existing.id);
+      showExistingProductModal(existing);
     } else {
       /* Reset do modal e pré-preenche código */
       $('pe-id').value = '';
@@ -2213,6 +2489,33 @@ function onScanResult(code) {
   /* ── Busca produto pelo EAN-13 ── */
   const prod = DB.prods.find(p => p.bc && p.bc.replace(/\D/g,'') === clean);
 
+  /* Scanner do celular com modal fechado → fluxo direto no PC */
+  const scannerOpen = $('mscanner')?.classList.contains('on');
+  if (!scannerOpen) {
+    _scanCooldown = false;
+    if (!prod) {
+      /* Produto não encontrado — oferecer cadastro */
+      askConfirm({
+        title: 'Produto não encontrado',
+        msg:   `Código <strong>${clean}</strong> não está cadastrado.<br>Deseja cadastrar este produto agora?`,
+        type:  'info',
+        btnLabel: '+ Cadastrar',
+      }, () => {
+        $('pe-id').value = '';
+        ['pe-nm','pe-em','pe-pr','pe-pd','pe-img','pe-desc','pe-feats','pe-em-m','pe-img-m'].forEach(i => { if ($(i)) $(i).value = ''; });
+        $('pe-st').value = '0';
+        if ($('pe-bc')) $('pe-bc').value = clean;
+        if ($('mp-title')) $('mp-title').textContent = 'Novo Produto';
+        if ($('mp-sub'))   $('mp-sub').textContent   = `Código: ${clean}`;
+        openMod('mp');
+      });
+    } else {
+      showExistingProductModal(prod);
+    }
+    return;
+  }
+
+  /* Scanner aberto normalmente */
   const ra = $('scan-result-area'), na = $('scan-notfound-area');
   if (!prod) {
     if (na) { na.style.display = 'flex'; $('scan-notfound-text').textContent = `Não encontrado: ${clean}`; }
@@ -2234,12 +2537,10 @@ function onScanResult(code) {
   setTimeout(() => {
     closeScanner();
     if (_scanMode === 'venda') {
-      /* Seleciona produto e adiciona ao carrinho */
       const vp = $('vp');
       if (vp) { vp.value = prod.id; vUpd(); nvAddItem(); }
       showToast(`✓ ${prod.nm} adicionado ao carrinho`);
     } else {
-      /* Vai para estoque e destaca o produto */
       epage('estoque', null);
       const busca = $('est-busca');
       if (busca) { busca.value = prod.nm; rEst(); }
@@ -2254,6 +2555,7 @@ async function closeScanner() {
     try { _scanner.clear(); }     catch(e) {}
     _scanner = null;
   }
+  closePhoneScanner();
   $('mscanner').classList.remove('on');
   document.body.style.overflow = '';
   _scanCooldown = false;
@@ -2267,6 +2569,171 @@ function openScannerForField() { openScanner('field'); }
 
 /* Abre scanner para cadastrar produto novo pelo código */
 function openScannerForNewProd() { openScanner('new-prod'); }
+
+/* ── Scanner por celular — sessão persistente ────────── */
+let _phoneChannel   = null;
+let _phonePanelOpen = false;
+let _phoneConnected = false;
+let _phoneSid       = null;
+let _phoneQrUrl     = null;
+
+/* Descobre o IP real da LAN via WebRTC (evita localhost no QR code) */
+function _getLocalIP() {
+  return new Promise(resolve => {
+    const pc   = new RTCPeerConnection({ iceServers: [] });
+    const seen = new Set();
+    pc.createDataChannel('');
+    pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => resolve(null));
+    pc.onicecandidate = ({ candidate }) => {
+      if (!candidate) { pc.close(); resolve(null); return; }
+      const m = candidate.candidate.match(/(\d{1,3}(?:\.\d{1,3}){3})/);
+      if (m && !seen.has(m[1])) {
+        seen.add(m[1]);
+        /* Pega primeiro IP que não seja loopback nem link-local */
+        if (!m[1].startsWith('127.') && !m[1].startsWith('169.254')) {
+          pc.close(); resolve(m[1]);
+        }
+      }
+    };
+    setTimeout(() => { try { pc.close(); } catch(e) {} resolve(null); }, 2000);
+  });
+}
+
+async function _renderQR(url) {
+  const canvas = $('scn-qr-canvas');
+  const img    = $('scn-qr-img');
+  const urlEl  = $('scn-qr-url');
+
+  /* Tenta QRCode.toCanvas (lib carregada no <head>) */
+  if (window.QRCode && canvas) {
+    try {
+      await QRCode.toCanvas(canvas, url, {
+        width: 200, margin: 1,
+        color: { dark: '#111111', light: '#ffffff' }
+      });
+      canvas.style.display = 'block';
+      if (img) img.style.display = 'none';
+      return;
+    } catch(e) { console.warn('[QR canvas]', e); }
+  }
+
+  /* Fallback: imagem via API pública */
+  if (img) {
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(url)}`;
+    img.style.display = 'block';
+    if (canvas) canvas.style.display = 'none';
+  }
+
+  /* Fallback extra: mostra URL como texto */
+  if (urlEl) { urlEl.textContent = url; urlEl.style.display = 'block'; }
+}
+
+function _phoneSetStatus(state, msg) {
+  const dot = $('scn-phone-dot');
+  const txt = $('scn-phone-status-txt');
+  const btn = $('scn-phone-toggle');
+  if (dot) dot.className = state === 'connected' ? 'scn-phone-dot connected'
+                         : state === 'received'  ? 'scn-phone-dot received'
+                         : 'scn-phone-dot';
+  if (txt && msg) txt.textContent = msg;
+  if (btn) btn.classList.toggle('phone-live', state === 'connected' || state === 'received');
+}
+
+async function togglePhoneScanner() {
+  if (_phonePanelOpen) { _hidePhonePanel(); return; }
+
+  if (!window._sbClient || window._sbClient._local) {
+    showToast('Scanner por celular requer conexão com o Supabase'); return;
+  }
+
+  _phonePanelOpen = true;
+  const btn = $('scn-phone-toggle');
+  if (btn) btn.classList.add('active');
+
+  const cam = document.querySelector('.scn-camera-wrap');
+  const panel = $('scn-phone-panel');
+  if (cam)   cam.style.display   = 'none';
+  if (panel) panel.style.display = 'flex';
+
+  if (_scanner) {
+    try { await _scanner.stop(); } catch(e) {}
+    try { _scanner.clear(); }     catch(e) {}
+    _scanner = null;
+  }
+
+  /* Sessão já existe — reusa QR e canal */
+  if (_phoneChannel && _phoneSid) {
+    await _renderQR(_phoneQrUrl);
+    _phoneSetStatus(_phoneConnected ? 'connected' : 'waiting',
+      _phoneConnected ? '📱 Celular conectado — pronto para escanear' : 'Aguardando celular...');
+    return;
+  }
+
+  /* Nova sessão */
+  _phoneSid       = [...Array(14)].map(() => Math.random().toString(36)[2]).join('');
+  _phoneConnected = false;
+
+  let baseUrl;
+  try {
+    const r = await fetch('http://localhost:3001/api/tunnel');
+    const j = await r.json();
+    baseUrl = j.url || null;
+  } catch(e) { baseUrl = null; }
+
+  if (!baseUrl) {
+    const host = await _getLocalIP() || location.hostname;
+    baseUrl = `https://${host}:${location.port}`;
+  }
+  _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}`;
+  await _renderQR(_phoneQrUrl);
+  _phoneSetStatus('waiting', 'Aguardando celular...');
+
+  _phoneChannel = window._sbClient.channel(`erp-scan-${_phoneSid}`, {
+    config: { broadcast: { self: false } }
+  });
+
+  _phoneChannel
+    .on('broadcast', { event: 'phone-connected' }, () => {
+      _phoneConnected = true;
+      _phoneSetStatus('connected', '📱 Celular conectado — pronto para escanear');
+    })
+    .on('broadcast', { event: 'barcode' }, ({ payload }) => {
+      if (!payload?.code) return;
+      const txt = $('scn-phone-status-txt');
+      _phoneSetStatus('received');
+      if (txt) txt.textContent = `✓ ${payload.code}`;
+      setTimeout(() => { if (_phoneConnected) _phoneSetStatus('connected'); }, 700);
+      onScanResult(payload.code);
+    })
+    .subscribe();
+}
+
+function _hidePhonePanel() {
+  _phonePanelOpen = false;
+  const cam   = document.querySelector('.scn-camera-wrap');
+  const panel = $('scn-phone-panel');
+  const btn   = $('scn-phone-toggle');
+  if (panel) panel.style.display = 'none';
+  if (cam)   cam.style.display   = '';
+  if (btn)   { btn.classList.remove('active'); btn.classList.toggle('phone-live', _phoneConnected); }
+}
+
+/* Desconecta o celular explicitamente */
+function disconnectPhone() {
+  if (_phoneChannel) { try { _phoneChannel.unsubscribe(); } catch(e) {} _phoneChannel = null; }
+  _phonePanelOpen = _phoneConnected = false;
+  _phoneSid = _phoneQrUrl = null;
+  const btn = $('scn-phone-toggle');
+  if (btn) btn.classList.remove('active', 'phone-live');
+  const cam = document.querySelector('.scn-camera-wrap');
+  const panel = $('scn-phone-panel');
+  if (panel) panel.style.display = 'none';
+  if (cam)   cam.style.display   = '';
+  showToast('Celular desconectado');
+}
+
+/* Chamado ao fechar o modal scanner — apenas esconde o painel */
+function closePhoneScanner() { if (_phonePanelOpen) _hidePhonePanel(); }
 
 /* Input manual de código de barras no scanner */
 function scanManualInput(val) {
@@ -2600,12 +3067,15 @@ function saveLojaSettings() {
 document.addEventListener('DOMContentLoaded', async () => {
   if (!$('ep-dashboard')) return;
 
-  // Verificar sessão Supabase (só se configurado)
-  if (window._sbClient) {
+  // Modo local: pula auth, exibe badge na sidebar
+  if (window._localMode) {
+    const emailEl = $('user-email');
+    if (emailEl) { emailEl.textContent = '🧪 Modo Local'; emailEl.style.color = '#F59E0B'; }
+  } else if (window._sbClient) {
+    // Verificar sessão Supabase (só se configurado e não for modo local)
     try {
       const session = await SBAuth.getSession();
       if (!session) { window.location.replace('login.html'); return; }
-      // Exibir email do usuário na sidebar
       const emailEl = $('user-email');
       if (emailEl && session.user?.email) emailEl.textContent = session.user.email;
     } catch(e) {
