@@ -154,7 +154,8 @@ function _rowToProduct(r) {
     st: r.st, dt: r.dt || '', img: r.img || '',
     bump: r.bump ?? null,
     desc:  r.description || '',
-    feats: r.feats || []
+    feats: r.feats || [],
+    bc: r.bc || null,
   };
 }
 
@@ -165,7 +166,8 @@ function _productToRow(p) {
     st: p.st, dt: p.dt || '', img: p.img || '',
     bump: p.bump ?? null,
     description: p.desc || '',
-    feats: p.feats || []
+    feats: p.feats || [],
+    bc: p.bc || null,
   };
 }
 

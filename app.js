@@ -109,9 +109,13 @@ function epage(id, el) {
   else document.querySelectorAll('.nav-link').forEach(l => { if (l.getAttribute('onclick')?.includes("'" + id + "'")) l.classList.add('on'); });
   const tt = { dashboard: 'Dashboard', receber: 'A Receber', historico: 'Histórico de Vendas', solicita: 'Solicitações', nvenda: 'Nova Venda', estoque: 'Estoque', clientes: 'Clientes', financeiro: 'Financeiro', catalogo: 'Catálogo', extrato: 'Extrato Mensal', relatorios: 'Relatórios', loja: 'Configurar Loja' };
   $('etitle').textContent = tt[id] || id;
+  if (id === 'dashboard') rMet();
   if (id === 'financeiro') rFin();
   if (id === 'relatorios') rRel();
   if (id === 'nvenda') rNV();
+  if (id === 'estoque')  rEst();
+  if (id === 'clientes') rClis();
+  if (id === 'catalogo') rKat();
   if (id === 'loja') rLoja();
   if (id === 'receber')  rReceber();
   if (id === 'historico') rHistorico();
@@ -134,6 +138,16 @@ function openMod(id) {
     const pb = $('pe-bump');
     if (pb) pb.innerHTML = '<option value="">Nenhum</option>' +
       DB.prods.filter(p => p.id !== currentId).map(p => `<option value="${p.id}">${p.em} ${p.nm}</option>`).join('');
+    /* Novo produto: reset title + preview */
+    if (!currentId) {
+      if ($('mp-title')) $('mp-title').textContent = 'Novo Produto';
+      if ($('mp-sub'))   $('mp-sub').textContent   = 'Preencha os dados abaixo';
+      if ($('mp-preview-img')) { $('mp-preview-img').style.display = 'none'; $('mp-preview-img').src = ''; }
+      if ($('mp-preview-em'))  { $('mp-preview-em').style.display = 'block'; $('mp-preview-em').textContent = '📦'; }
+      if ($('mp-img-hint'))    $('mp-img-hint').textContent = '';
+    }
+    /* Wizard: sempre começa na etapa 1 no mobile */
+    mpGoStep(1);
   }
   $(id).classList.add('on');
   document.body.style.overflow = 'hidden';
@@ -402,28 +416,288 @@ function renderAll() {
   setTimeout(rDashCharts, 50);
 }
 
+/* Greeting com nome real do usuário logado */
+async function rGreeting() {
+  const h     = new Date().getHours();
+  const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  const emoji = h < 12 ? '☀️' : h < 18 ? '👋' : '🌙';
+
+  /* Tenta pegar o nome do usuário logado via Supabase */
+  let nome = 'você';
+  try {
+    if (typeof SBAuth !== 'undefined') {
+      const session = await SBAuth.getSession();
+      if (session?.user) {
+        const meta = session.user.user_metadata || {};
+        nome = meta.full_name || meta.name ||
+               (session.user.email ? session.user.email.split('@')[0] : 'você');
+        /* Capitaliza primeira letra */
+        nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+      }
+    }
+  } catch(e) {}
+
+  /* Fallback: usa nome das configurações da loja */
+  if (nome === 'você' && DB.settings?.heroKicker) {
+    nome = DB.settings.heroKicker.replace('Consultora Oficial Mary Kay','').replace('Consultora','').trim().split(' ')[0] || 'você';
+  }
+
+  const dias  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const now   = new Date();
+  const hi    = $('dash-hello');
+  const dt    = $('dash-date');
+  if (hi) hi.textContent = `${greet}, ${nome}! ${emoji}`;
+  if (dt) dt.textContent = `${dias[now.getDay()]}, ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+}
+
 function rMet() {
-  const fat     = DB.peds.reduce((a, b) => a + b.tot, 0);
-  const aReceber = DB.peds.filter(p => p.pag === 'Fiado').reduce((a, b) => a + b.tot, 0);
-  const est     = DB.prods.reduce((a, b) => a + b.st, 0);
+  rGreeting();
+  rDashAttention();
+
+  /* Mês atual vs mês anterior */
+  const now  = new Date();
+  const curM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const prevDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prvM = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
+
+  const pedsCur  = DB.peds.filter(p => p.dt?.startsWith(curM));
+  const pedsPrv  = DB.peds.filter(p => p.dt?.startsWith(prvM));
+  const fatCur   = pedsCur.reduce((a,b) => a+b.tot, 0);
+  const fatPrv   = pedsPrv.reduce((a,b) => a+b.tot, 0);
+  const fatPct   = fatPrv > 0 ? Math.round(((fatCur-fatPrv)/fatPrv)*100) : null;
+
+  const fiados   = DB.peds.filter(p => p.pag === 'Fiado');
+  const aRec     = fiados.reduce((a,b) => a+b.tot, 0);
+
+  const est      = DB.prods.reduce((a,b) => a+b.st, 0);
+  const baixo    = DB.prods.filter(p => p.st <= 3).length;
+
+  /* Novos clientes este mês */
+  const novosCli = DB.clis.filter(c => c.ult?.startsWith(curM)).length;
+
+  /* Trend badge */
+  function trend(pct) {
+    if (pct === null) return `<span class="mc-trend mc-trend-neu">Novo mês</span>`;
+    if (pct > 0)  return `<span class="mc-trend mc-trend-up">↑ ${pct}% vs mês anterior</span>`;
+    if (pct < 0)  return `<span class="mc-trend mc-trend-dn">↓ ${Math.abs(pct)}% vs mês anterior</span>`;
+    return `<span class="mc-trend mc-trend-neu">= igual ao mês anterior</span>`;
+  }
+
+  const iconFat = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`;
+  const iconPed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>`;
+  const iconCli = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`;
+  const iconRec = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 10a2.5 2.5 0 00-5 0c0 1.38 1.12 2.5 2.5 2.5s2.5 1.12 2.5 2.5a2.5 2.5 0 01-5 0"/></svg>`;
+
   $('mgrid').innerHTML = `
-    <article class="summary-card"><div>Faturamento</div><div class="summary-value">${brl(fat)}</div><div class="summary-meta ${aReceber > 0 ? 'mdn' : 'mup'}">${aReceber > 0 ? `${brl(aReceber)} a receber` : '↑ todas as vendas'}</div></article>
-    <article class="summary-card"><div>Pedidos</div><div class="summary-value">${DB.peds.length}</div><div class="summary-meta">${DB.peds.filter(p => p.pag === 'Fiado').length} fiado</div></article>
-    <article class="summary-card"><div>Clientes</div><div class="summary-value">${DB.clis.length}</div><div class="summary-meta">cadastrados</div></article>
-    <article class="summary-card"><div>Em estoque</div><div class="summary-value">${est}</div><div class="summary-meta">${DB.prods.filter(p => p.st <= 3).length} com estoque baixo</div></article>`;
+    <article class="mc mc-green" onclick="epage('extrato',null)" style="cursor:pointer">
+      <div class="mc-top">
+        <span class="mc-label">Faturamento este mês</span>
+        <div class="mc-icon mc-icon-green">${iconFat}</div>
+      </div>
+      <div class="mc-value">${brl(fatCur)}</div>
+      <div class="mc-meta">${trend(fatPct)}</div>
+    </article>
+    <article class="mc mc-blue" onclick="epage('historico',null)" style="cursor:pointer">
+      <div class="mc-top">
+        <span class="mc-label">Pedidos este mês</span>
+        <div class="mc-icon mc-icon-blue">${iconPed}</div>
+      </div>
+      <div class="mc-value">${pedsCur.length}</div>
+      <div class="mc-meta">
+        ${pedsPrv.length > 0
+          ? trend(Math.round(((pedsCur.length - pedsPrv.length)/pedsPrv.length)*100))
+          : `<span class="mc-trend mc-trend-neu">${DB.peds.length} no total</span>`}
+      </div>
+    </article>
+    <article class="mc mc-violet" onclick="epage('clientes',null)" style="cursor:pointer">
+      <div class="mc-top">
+        <span class="mc-label">Clientes</span>
+        <div class="mc-icon mc-icon-violet">${iconCli}</div>
+      </div>
+      <div class="mc-value">${DB.clis.length}</div>
+      <div class="mc-meta">
+        ${novosCli > 0
+          ? `<span class="mc-trend mc-trend-up">+${novosCli} novos este mês</span>`
+          : `<span class="mc-trend mc-trend-neu">cadastrados</span>`}
+      </div>
+    </article>
+    <article class="mc mc-orange" onclick="epage('receber',null)" style="cursor:pointer">
+      <div class="mc-top">
+        <span class="mc-label">A receber (fiado)</span>
+        <div class="mc-icon mc-icon-orange">${iconRec}</div>
+      </div>
+      <div class="mc-value">${brl(aRec)}</div>
+      <div class="mc-meta">
+        ${fiados.length > 0
+          ? `<span class="mc-trend mc-trend-dn">${fiados.length} venda${fiados.length>1?'s':''} pendente${fiados.length>1?'s':''}</span>`
+          : `<span class="mc-trend mc-trend-up">Tudo recebido ✓</span>`}
+      </div>
+    </article>`;
 }
 
-function rDashRec() {
-  $('dash-rec').innerHTML = `
-    <table class="compact-table"><thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Status</th></tr></thead><tbody>${[...DB.peds].slice(-4).reverse().map(p => {
-      const c = DB.clis.find(x => x.id === p.cid);
-      return `<tr><td>#${p.id}</td><td>${c ? c.nm : '—'}</td><td>${brl(p.tot)}</td><td><span class="xb ${stB[p.st] || 'xb-gray'}">${p.st}</span></td></tr>`;
-    }).join('')}</tbody></table>`;
+/* ── Atividade recente — lista paginada ── */
+let _recPage = 0;
+const REC_PER_PAGE = 5;
+
+function rDashRec(page) {
+  if (page !== undefined) _recPage = page;
+  const el = $('dash-rec');
+  if (!el) return;
+
+  const todos = [...DB.peds].reverse();
+  if (!todos.length) {
+    el.innerHTML = '<p class="small-note" style="padding:20px 0;text-align:center;color:var(--tx-s)">Nenhum pedido ainda. <a href="#" onclick="openMod(\'mv\')" style="color:var(--gl)">Registrar primeira venda →</a></p>';
+    return;
+  }
+
+  const total   = todos.length;
+  const pages   = Math.ceil(total / REC_PER_PAGE);
+  _recPage      = Math.max(0, Math.min(_recPage, pages - 1));
+  const slice   = todos.slice(_recPage * REC_PER_PAGE, (_recPage + 1) * REC_PER_PAGE);
+
+  const stCls = { Pendente:'xb-gold', Confirmado:'xb-blue', Enviado:'xb-gray', Entregue:'xb-green' };
+  const avatarColors = ['--blue-bg,--blue','--violet-bg,--violet','--green-bg,--green','--orange-bg,--orange'];
+
+  const rows = slice.map((p, idx) => {
+    const c   = DB.clis.find(x => x.id === p.cid);
+    const nm  = c ? c.nm : '—';
+    const ini = nm.split(' ').filter(Boolean).map(w => w[0]).slice(0,2).join('').toUpperCase();
+    const prod = p.itens && p.itens.length > 1
+      ? `${p.itens[0].nm} +${p.itens.length - 1}`
+      : (p.itens?.[0]?.nm || p.prod);
+    const [bg, fg] = avatarColors[idx % avatarColors.length].split(',');
+    return `<div class="order-item" onclick="editPed(${p.id})">
+      <div class="order-avatar" style="background:var(${bg});color:var(${fg})">${ini}</div>
+      <div class="order-info">
+        <div class="order-name">${nm}</div>
+        <div class="order-product">${prod} · ${fdt(p.dt)}</div>
+      </div>
+      <div class="order-right">
+        <div class="order-value">${brl(p.tot)}</div>
+        <span class="xb ${stCls[p.st]||'xb-gray'}">${p.st}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  const from = _recPage * REC_PER_PAGE + 1;
+  const to   = Math.min(from + REC_PER_PAGE - 1, total);
+
+  const pagination = pages <= 1 ? '' : `
+    <div class="list-pagination">
+      <span class="lp-info">${from}–${to} de ${total}</span>
+      <div class="lp-btns">
+        <button class="lp-btn" onclick="rDashRec(${_recPage - 1})" ${_recPage === 0 ? 'disabled' : ''}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="lp-btn" onclick="rDashRec(${_recPage + 1})" ${_recPage >= pages - 1 ? 'disabled' : ''}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>`;
+
+  el.innerHTML = rows + pagination;
 }
 
+/* ── Precisa de atenção — compacto, limpo ── */
+let _atnPage = 0;
+const ATN_PER_PAGE = 4;
+
+function rDashAttention(page) {
+  if (page !== undefined) _atnPage = page;
+  const el = $('dash-attention');
+  if (!el) return;
+
+  const vencidos = DB.peds.filter(p => p.pag === 'Fiado' && p.dtpag && p.dtpag < td());
+  const critico  = DB.prods.filter(p => p.st <= 2);
+
+  /* Estado vazio — minimalista */
+  if (!vencidos.length && !critico.length) {
+    el.innerHTML = `
+      <div class="atn-empty">
+        <div class="atn-empty-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="atn-empty-title">Tudo em dia</div>
+        <div class="atn-empty-sub">Sem pendências no momento.</div>
+      </div>`;
+    return;
+  }
+
+  /* Monta lista unificada — fiados primeiro, depois estoque */
+  const items = [
+    ...vencidos.map(p => ({ tipo: 'fiado', p })),
+    ...critico.map(p  => ({ tipo: 'estoque', p }))
+  ];
+
+  const total = items.length;
+  const pages = Math.ceil(total / ATN_PER_PAGE);
+  _atnPage = Math.max(0, Math.min(_atnPage, pages - 1));
+  const slice = items.slice(_atnPage * ATN_PER_PAGE, (_atnPage + 1) * ATN_PER_PAGE);
+
+  const rows = slice.map(({ tipo, p }) => {
+    if (tipo === 'fiado') {
+      const c    = DB.clis.find(x => x.id === p.cid);
+      const nm   = c?.nm || '—';
+      const dias = Math.round((new Date() - new Date(p.dtpag + 'T12:00')) / 86400000);
+      return `
+        <div class="atn-row">
+          <div class="atn-dot atn-dot-red"></div>
+          <div class="atn-row-info">
+            <span class="atn-row-name">${nm}</span>
+            <span class="atn-row-sub">há ${dias} dia${dias!==1?'s':''}</span>
+          </div>
+          <span class="atn-row-val">${brl(p.tot)}</span>
+          <button class="atn-row-btn atn-row-btn-red" onclick="event.stopPropagation();receberPed(${p.id})">Receber</button>
+        </div>`;
+    } else {
+      return `
+        <div class="atn-row" onclick="epage('estoque',null)">
+          <div class="atn-dot atn-dot-orange"></div>
+          <div class="atn-row-info">
+            <span class="atn-row-name">${p.em || ''} ${p.nm}</span>
+            <span class="atn-row-sub">${p.st === 0 ? 'Esgotado' : `${p.st} un. restante${p.st!==1?'s':''}`}</span>
+          </div>
+          <button class="atn-row-btn atn-row-btn-orange" onclick="event.stopPropagation();openMod('msolic')">Solicitar</button>
+        </div>`;
+    }
+  }).join('');
+
+  const from = _atnPage * ATN_PER_PAGE + 1;
+  const to   = Math.min(from + ATN_PER_PAGE - 1, total);
+  const pagination = pages <= 1 ? '' : `
+    <div class="list-pagination">
+      <span class="lp-info">${from}–${to} de ${total}</span>
+      <div class="lp-btns">
+        <button class="lp-btn" onclick="rDashAttention(${_atnPage-1})" ${_atnPage===0?'disabled':''}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="lp-btn" onclick="rDashAttention(${_atnPage+1})" ${_atnPage>=pages-1?'disabled':''}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>`;
+
+  el.innerHTML = rows + pagination;
+}
+
+/* rDashLow — mantida para compatibilidade com outras páginas */
 function rDashLow() {
   const low = DB.prods.filter(p => p.st <= 5);
-  $('dash-low').innerHTML = !low.length ? '<p class="small-note">✓ Todos os produtos OK</p>' : low.map(p => `<div class="lsi"><span>${p.em} ${p.nm}</span><span class="xb ${p.st === 0 ? 'xb-red' : 'xb-gold'}">${p.st} un.</span></div>`).join('');
+  if (!$('dash-low')) return;
+  if (!low.length) { $('dash-low').innerHTML = '<p class="small-note" style="padding:16px 0">✓ Todos os produtos OK</p>'; return; }
+  $('dash-low').innerHTML = low.map(p => {
+    const pct = Math.min(100, Math.round((p.st/10)*100));
+    const barCls = p.st===0?'stock-bar-out':p.st<=2?'stock-bar-low':'stock-bar-ok';
+    return `<div class="stock-item">
+      <div class="stock-emoji">${p.em||'📦'}</div>
+      <div class="stock-info">
+        <div class="stock-name">${p.nm}</div>
+        <div class="stock-bar-wrap"><div class="stock-bar-fill ${barCls}" style="width:${pct}%"></div></div>
+      </div>
+      <span class="xb ${p.st===0?'xb-red':'xb-gold'}">${p.st} un.</span>
+    </div>`;
+  }).join('');
 }
 
 /* ── A Receber (vendas fiado) ────────────────────── */
@@ -531,16 +805,24 @@ function hvUpd() {
   tb.innerHTML = peds.map(p => {
     const c = DB.clis.find(x => x.id === p.cid);
     return `<tr>
-      <td>#${p.id}</td>
+      <td style="color:var(--tx-m);font-size:12.5px">#${p.id}</td>
       <td>${fdt(p.dt)}</td>
-      <td>${c ? c.nm : '—'}</td>
-      <td>${p.prod}</td>
-      <td>${brl(p.tot)}</td>
-      <td>${p.pag}</td>
+      <td style="font-weight:500">${c ? c.nm : '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.prod}</td>
+      <td style="font-weight:600">${brl(p.tot)}</td>
+      <td style="color:var(--tx-m)">${p.pag}</td>
       <td><span class="xb ${stCl[p.st] || 'xb-gray'}">${p.st}</span></td>
-      <td><select class="fi small-select" onchange="updPS(${p.id}, this.value);hvUpd()">
-        ${['Pendente','Confirmado','Enviado','Entregue'].map(x => `<option${x === p.st ? ' selected' : ''}>${x}</option>`).join('')}
-      </select></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <select class="fi small-select" onchange="updPS(${p.id}, this.value);hvUpd()">
+            ${['Pendente','Confirmado','Enviado','Entregue'].map(x => `<option${x === p.st ? ' selected' : ''}>${x}</option>`).join('')}
+          </select>
+          <button class="cupom-row-btn" onclick="gerarCupomPedido(${p.id})" title="Gerar cupom fiscal">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Cupom
+          </button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -606,16 +888,242 @@ function updPS(id, st) {
   if (p) { p.st = st; rReceber(); rDashRec(); showToast('Status atualizado'); sbSync(() => SBPeds.updateStatus(id, st)); }
 }
 
+/* ── Estoque — estado dos filtros ── */
+let _estCat = '', _estSt = '';
+
+function estCat(el, cat) {
+  _estCat = cat;
+  document.querySelectorAll('.est-cat-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  rEst();
+}
+function estSt(el, st) {
+  _estSt = st;
+  document.querySelectorAll('.est-st-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  rEst();
+}
+
 function rEst() {
-  $('ett').innerHTML = DB.prods.map(p => `
-    <tr>
-      <td>${p.em} <span class="cell-strong">${p.nm}</span></td>
-      <td>${cNm[p.cat]}</td>
-      <td>${brl(p.pr)}</td>
-      <td><span class="xb ${p.st === 0 ? 'xb-red' : p.st <= 3 ? 'xb-gold' : 'xb-green'}">${p.st}</span></td>
-      <td><span class="xb ${p.st === 0 ? 'xb-red' : p.st <= 5 ? 'xb-gold' : 'xb-green'}">${p.st === 0 ? 'Esgotado' : p.st <= 5 ? 'Baixo' : 'OK'}</span></td>
-      <td class="table-actions"><button class="eb small" onclick="editP(${p.id})">Editar</button><input type="number" value="${p.st}" min="0" class="small-input" onchange="updSt(${p.id}, this.value)"></td>
-    </tr>`).join('');
+  const el = $('est-list');
+  if (!el) {
+    /* compatibilidade: se vier da renderAll sem o novo HTML */
+    if ($('ett')) $('ett').innerHTML = DB.prods.map(p =>
+      `<tr><td>${p.em} <span class="cell-strong">${p.nm}</span></td><td>${cNm[p.cat]}</td><td>${brl(p.pr)}</td>
+       <td><span class="xb ${p.st===0?'xb-red':p.st<=3?'xb-gold':'xb-green'}">${p.st}</span></td>
+       <td><span class="xb ${p.st===0?'xb-red':p.st<=5?'xb-gold':'xb-green'}">${p.st===0?'Esgotado':p.st<=5?'Baixo':'OK'}</span></td>
+       <td class="table-actions"><button class="eb small" onclick="editP(${p.id})">Editar</button>
+       <input type="number" value="${p.st}" min="0" class="small-input" onchange="updSt(${p.id},this.value)"></td></tr>`
+    ).join('');
+    return;
+  }
+
+  const busca = ($('est-busca')?.value || '').toLowerCase();
+
+  /* Mobile: mostra lista só quando há busca ativa */
+  const section = $('ep-estoque');
+  if (section) section.classList.toggle('est-search-active', busca.length > 0);
+
+  let prods   = [...DB.prods];
+  if (busca)             prods = prods.filter(p => p.nm.toLowerCase().includes(busca) || (p.em||'').includes(busca));
+  if (_estCat)           prods = prods.filter(p => p.cat === _estCat);
+  if (_estSt === 'ok')       prods = prods.filter(p => p.st > 5);
+  if (_estSt === 'baixo')    prods = prods.filter(p => p.st > 0 && p.st <= 5);
+  if (_estSt === 'esgotado') prods = prods.filter(p => p.st === 0);
+
+  if (!prods.length) {
+    el.innerHTML = '<div class="est-empty">Nenhum produto encontrado.</div>';
+    return;
+  }
+
+  /* Agrupar por categoria */
+  const catOrder = ['pele','maquiagem','corpo','fragrancias'];
+  const groups   = {};
+  prods.forEach(p => { if (!groups[p.cat]) groups[p.cat] = []; groups[p.cat].push(p); });
+
+  let html = '';
+  catOrder.forEach(cat => {
+    if (!groups[cat]) return;
+    const list = groups[cat];
+    html += `<div class="est-group-hd">
+      <span class="est-group-name">${cNm[cat] || cat}</span>
+      <span class="xb xb-gray">${list.length} produto${list.length!==1?'s':''}</span>
+    </div>`;
+    html += list.map(p => {
+      const max    = Math.max(p.st + 3, 10);
+      const pct    = p.st === 0 ? 0 : Math.min(100, Math.round((p.st / max) * 100));
+      const barClr = p.st === 0 ? '#EF4444' : p.st <= 5 ? '#D97706' : '#059669';
+      const stCls  = p.st === 0 ? 'xb-red' : p.st <= 5 ? 'xb-gold' : 'xb-green';
+      const stLbl  = p.st === 0 ? 'Esgotado' : p.st <= 5 ? 'Baixo' : 'OK';
+      const thumb  = p.img
+        ? `<div class="est-thumb"><img src="${p.img}" alt="${p.nm}"></div>`
+        : `<div class="est-thumb">${p.em || '📦'}</div>`;
+      return `<div class="est-row" onclick="showProdDetail(${p.id})">
+        ${thumb}
+        <div class="est-row-prod">
+          <div>
+            <div class="est-row-nm">${p.nm}${p.pd?` <span style="font-size:11px;color:var(--green);font-weight:600">🏷${brl(p.pd)}</span>`:''}</div>
+            <div class="est-row-cat">${cNm[p.cat]||p.cat}</div>
+          </div>
+        </div>
+        <div class="est-row-price">${brl(p.pr)}</div>
+        <div class="est-row-stock">
+          <div class="est-st-bar"><div class="est-st-fill" style="width:${pct}%;background:${barClr}"></div></div>
+          <span class="est-st-num">${p.st} unidades</span>
+        </div>
+        <span class="xb ${stCls}">${stLbl}</span>
+        <div class="est-row-actions" onclick="event.stopPropagation()">
+          <input type="number" value="${p.st}" min="0" class="small-input" onchange="updSt(${p.id},this.value)" title="Ajustar estoque">
+          <button class="eb" onclick="editP(${p.id})">Editar</button>
+          <button class="est-detail-btn" onclick="event.stopPropagation();showProdDetail(${p.id})">Ver mais →</button>
+        </div>
+      </div>`;
+    }).join('');
+  });
+
+  el.innerHTML = html;
+}
+
+/* ── Métricas de estoque ── */
+function showEstMetrics() {
+  const total  = DB.prods.length;
+  const units  = DB.prods.reduce((a,b) => a+b.st, 0);
+  const valor  = DB.prods.reduce((a,b) => a+(b.pd||b.pr)*b.st, 0);
+  const ok     = DB.prods.filter(p => p.st > 5).length;
+  const baixo  = DB.prods.filter(p => p.st > 0 && p.st <= 5).length;
+  const zero   = DB.prods.filter(p => p.st === 0).length;
+
+  /* Top vendidos */
+  const sold = {};
+  DB.peds.forEach(p => {
+    if (p.itens) p.itens.forEach(i => { sold[i.nm] = (sold[i.nm]||0)+i.q; });
+    else sold[p.prod] = (sold[p.prod]||0)+p.q;
+  });
+  const top = Object.entries(sold).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  $('estq-mc').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+      <div class="mc mc-blue"  style="padding:14px;gap:6px">
+        <div class="mc-label">Produtos</div>
+        <div class="mc-value" style="font-size:22px">${total}</div>
+      </div>
+      <div class="mc mc-green" style="padding:14px;gap:6px">
+        <div class="mc-label">Unidades</div>
+        <div class="mc-value" style="font-size:22px">${units}</div>
+      </div>
+      <div class="mc mc-violet" style="padding:14px;gap:6px">
+        <div class="mc-label">Valor em estoque</div>
+        <div class="mc-value" style="font-size:16px">${brl(valor)}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="xb xb-green" style="padding:6px 14px;font-size:12px">✓ OK: ${ok}</span>
+      <span class="xb xb-gold"  style="padding:6px 14px;font-size:12px">↓ Baixo: ${baixo}</span>
+      <span class="xb xb-red"   style="padding:6px 14px;font-size:12px">✕ Esgotado: ${zero}</span>
+    </div>
+    ${top.length ? `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx-s);margin-bottom:10px">Mais vendidos</div>
+      ${top.map(([nm,q],i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F3F4F6">
+          <span style="font-size:13px;color:var(--tx);font-weight:500">${i+1}. ${nm}</span>
+          <span style="font-size:12.5px;font-weight:600;color:var(--tx-m)">${q} un. vendidas</span>
+        </div>`).join('')}
+    ` : ''}`;
+  openMod('mestq');
+}
+
+/* ── Detalhe do produto ── */
+let _curProd = null;
+function showProdDetail(id) {
+  _curProd = id;
+  const p = DB.prods.find(x => x.id === id);
+  if (!p) return;
+
+  const peds = DB.peds.filter(ped =>
+    ped.itens ? ped.itens.some(i => i.nm === p.nm) : ped.prod === p.nm
+  );
+  const totalQ = peds.reduce((a, ped) =>
+    a + (ped.itens ? ped.itens.filter(i=>i.nm===p.nm).reduce((s,i)=>s+i.q,0) : ped.q), 0
+  );
+
+  const maxSt  = Math.max(p.st+3, 10);
+  const pct    = p.st===0 ? 0 : Math.min(100, Math.round((p.st/maxSt)*100));
+  const barClr = p.st===0 ? 'var(--err)' : p.st<=5 ? 'var(--warn)' : 'var(--green)';
+  const stMsg  = p.st===0 ? 'Esgotado' : p.st<=5 ? 'Estoque baixo' : 'Estoque saudável';
+
+  $('prod-drawer-title').textContent = p.nm;
+  $('prod-del-btn').onclick  = () => { closeProdDetail(); delP(id); };
+  $('prod-edit-btn').onclick = () => { closeProdDetail(); editP(id); };
+
+  $('prod-drawer-body').innerHTML = `
+    <!-- Cabeçalho do produto -->
+    <div style="display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:1px solid #F3F4F6;margin-bottom:18px">
+      <div style="width:54px;height:54px;border-radius:14px;background:#F9FAFB;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden">
+        ${p.img ? `<img src="${p.img}" style="width:100%;height:100%;object-fit:cover">` : (p.em||'📦')}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700;color:var(--tx)">${p.nm}</div>
+        <div style="font-size:12.5px;color:var(--tx-m);margin-top:2px">${cNm[p.cat]||p.cat}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <span style="font-size:14px;font-weight:700;color:var(--tx)">${brl(p.pr)}</span>
+          ${p.pd?`<span style="font-size:12px;color:var(--green);font-weight:600">🏷 ${brl(p.pd)}</span>`:''}
+        </div>
+      </div>
+    </div>
+
+    <!-- Gauge do estoque -->
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:600;color:var(--tx)">Estoque atual</span>
+        <span style="font-size:15px;font-weight:700;color:var(--tx)">${p.st} un.</span>
+      </div>
+      <div style="height:8px;background:#F3F4F6;border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barClr};border-radius:4px;transition:width .4s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:12px;color:var(--tx-m)">${stMsg}</span>
+        <button class="eb" onclick="openMod('msolic')" style="font-size:11.5px">+ Solicitar reposição</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <div style="background:#F9FAFB;border-radius:10px;padding:14px">
+        <div style="font-size:11.5px;color:var(--tx-m);margin-bottom:4px">Unidades vendidas</div>
+        <div style="font-size:22px;font-weight:700;color:var(--tx);letter-spacing:-.04em">${totalQ}</div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:10px;padding:14px">
+        <div style="font-size:11.5px;color:var(--tx-m);margin-bottom:4px">Pedidos incluindo</div>
+        <div style="font-size:22px;font-weight:700;color:var(--tx);letter-spacing:-.04em">${peds.length}</div>
+      </div>
+    </div>
+
+    ${p.desc ? `<div style="font-size:13px;color:var(--tx-m);line-height:1.6;padding:12px 14px;background:#F9FAFB;border-radius:10px;margin-bottom:18px">${p.desc}</div>` : ''}
+
+    <!-- Últimos pedidos -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx-s);margin-bottom:10px">Últimos pedidos</div>
+    ${peds.length ? [...peds].slice(-5).reverse().map(ped => {
+      const c = DB.clis.find(x => x.id === ped.cid);
+      const stCls = {Pendente:'xb-gold',Confirmado:'xb-blue',Enviado:'xb-gray',Entregue:'xb-green'};
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F3F4F6">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--tx)">${c?.nm||'—'}</div>
+          <div style="font-size:11.5px;color:var(--tx-m)">${fdt(ped.dt)}</div>
+        </div>
+        <span class="xb ${stCls[ped.st]||'xb-gray'}">${ped.st}</span>
+      </div>`;
+    }).join('')
+    : `<p style="font-size:13px;color:var(--tx-m);text-align:center;padding:16px 0">Nenhum pedido com este produto.</p>`}
+  `;
+
+  $('prod-backdrop').classList.add('on');
+  $('prod-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProdDetail() {
+  $('prod-backdrop').classList.remove('on');
+  $('prod-drawer').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function updSt(id, v) {
@@ -673,10 +1181,187 @@ function rFin() {
 let _nvCart = [];
 let _mvCart = [];
 
+/* ══════════════════════════════════════════════════════
+   NOVA VENDA — WIZARD 3 ETAPAS
+   ══════════════════════════════════════════════════════ */
+let _nvStep = 1;
+
+function nvGoStep(step) {
+  /* Validação antes de avançar */
+  if (step > _nvStep) {
+    if (_nvStep === 1) {
+      if (!$('vc')?.value) { showToast('Selecione um cliente para continuar'); return; }
+    }
+    if (_nvStep === 2) {
+      if (!_nvCart.length) { showToast('Adicione ao menos um produto'); return; }
+    }
+  }
+
+  _nvStep = step;
+
+  /* Mostra/oculta painéis */
+  [1,2,3].forEach(n => {
+    const p = $(`nv-s${n}`);
+    if (p) p.classList.toggle('on', n === step);
+  });
+
+  /* Atualiza indicadores */
+  [1,2,3].forEach(n => {
+    const ind = $(`nv-ind-${n}`);
+    if (!ind) return;
+    ind.classList.toggle('active', n === step);
+    ind.classList.toggle('done',   n < step);
+  });
+  [1,2].forEach(n => {
+    const ln = $(`nv-line-${n}`);
+    if (ln) ln.classList.toggle('done', n < step);
+  });
+
+  /* Ao entrar na etapa 3: monta o resumo */
+  if (step === 3) nvBuildSummary();
+
+  /* Scroll to top */
+  const ec = document.querySelector('.erp-content');
+  if (ec) ec.scrollTop = 0;
+}
+
+/* Monta o resumo na etapa 3 */
+function nvBuildSummary() {
+  const cid  = parseInt($('vc')?.value) || 0;
+  const cli  = DB.clis.find(x => x.id === cid);
+  const tot  = _nvCart.reduce((a,b) => a+b.sub, 0);
+  const parc = parseInt($('vparc')?.value) || 1;
+
+  /* Atualiza o total do resumo */
+  if ($('vt-r')) $('vt-r').textContent = brl(tot);
+  if ($('vt'))   $('vt').textContent   = brl(tot);
+  if ($('vt-sub')) $('vt-sub').textContent = parc > 1 ? `${parc}× de ${brl(tot/parc)}` : '';
+
+  /* Cliente */
+  const ini = cli ? cli.nm.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : '?';
+  let html = `<div class="nv-res-cli">
+    <div class="cli-ava" style="width:34px;height:34px;font-size:12px">${ini}</div>
+    <div>
+      <div style="font-size:13.5px;font-weight:600;color:var(--tx)">${cli?.nm||'—'}</div>
+      <div style="font-size:11.5px;color:var(--tx-m)">${cli?.tel||''}</div>
+    </div>
+  </div>`;
+
+  /* Produtos */
+  html += _nvCart.map(i => `
+    <div class="nv-res-item">
+      <span class="nv-res-nm">${i.em||''} ${i.nm} ×${i.q}</span>
+      <span class="nv-res-val">${brl(i.sub)}</span>
+    </div>`).join('');
+
+  if ($('nv-resumo-body')) $('nv-resumo-body').innerHTML = html;
+
+  /* Mostra total parcial na etapa 2 */
+  const ts2 = $('nv-total-s2');
+  if (ts2) ts2.style.display = _nvCart.length ? 'flex' : 'none';
+}
+
+/* ── Client picker ── */
+function renderCliPicker() {
+  const el    = $('cli-picker');
+  if (!el) return;
+  const busca = ($('nv-cli-busca')?.value || '').toLowerCase().trim();
+  const selId = parseInt($('vc')?.value) || 0;
+  let clis = DB.clis;
+  if (busca) clis = clis.filter(c =>
+    c.nm.toLowerCase().includes(busca) ||
+    (c.tel||'').includes(busca) ||
+    (c.em||'').toLowerCase().includes(busca)
+  );
+
+  if (!clis.length) {
+    el.innerHTML = `<div class="cli-empty">Nenhum cliente encontrado.<br><a href="#" onclick="newCli()" style="color:var(--gl)">+ Criar novo cliente</a></div>`;
+    return;
+  }
+
+  const checkSvg = `<svg class="cli-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  el.innerHTML = clis.map(c => {
+    const ini = c.nm.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const sel = c.id === selId ? ' sel' : '';
+    const meta = [c.tel, c.em].filter(Boolean)[0] || 'Sem contato';
+    return `<div class="cli-row${sel}" onclick="selectCliWiz(${c.id})">
+      <div class="cli-ava">${ini}</div>
+      <div class="cli-info">
+        <div class="cli-nm">${c.nm}</div>
+        <div class="cli-meta">${meta}</div>
+      </div>
+      ${checkSvg}
+    </div>`;
+  }).join('');
+}
+
+function selectCliWiz(id) {
+  if ($('vc')) $('vc').value = id;
+  renderCliPicker();
+}
+
+/* ── Product picker para Nova Venda ── */
+function renderProdPicker() {
+  const el  = $('prod-picker');
+  if (!el) return;
+  const busca = ($('v-busca')?.value || '').toLowerCase().trim();
+  let prods = DB.prods;
+  if (busca) prods = prods.filter(p =>
+    p.nm.toLowerCase().includes(busca) ||
+    (p.em || '').includes(busca) ||
+    (p.bc || '').includes(busca)
+  );
+
+  if (!prods.length) {
+    el.innerHTML = `<div class="pp-empty">Nenhum produto encontrado</div>`;
+    return;
+  }
+
+  const selectedId = parseInt($('vp')?.value) || 0;
+  el.innerHTML = prods.map(p => {
+    const preco = p.pd ?? p.pr;
+    const sel   = p.id === selectedId ? ' pp-card-sel' : '';
+    const stCls = p.st === 0 ? 'xb-red' : p.st <= 3 ? 'xb-gold' : 'xb-green';
+    return `<div class="pp-card${sel}" onclick="selectProd(${p.id})" title="${p.nm}">
+      <div class="pp-thumb">${p.img ? `<img src="${p.img}" onerror="this.outerHTML='${p.em||'📦'}'">` : (p.em||'📦')}</div>
+      <div class="pp-info">
+        <div class="pp-nm">${p.nm}</div>
+        <div class="pp-pr">${brl(preco)}${p.pd?'<span class="pp-promo"> 🏷</span>':''}</div>
+      </div>
+      <span class="xb ${stCls} pp-st">${p.st}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectProd(id) {
+  const vp = $('vp');
+  if (vp) { vp.value = id; vUpd(); }
+  renderProdPicker(); /* re-render to highlight selection */
+  if ($('v-busca')) $('v-busca').value = '';
+  if ($('vq'))      $('vq').value = 1;
+}
+
 function rNV() {
   const vc = $('vc'), vp = $('vp');
-  if (vc) vc.innerHTML = DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
-  if (vp) { vp.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pd ?? p.pr)}${p.pd ? ' 🏷' : ''}</option>`).join(''); vUpd(); }
+  /* sem pré-seleção */
+  if (vc) vc.innerHTML =
+    `<option value="">—</option>` +
+    DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
+  if (vp) vp.innerHTML =
+    `<option value="">—</option>` +
+    DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm}</option>`).join('');
+
+  /* Reinicia no passo 1 */
+  _nvStep = 1;
+  nvGoStep(1);
+  if ($('nv-cli-busca')) $('nv-cli-busca').value = '';
+  if ($('v-busca'))      $('v-busca').value = '';
+  renderCliPicker();
+  renderProdPicker();
+
+  /* Limpa preview */
+  const prev = $('vprev'); if (prev) prev.style.display = 'none';
   if ($('vdtpag')) $('vdtpag').value = td();
   _nvCart = [];
   nvRenderCart();
@@ -741,8 +1426,12 @@ function nvRenderCart() {
     </div>`).join('');
   const tot  = _nvCart.reduce((a, b) => a + b.sub, 0);
   const parc = parseInt($('vparc')?.value) || 1;
-  if ($('vt')) $('vt').textContent = brl(tot);
-  if ($('vt-sub')) $('vt-sub').textContent = parc > 1 ? `${parc}× de ${brl(tot / parc)}` : '';
+  if ($('vt'))    $('vt').textContent    = brl(tot);
+  if ($('vt-r'))  $('vt-r').textContent  = brl(tot);
+  if ($('vt-sub')) $('vt-sub').textContent = parc > 1 ? `${parc}× de ${brl(tot/parc)}` : '';
+  /* Mostra total parcial */
+  const ts2 = $('nv-total-s2');
+  if (ts2) ts2.style.display = _nvCart.length ? 'flex' : 'none';
 }
 
 /* ── Carrinho Modal mv ───────────────────────────── */
@@ -836,8 +1525,56 @@ function saveV() {
   nvRenderCart();
   renderAll();
   rReceber();
-  showToast(`Venda registrada — ${brl(tot)}${parc > 1 ? ` · ${parc}× de ${brl(tot/parc)}` : ''}`);
-  showCupom(ped, c, null);
+  /* Animação de sucesso em vez do toast direto */
+  showSaleSuccess(ped, c, tot, parc);
+}
+
+/* ══════════════════════════════════════════════════════
+   ANIMAÇÃO DE SUCESSO — VENDA REGISTRADA
+   ══════════════════════════════════════════════════════ */
+let _lastSalePed = null, _lastSaleCli = null;
+
+function showSaleSuccess(ped, cli, tot, parc) {
+  _lastSalePed = ped;
+  _lastSaleCli = cli;
+
+  const el = $('sale-success');
+  if (!el) { showCupom(ped, cli, null); return; }
+
+  /* Preenche dados */
+  const nm  = $('ss-client');
+  const amt = $('ss-total');
+  const sub = $('ss-sub');
+  if (nm)  nm.textContent  = cli?.nm || '—';
+  if (amt) amt.textContent = brl(tot);
+  if (sub) sub.textContent = parc > 1 ? `${parc}× de ${brl(tot/parc)}` : '';
+
+  /* Reseta animações reiniciando os elementos */
+  const coins = el.querySelectorAll('.ss-coin');
+  coins.forEach(c => { c.style.animation = 'none'; void c.offsetWidth; c.style.animation = ''; });
+  const vault = el.querySelector('.ss-vault');
+  if (vault) { vault.style.animation = 'none'; void vault.offsetWidth; vault.style.animation = ''; }
+
+  el.classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSaleSuccess() {
+  const el = $('sale-success');
+  if (el) el.classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+function ssCupom() {
+  closeSaleSuccess();
+  if (_lastSalePed && _lastSaleCli) showCupom(_lastSalePed, _lastSaleCli, null);
+}
+
+function ssNovaVenda() {
+  closeSaleSuccess();
+  _nvCart = [];
+  rNV();
+  if (window.innerWidth <= 768) mobNav('nvenda');
 }
 
 function mvUpd() {
@@ -1040,6 +1777,88 @@ function whatsappCupom() {
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
+/* ── Wizard de produto (mobile) ──────────────────────── */
+let _mpStep = 1;
+
+function mpGoStep(n) {
+  _mpStep = n;
+  /* Painéis */
+  document.querySelectorAll('.mp-step-panel').forEach(el => {
+    el.classList.toggle('mp-step-on', parseInt(el.dataset.step) === n);
+  });
+  /* Dots */
+  document.querySelectorAll('.mp-dot').forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.toggle('active', s === n);
+    el.classList.toggle('done',   s < n);
+  });
+  /* Label */
+  const lbls = { 1:'Dados do produto', 2:'Preço & Estoque', 3:'Extras & Foto' };
+  const lbl = $('mp-wiz-label');
+  if (lbl) lbl.textContent = lbls[n] || '';
+  /* Botões de navegação */
+  const prev = $('mp-prev-btn'), next = $('mp-next-btn');
+  if (prev) prev.style.display = n === 1 ? 'none' : '';
+  if (next) next.textContent = n === 3 ? 'Salvar produto' : 'Próximo';
+}
+
+function mpNext() {
+  if (_mpStep === 1) {
+    const nm = ($('pe-nm')?.value || '').trim();
+    if (!nm) { showToast('Informe o nome do produto'); $('pe-nm')?.focus(); return; }
+  }
+  if (_mpStep === 3) { confirmSaveProd(); return; }
+  mpGoStep(_mpStep + 1);
+}
+
+function mpPrev() {
+  if (_mpStep > 1) mpGoStep(_mpStep - 1);
+}
+
+/* Sincroniza campo mobile → campo desktop (ambos usam o mesmo dado ao salvar) */
+function mpSyncField(fromId, toId) {
+  const from = $(fromId), to = $(toId);
+  if (from && to) to.value = from.value;
+}
+
+/* Atualiza preview da imagem/emoji no modal de produto */
+function mpPreviewUpdate() {
+  const url  = ($('pe-img')?.value || '').trim();
+  const em   = $('pe-em')?.value || '📦';
+  const img  = $('mp-preview-img');
+  const emEl = $('mp-preview-em');
+  const hint = $('mp-img-hint');
+  if (url) {
+    if (img) {
+      img.src = url;
+      img.onload  = () => { img.style.display = 'block'; if (emEl) emEl.style.display = 'none'; if (hint) hint.textContent = '✓ Imagem carregada'; if (hint) hint.style.color = 'var(--green)'; };
+      img.onerror = () => { img.style.display = 'none'; if (emEl) emEl.style.display = 'block'; if (hint) hint.textContent = '⚠ URL inválida ou inacessível'; if (hint) hint.style.color = 'var(--warn)'; };
+    }
+  } else {
+    if (img)  { img.style.display = 'none'; img.src = ''; }
+    if (emEl) { emEl.style.display = 'block'; emEl.textContent = em || '📦'; }
+    if (hint) { hint.textContent = ''; }
+  }
+  if (emEl && !url) emEl.textContent = em || '📦';
+}
+
+/* Salvar produto — pede confirmação se for edição */
+function confirmSaveProd() {
+  const nm = $('pe-nm')?.value?.trim();
+  if (!nm) { showToast('Informe o nome do produto'); return; }
+  const eid = $('pe-id')?.value;
+  if (eid) {
+    askConfirm({
+      title: 'Salvar alterações?',
+      msg: `As mudanças em <strong>${nm}</strong> serão salvas permanentemente.`,
+      type: 'info',
+      btnLabel: 'Salvar'
+    }, saveProd);
+  } else {
+    saveProd(); /* novo produto: salva direto */
+  }
+}
+
 function saveProd() {
   const eid = $('pe-id')?.value;
   const featsRaw = $('pe-feats')?.value || '';
@@ -1054,7 +1873,8 @@ function saveProd() {
     img: ($('pe-img')?.value || '').trim(),
     desc: ($('pe-desc')?.value || '').trim(),
     feats: featsRaw ? featsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
-    bump: $('pe-bump')?.value ? parseInt($('pe-bump').value) : null
+    bump: $('pe-bump')?.value ? parseInt($('pe-bump').value) : null,
+    bc: ($('pe-bc')?.value || '').replace(/\D/g,'') || null,
   };
   if (!o.nm) { showToast('Informe o nome'); return; }
   let saved;
@@ -1068,34 +1888,50 @@ function saveProd() {
   }
   renderAll();
   closeMod('mp');
-  showToast('Produto salvo');
+  showToast(eid ? 'Produto atualizado ✓' : 'Produto criado ✓');
   if (saved) sbSync(() => SBProds.upsert(saved));
   $('pe-id').value = '';
-  ['pe-nm', 'pe-em', 'pe-pr', 'pe-pd', 'pe-img', 'pe-desc', 'pe-feats'].forEach(id => { if ($(id)) $(id).value = ''; });
+  ['pe-nm','pe-em','pe-pr','pe-pd','pe-img','pe-desc','pe-feats','pe-bc'].forEach(i => { if ($(i)) $(i).value = ''; });
   $('pe-st').value = '0';
+  if ($('pe-em-m'))  $('pe-em-m').value  = '';
+  if ($('pe-img-m')) $('pe-img-m').value = '';
 }
 
 function editP(id) {
   const p = DB.prods.find(x => x.id === id);
   if (!p) return;
   $('pe-id').value = p.id;
-  $('pe-em').value = p.em;
-  $('pe-nm').value = p.nm;
+  $('pe-em').value  = p.em;
+  $('pe-nm').value  = p.nm;
   $('pe-cat').value = p.cat;
-  $('pe-pr').value = p.pr;
-  $('pe-pd').value = p.pd || '';
-  $('pe-st').value = p.st;
-  $('pe-dt').value = p.dt || '';
-  if ($('pe-img')) $('pe-img').value = p.img || '';
-  if ($('pe-desc')) $('pe-desc').value = p.desc || '';
-  if ($('pe-feats')) $('pe-feats').value = (p.feats || []).join(', ');
+  $('pe-pr').value  = p.pr;
+  $('pe-pd').value  = p.pd || '';
+  $('pe-st').value  = p.st;
+  $('pe-dt').value  = p.dt || '';
+  if ($('pe-img'))   $('pe-img').value   = p.img   || '';
+  if ($('pe-desc'))  $('pe-desc').value  = p.desc  || '';
+  if ($('pe-feats')) $('pe-feats').value = (p.feats||[]).join(', ');
+  if ($('pe-bump'))  $('pe-bump').value  = p.bump  || '';
+  if ($('pe-bc'))    $('pe-bc').value    = p.bc    || '';
+  /* Campos espelho mobile */
+  if ($('pe-em-m'))  $('pe-em-m').value  = p.em    || '';
+  if ($('pe-img-m')) $('pe-img-m').value = p.img   || '';
+  /* Atualiza título e preview */
+  if ($('mp-title')) $('mp-title').textContent = 'Editar Produto';
+  if ($('mp-sub'))   $('mp-sub').textContent   = `Editando: ${p.nm}`;
+  setTimeout(mpPreviewUpdate, 50);
   openMod('mp');
-  if ($('pe-bump')) $('pe-bump').value = p.bump || '';
 }
 
 function delP(id) {
   const p = DB.prods.find(x => x.id === id);
-  askConfirm(`Excluir "${p?.nm || 'este produto'}"?\n\nEsta ação não pode ser desfeita.`, () => {
+  if (!p) return;
+  askConfirm({
+    title: 'Excluir produto?',
+    msg: `Tem certeza que deseja excluir <strong>${p.nm}</strong>? Esta ação <strong>não pode ser desfeita</strong>.`,
+    type: 'danger',
+    btnLabel: 'Excluir produto'
+  }, () => {
     DB.prods = DB.prods.filter(x => x.id !== id);
     renderAll();
     showToast('Produto excluído');
@@ -1209,11 +2045,250 @@ function savePedEdit() {
   showToast('Pedido atualizado');
 }
 
-function askConfirm(msg, onYes) {
-  if ($('mconf-msg')) $('mconf-msg').textContent = msg;
-  const ok = $('mconf-ok');
-  if (ok) ok.onclick = () => { closeMod('mconf'); onYes(); };
+/* askConfirm — type: 'danger' | 'warn' | 'info' */
+function askConfirm(opts, onYes) {
+  /* compatibilidade: aceita (msg, fn) antigo */
+  if (typeof opts === 'string') opts = { title:'Confirmar', msg: opts, type:'info', btnLabel:'Confirmar' };
+  const { title='Confirmar', msg='', type='info', btnLabel='Confirmar' } = opts;
+
+  const iconEl  = $('mconf-icon');
+  const wrapEl  = $('mconf-icon-wrap');
+  const titleEl = $('mconf-title');
+  const msgEl   = $('mconf-msg');
+  const okBtn   = $('mconf-ok');
+
+  /* Ícone por tipo */
+  const icons = {
+    danger: `<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`,            /* trash */
+    warn:   `<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`, /* warning */
+    info:   `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`, /* check */
+  };
+
+  if (iconEl)  iconEl.innerHTML = icons[type] || icons.info;
+  if (wrapEl)  wrapEl.className = `mconf-icon-wrap ${type}`;
+  if (titleEl) titleEl.textContent = title;
+  if (msgEl)   msgEl.innerHTML = msg;
+
+  if (okBtn) {
+    okBtn.className = `btn ${type === 'danger' ? 'btn-danger' : 'btn-primary'}`;
+    okBtn.textContent = btnLabel;
+    okBtn.onclick = () => { closeMod('mconf'); onYes(); };
+  }
   openMod('mconf');
+}
+
+/* ══════════════════════════════════════════════════════
+   SCANNER DE CÓDIGO DE BARRAS — EAN-13
+   ══════════════════════════════════════════════════════ */
+let _scanner    = null;
+let _scanMode   = 'estoque';  /* 'estoque' | 'venda' | 'field' */
+let _scanCooldown = false;
+
+async function openScanner(mode) {
+  _scanMode = mode || 'estoque';
+
+  const titles = { estoque:'Buscar produto', venda:'Adicionar à venda', field:'Ler código de barras', 'new-prod':'Cadastrar produto' };
+  const subs   = { estoque:'Aponte para o EAN-13 do produto', venda:'Produto será adicionado ao carrinho', field:'O código será preenchido no campo', 'new-prod':'Escaneie o código do produto a cadastrar' };
+  if ($('scan-title')) $('scan-title').textContent = titles[mode] || titles.estoque;
+  if ($('scan-sub'))   $('scan-sub').textContent   = subs[mode]   || subs.estoque;
+
+  const ra = $('scan-result-area'), na = $('scan-notfound-area'), fc = $('scn-found-card');
+  if (ra) ra.style.display = 'none';
+  if (na) na.style.display = 'none';
+  if (fc) fc.style.display = 'none';
+
+  $('mscanner').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  _scanCooldown = false;
+
+  /* ── Verifica se a lib foi carregada ── */
+  if (typeof Html5Qrcode === 'undefined') {
+    _showScanError('Biblioteca de scanner não carregada. Use o campo abaixo.');
+    return;
+  }
+
+  /* ── Verifica HTTPS (câmera só funciona em HTTPS ou localhost) ── */
+  const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (!isSecure) {
+    _showScanError(`Câmera requer HTTPS.\nAcesse via: https://${location.hostname}:3443`);
+    return;
+  }
+
+  /* ── Verifica suporte à API de câmera ── */
+  if (!navigator.mediaDevices?.getUserMedia) {
+    _showScanError('Seu navegador não suporta câmera. Use o campo manual abaixo.');
+    return;
+  }
+
+  const cfg = {
+    fps: 15,
+    experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+  };
+
+  /* Adiciona formatos se disponível */
+  if (typeof Html5QrcodeSupportedFormats !== 'undefined') {
+    cfg.formatsToSupport = [
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.QR_CODE,
+    ];
+  }
+
+  try {
+    _scanner = new Html5Qrcode('scan-reader');
+
+    /* Tenta câmera traseira primeiro, depois frontal */
+    let started = false;
+    for (const facing of ['environment', 'user']) {
+      try {
+        await _scanner.start({ facingMode: facing }, cfg, code => onScanResult(code), () => {});
+        started = true;
+        break;
+      } catch(e) { /* tenta próxima */ }
+    }
+
+    if (!started) throw new Error('Nenhuma câmera disponível');
+
+  } catch (err) {
+    const msg = err?.message || '';
+    if (msg.includes('Permission') || msg.includes('permission') || msg.includes('NotAllowed')) {
+      _showScanError('Permissão de câmera negada.\nVá em Configurações > Privacidade > Câmera e permita o navegador.');
+    } else if (msg.includes('NotFound') || msg.includes('DevicesNotFound')) {
+      _showScanError('Nenhuma câmera encontrada neste dispositivo.');
+    } else {
+      _showScanError('Câmera indisponível — use o campo manual abaixo.');
+    }
+  }
+}
+
+/* Mostra erro no scanner e foca o input manual */
+function _showScanError(msg) {
+  const na = $('scan-notfound-area');
+  const si = $('scan-manual-input');
+  if (na) { na.style.display = 'flex'; $('scan-notfound-text').textContent = msg; }
+  /* Para o scanner se estava rodando */
+  if (_scanner) { try { _scanner.stop(); } catch(e){} _scanner = null; }
+  /* Foca automaticamente no input manual */
+  setTimeout(() => { if (si) { si.focus(); si.scrollIntoView({ behavior:'smooth', block:'center' }); } }, 400);
+}
+
+function onScanResult(code) {
+  if (_scanCooldown) return;
+  _scanCooldown = true;
+
+  const clean = code.replace(/\D/g, '');
+
+  /* ── Modo field: apenas preenche o campo no modal ── */
+  if (_scanMode === 'field') {
+    closeScanner();
+    if ($('pe-bc')) { $('pe-bc').value = clean; $('pe-bc').focus(); }
+    showToast('Código lido: ' + clean);
+    return;
+  }
+
+  /* ── Modo new-prod: cadastrar novo produto via código ── */
+  if (_scanMode === 'new-prod') {
+    closeScanner();
+    const existing = DB.prods.find(p => p.bc && p.bc.replace(/\D/g,'') === clean);
+    if (existing) {
+      showToast(`Produto encontrado: ${existing.nm}`);
+      editP(existing.id);
+    } else {
+      /* Reset do modal e pré-preenche código */
+      $('pe-id').value = '';
+      ['pe-nm','pe-em','pe-pr','pe-pd','pe-img','pe-desc','pe-feats','pe-em-m','pe-img-m'].forEach(i => { if ($(i)) $(i).value = ''; });
+      $('pe-st').value = '0';
+      if ($('pe-bc'))    $('pe-bc').value    = clean;
+      if ($('mp-title')) $('mp-title').textContent = 'Novo Produto';
+      if ($('mp-sub'))   $('mp-sub').textContent   = `Código: ${clean}`;
+      openMod('mp');
+      showToast('Código lido — complete os dados do produto');
+    }
+    return;
+  }
+
+  /* ── Busca produto pelo EAN-13 ── */
+  const prod = DB.prods.find(p => p.bc && p.bc.replace(/\D/g,'') === clean);
+
+  const ra = $('scan-result-area'), na = $('scan-notfound-area');
+  if (!prod) {
+    if (na) { na.style.display = 'flex'; $('scan-notfound-text').textContent = `Não encontrado: ${clean}`; }
+    if (ra) ra.style.display = 'none';
+    setTimeout(() => { _scanCooldown = false; if (na) na.style.display = 'none'; }, 2000);
+    return;
+  }
+
+  /* Produto encontrado — preenche o card visual */
+  const fc = $('scn-found-card');
+  if (fc) {
+    $('scn-found-nm').textContent   = `${prod.em || ''} ${prod.nm}`;
+    $('scn-found-meta').textContent = `${prod.st} un. · ${cNm[prod.cat] || prod.cat}`;
+    $('scn-found-pr').textContent   = brl(prod.pd ?? prod.pr);
+    fc.style.display = 'flex';
+  }
+  if (na) na.style.display = 'none';
+
+  setTimeout(() => {
+    closeScanner();
+    if (_scanMode === 'venda') {
+      /* Seleciona produto e adiciona ao carrinho */
+      const vp = $('vp');
+      if (vp) { vp.value = prod.id; vUpd(); nvAddItem(); }
+      showToast(`✓ ${prod.nm} adicionado ao carrinho`);
+    } else {
+      /* Vai para estoque e destaca o produto */
+      epage('estoque', null);
+      const busca = $('est-busca');
+      if (busca) { busca.value = prod.nm; rEst(); }
+      showToast(`✓ ${prod.nm} encontrado`);
+    }
+  }, 800);
+}
+
+async function closeScanner() {
+  if (_scanner) {
+    try { await _scanner.stop(); } catch(e) {}
+    try { _scanner.clear(); }     catch(e) {}
+    _scanner = null;
+  }
+  $('mscanner').classList.remove('on');
+  document.body.style.overflow = '';
+  _scanCooldown = false;
+  const fc = $('scn-found-card'); if (fc) fc.style.display = 'none';
+  const na = $('scan-notfound-area'); if (na) na.style.display = 'none';
+  if ($('scan-manual-input')) $('scan-manual-input').value = '';
+}
+
+/* Abre scanner para preencher o campo EAN-13 do modal de produto */
+function openScannerForField() { openScanner('field'); }
+
+/* Abre scanner para cadastrar produto novo pelo código */
+function openScannerForNewProd() { openScanner('new-prod'); }
+
+/* Input manual de código de barras no scanner */
+function scanManualInput(val) {
+  const clean = val.replace(/\D/g,'');
+  const inp   = $('scan-manual-input');
+  if (inp && clean !== val) inp.value = clean;
+  /* Auto-submete se atingiu 13 dígitos */
+  if (clean.length >= 13) scanManualSubmit();
+}
+function scanManualSubmit() {
+  const val = ($('scan-manual-input')?.value || '').replace(/\D/g,'');
+  if (!val) return;
+  onScanResult(val);
+  if ($('scan-manual-input')) $('scan-manual-input').value = '';
+}
+
+/* Gerar cupom a partir do histórico de vendas */
+function gerarCupomPedido(id) {
+  const p = DB.peds.find(x => x.id === id);
+  if (!p) return;
+  const c = DB.clis.find(x => x.id === p.cid);
+  showCupom(p, c || { nm: '—', tel: '' }, null);
 }
 
 function confirmV() {
@@ -1261,7 +2336,45 @@ function srchSt(s) { document.querySelectorAll('#ptt tr').forEach(r => { r.style
 /* ── Gráficos ────────────────────────────────────── */
 let _c = {};
 function dc(id) { if (_c[id]) { _c[id].destroy(); delete _c[id]; } }
-const ca = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Inter', size: 11, weight: '300' }, color: '#64748b' } } }, scales: { x: { ticks: { color: '#64748b', font: { size: 10, family: 'Inter', weight: '300' } }, grid: { color: '#e5e7eb', lineWidth: 1 } }, y: { ticks: { color: '#64748b', font: { size: 10, family: 'Inter', weight: '300' } }, grid: { color: '#e5e7eb', lineWidth: 1 } } } };
+
+/* Base chart config — Shorti design system */
+const ca = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      labels: {
+        font: { family: 'Inter', size: 12, weight: '500' },
+        color: '#6B7280',
+        padding: 16,
+        usePointStyle: true,
+        pointStyleWidth: 8,
+      }
+    },
+    tooltip: {
+      backgroundColor: '#111827',
+      titleColor: '#F9FAFB',
+      bodyColor: '#9CA3AF',
+      padding: 12,
+      cornerRadius: 10,
+      titleFont: { family: 'Inter', size: 13, weight: '600' },
+      bodyFont:  { family: 'Inter', size: 12 },
+      displayColors: false,
+    }
+  },
+  scales: {
+    x: {
+      border: { display: false },
+      grid: { display: false },
+      ticks: { color: '#9CA3AF', font: { size: 12, family: 'Inter' }, maxRotation: 0 }
+    },
+    y: {
+      border: { display: false },
+      grid: { color: '#F3F4F6', lineWidth: 1 },
+      ticks: { color: '#9CA3AF', font: { size: 12, family: 'Inter' } }
+    }
+  }
+};
 
 function _lastMonths(n) {
   const now = new Date(), ym = [], lb = [];
@@ -1277,24 +2390,100 @@ function rDashCharts() {
   dc('fat'); dc('cat');
   const cf = $('ch-fat'), cc = $('ch-cat');
 
+  /* ── Faturamento — área com gradiente ── */
   if (cf) {
     const { ym, lb } = _lastMonths(6);
-    const data = ym.map(m => DB.peds.filter(p => p.dt?.startsWith(m)).reduce((a, b) => a + b.tot, 0));
-    _c.fat = new Chart(cf, { type: 'bar', data: { labels: lb, datasets: [{ data, backgroundColor: 'rgba(36,96,90,.95)', borderRadius: 6, label: 'R$' }] }, options: { ...ca } });
+    const data = ym.map(m => DB.peds.filter(p => p.dt?.startsWith(m)).reduce((a,b) => a+b.tot, 0));
+    const ctx = cf.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 220);
+    grad.addColorStop(0, 'rgba(37,99,235,.18)');
+    grad.addColorStop(1, 'rgba(37,99,235,0)');
+    _c.fat = new Chart(cf, {
+      type: 'line',
+      data: {
+        labels: lb,
+        datasets: [{
+          label: 'Faturamento',
+          data,
+          borderColor: '#2563EB',
+          backgroundColor: grad,
+          fill: true,
+          tension: 0.45,
+          borderWidth: 2.5,
+          pointRadius: 5,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#2563EB',
+          pointBorderWidth: 2.5,
+          pointHoverRadius: 7,
+        }]
+      },
+      options: {
+        ...ca,
+        plugins: {
+          ...ca.plugins,
+          legend: { display: false },
+          tooltip: {
+            ...ca.plugins.tooltip,
+            callbacks: { label: ctx => ' ' + brl(ctx.parsed.y) }
+          }
+        },
+        scales: {
+          x: { ...ca.scales.x },
+          y: {
+            ...ca.scales.y,
+            ticks: {
+              ...ca.scales.y.ticks,
+              callback: v => v === 0 ? '' : 'R$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v)
+            }
+          }
+        }
+      }
+    });
   }
 
+  /* ── Categorias — donut moderno ── */
   if (cc) {
-    const cats = ['pele', 'maquiagem', 'corpo', 'fragrancias'];
-    const catLabels = ['Skincare', 'Maquiagem', 'Corpo', 'Fragrâncias'];
-    const catData = cats.map(cat => {
+    const cats      = ['pele','maquiagem','corpo','fragrancias'];
+    const catLabels = ['Skincare','Maquiagem','Corpo','Fragrâncias'];
+    const catColors = ['#2563EB','#7C3AED','#059669','#EA580C'];
+    const catData   = cats.map(cat => {
       const names = new Set(DB.prods.filter(p => p.cat === cat).map(p => p.nm));
-      return DB.peds.filter(p => names.has(p.prod)).reduce((a, b) => a + b.q, 0);
+      return DB.peds.reduce((a,p) => {
+        if (p.itens) return a + p.itens.filter(i => names.has(i.nm)).reduce((s,i) => s+i.q, 0);
+        return names.has(p.prod) ? a + p.q : a;
+      }, 0);
     });
     const hasData = catData.some(v => v > 0);
     _c.cat = new Chart(cc, {
       type: 'doughnut',
-      data: { labels: catLabels, datasets: [{ data: hasData ? catData : [1, 1, 1, 1], backgroundColor: ['#24605a', '#5f7d78', '#7aa99f', '#a9c3bd'], borderWidth: 0 }] },
-      options: { ...ca, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11, weight: '300' }, color: '#64748b' } } } }
+      data: {
+        labels: catLabels,
+        datasets: [{
+          data: hasData ? catData : [1,1,1,1],
+          backgroundColor: catColors,
+          borderWidth: 3,
+          borderColor: '#fff',
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        ...ca,
+        cutout: '68%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              font: { family: 'Inter', size: 12, weight: '500' },
+              color: '#374151', padding: 16,
+              usePointStyle: true, pointStyleWidth: 10,
+            }
+          },
+          tooltip: {
+            ...ca.plugins.tooltip,
+            callbacks: { label: ctx => `  ${ctx.label}: ${ctx.parsed} vendas` }
+          }
+        }
+      }
     });
   }
 }
@@ -1304,12 +2493,34 @@ function rFlxChart() {
   const c = $('ch-flx');
   if (!c) return;
   const { ym, lb } = _lastMonths(6);
-  const rec = ym.map(m => DB.trans.filter(t => t.tp === 'receita' && t.dt?.startsWith(m)).reduce((a, b) => a + b.vl, 0));
-  const des = ym.map(m => DB.trans.filter(t => t.tp === 'despesa' && t.dt?.startsWith(m)).reduce((a, b) => a + b.vl, 0));
-  _c.flx = new Chart(c, { type: 'line', data: { labels: lb, datasets: [
-    { label: 'Receita', data: rec, borderColor: '#24605a', backgroundColor: 'rgba(36,96,90,.16)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 4 },
-    { label: 'Despesa', data: des, borderColor: '#d45d5d', backgroundColor: 'rgba(212,93,93,.14)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 4 }
-  ] }, options: { ...ca } });
+  const rec = ym.map(m => DB.trans.filter(t => t.tp==='receita' && t.dt?.startsWith(m)).reduce((a,b) => a+b.vl, 0));
+  const des = ym.map(m => DB.trans.filter(t => t.tp==='despesa' && t.dt?.startsWith(m)).reduce((a,b) => a+b.vl, 0));
+  const ctx = c.getContext('2d');
+  const gRec = ctx.createLinearGradient(0,0,0,220);
+  gRec.addColorStop(0, 'rgba(5,150,105,.18)'); gRec.addColorStop(1, 'rgba(5,150,105,0)');
+  const gDes = ctx.createLinearGradient(0,0,0,220);
+  gDes.addColorStop(0, 'rgba(220,38,38,.14)'); gDes.addColorStop(1, 'rgba(220,38,38,0)');
+  _c.flx = new Chart(c, {
+    type: 'line',
+    data: { labels: lb, datasets: [
+      { label: 'Receita', data: rec, borderColor: '#059669', backgroundColor: gRec, fill: true, tension: 0.45, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderColor: '#059669', pointBorderWidth: 2 },
+      { label: 'Despesa', data: des, borderColor: '#DC2626', backgroundColor: gDes, fill: true, tension: 0.45, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderColor: '#DC2626', pointBorderWidth: 2 }
+    ]},
+    options: {
+      ...ca,
+      plugins: {
+        ...ca.plugins,
+        tooltip: {
+          ...ca.plugins.tooltip,
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${brl(ctx.parsed.y)}` }
+        }
+      },
+      scales: {
+        x: { ...ca.scales.x },
+        y: { ...ca.scales.y, ticks: { ...ca.scales.y.ticks, callback: v => v === 0 ? '' : 'R$'+(v>=1000?(v/1000).toFixed(0)+'k':v) } }
+      }
+    }
+  });
 }
 
 function rRel() {

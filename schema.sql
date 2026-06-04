@@ -21,6 +21,7 @@ create table if not exists products (
   bump        integer,
   description text         not null default '',
   feats       text[]       not null default '{}',
+  bc          text,                              -- código de barras EAN-13
   created_at  timestamptz  not null default now()
 );
 

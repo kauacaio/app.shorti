@@ -2,354 +2,535 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acesso — Milena Lima Beauty</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./store.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Shorti — Entrar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* Ocultar botões nativos do navegador dentro dos inputs */
-    input::-webkit-credentials-auto-fill-button,
-    input::-webkit-contacts-auto-fill-button { visibility: hidden; display: none !important; pointer-events: none; }
-    input::-ms-reveal, input::-ms-clear { display: none; }
-    /* Fundo do autofill */
-    input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px #fff inset !important; -webkit-text-fill-color: #1a1714 !important; }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body { height: 100%; }
-
-    body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      display: flex;
-      min-height: 100vh;
+    :root {
+      --blue:   #1B44B8;
+      --blue-h: #1538A0;
+      --blue-l: #EFF4FF;
+      --blue-g: rgba(27,68,184,.12);
+      --ok:     #10B981;
+      --err:    #EF4444;
+      --tx:     #0F172A;
+      --tx-m:   #64748B;
+      --tx-s:   #94A3B8;
+      --bd:     #E2E8F0;
+      --bd-s:   #CBD5E1;
     }
 
-    /* ── Painel esquerdo ─────────────────────────── */
-    .login-left {
-      width: 360px;
-      flex-shrink: 0;
-      background: #18251f;
-      background-image:
-        radial-gradient(ellipse 260px 200px at 50% 5%, rgba(196,137,122,.18) 0%, transparent 100%),
-        linear-gradient(175deg, #1e2e26 0%, #111c17 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 48px 40px 36px;
-      position: relative;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: #fff;
+      color: var(--tx);
       overflow: hidden;
     }
 
-    .login-left::after {
+    input::-webkit-contacts-auto-fill-button,
+    input::-webkit-credentials-auto-fill-button { visibility: hidden; width: 0; pointer-events: none; }
+
+    /* ════ LAYOUT ════════════════════════════════════ */
+    .page { display: grid; grid-template-columns: 1.1fr .9fr; height: 100vh; }
+
+    /* ════ LEFT ══════════════════════════════════════ */
+    .brand {
+      position: relative;
+      background: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 72px 80px;
+      overflow: hidden;
+    }
+
+    /* single large circle — only decoration */
+    .brand::after {
       content: '';
       position: absolute;
-      bottom: -60px;
-      right: -40px;
-      width: 260px;
-      height: 260px;
-      background: radial-gradient(circle, rgba(61,102,85,.4) 0%, transparent 70%);
+      width: 520px; height: 520px;
       border-radius: 50%;
+      border: 1px solid rgba(27,68,184,.08);
+      top: 50%; left: 55%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    /* second ring */
+    .brand-ring {
+      position: absolute;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      border: 1px solid rgba(27,68,184,.06);
+      top: 50%; left: 55%;
+      transform: translate(-50%, -50%);
       pointer-events: none;
     }
 
-    .left-top { position: relative; z-index: 1; }
+    /* dot grid */
+    .brand-grid {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(27,68,184,.09) 1px, transparent 1px);
+      background-size: 28px 28px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 45% 50%, black 5%, transparent 100%);
+      mask-image: radial-gradient(ellipse 80% 80% at 45% 50%, black 5%, transparent 100%);
+    }
 
-    .left-monogram {
-      font-size: 22px;
-      color: #D4957F;
-      margin-bottom: 28px;
+    /* brand content */
+    .b-inner { position: relative; z-index: 1; }
+
+    .eyebrow {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--tx-s); margin-bottom: 24px;
+      opacity: 0; animation: fadeUp .5s ease .05s forwards;
+    }
+    .e-bars { display: flex; align-items: flex-end; gap: 2px; }
+    .e-bar  { background: var(--blue); border-radius: 1.5px; transform: skewX(-14deg); }
+    .e-bar:nth-child(1) { width: 3px; height: 8px; opacity: .5; }
+    .e-bar:nth-child(2) { width: 3.5px; height: 11px; }
+
+    /* wordmark */
+    .wm {
       display: block;
-      opacity: .85;
+      font-size: clamp(84px, 11.5vw, 134px);
+      font-weight: 900;
+      letter-spacing: -.055em;
+      line-height: .92;
+      color: var(--tx);
+      white-space: nowrap;
+      user-select: none;
+      margin-bottom: 28px;
+    }
+    .wl {
+      display: inline-block;
+      opacity: 0;
+      animation: lpop .65s cubic-bezier(.34,1.56,.64,1) both;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+      cursor: default;
+    }
+    .wl-dot {
+      background: linear-gradient(135deg, var(--blue) 0%, #7C3AED 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: lpop .65s cubic-bezier(.34,1.56,.64,1) .48s both;
+    }
+    .wl:nth-child(1){animation-delay:.06s} .wl:nth-child(2){animation-delay:.12s}
+    .wl:nth-child(3){animation-delay:.18s} .wl:nth-child(4){animation-delay:.24s}
+    .wl:nth-child(5){animation-delay:.30s} .wl:nth-child(6){animation-delay:.36s}
+    @keyframes lpop { to { opacity: 1; transform: none; } }
+
+    .brand-line {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, var(--blue) 0%, rgba(27,68,184,.2) 100%);
+      border-radius: 2px;
+      opacity: 0; animation: fadeUp .5s ease .52s forwards;
     }
 
-    .left-brand {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 30px;
-      font-weight: 300;
-      color: #F5F4F2;
-      line-height: 1.2;
-      letter-spacing: .02em;
-    }
-
-    .left-brand em {
-      color: #D4957F;
-      font-style: italic;
-    }
-
-    .left-tagline {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: .22em;
-      color: rgba(255,255,255,.25);
-      margin-top: 8px;
-    }
-
-    .left-divider {
-      width: 32px;
-      height: 1px;
-      background: #D4957F;
-      opacity: .45;
-      margin: 28px 0;
-    }
-
-    .left-desc {
-      font-size: 13px;
-      color: rgba(255,255,255,.36);
-      line-height: 1.75;
-    }
-
-    .left-footer {
-      font-size: 11px;
-      color: rgba(255,255,255,.18);
-      position: relative;
-      z-index: 1;
-    }
-
-    /* ── Painel direito ──────────────────────────── */
-    .login-right {
-      flex: 1;
-      background: #FDFCFB;
+    /* ════ RIGHT ═════════════════════════════════════ */
+    .form-side {
+      background: #fff;
+      border-left: 1px solid #F1F5F9;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 48px 40px;
     }
 
-    .login-card {
+    .card {
+      width: 100%; max-width: 340px;
+      opacity: 0; animation: cardIn .7s cubic-bezier(.16,1,.3,1) .22s forwards;
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+    .c-title {
+      font-size: 21px; font-weight: 700;
+      letter-spacing: -.03em; color: var(--tx);
+      margin-bottom: 4px;
+    }
+    .c-sub {
+      font-size: 13px; color: var(--tx-m);
+      line-height: 1.5; margin-bottom: 28px;
+    }
+
+    /* ── Fields ─────────────────────────────────────── */
+    .field { position: relative; margin-bottom: 12px; }
+
+    .field input {
       width: 100%;
-      max-width: 360px;
-      box-shadow: none;
-      border: none;
-      background: transparent;
-      padding: 0;
-    }
-
-    .login-card::before { display: none; }
-
-    .login-monogram { display: none; }
-
-    .login-brand {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      font-size: 22px;
-      font-weight: 600;
-      color: #18181B;
-      letter-spacing: -.02em;
-    }
-
-    .login-eyebrow {
-      font-size: 13px;
-      color: #71717A;
-      margin-top: 4px;
-    }
-
-    .login-divider {
-      width: 32px;
-      height: 2px;
-      background: #D4957F;
-      opacity: .5;
-      margin: 20px 0;
-    }
-
-    .login-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 500;
-      color: #52525B;
-      margin-bottom: 6px;
-    }
-
-    .login-input-wrap { position: relative; }
-
-    .login-input {
-      width: 100%;
-      height: 42px;
-      padding: 0 14px;
-      font-family: 'DM Sans', system-ui, sans-serif;
-      font-size: 14px;
-      color: #18181B;
+      height: 52px;
       background: #fff;
-      border: 1px solid rgba(26,23,20,.15);
-      border-radius: 8px;
+      border: 1.5px solid var(--bd);
+      border-radius: 10px;
+      padding: 18px 44px 6px 14px;
+      font-size: 14.5px;
+      font-family: 'Inter', sans-serif;
+      color: var(--tx);
       outline: none;
-      transition: border-color .15s, box-shadow .15s;
+      caret-color: var(--blue);
+      transition: border-color .16s, box-shadow .16s;
+      appearance: none; -webkit-appearance: none;
+    }
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(27,68,184,.08);
     }
 
-    .login-input:focus {
-      border-color: rgba(61,102,85,.5);
-      box-shadow: 0 0 0 3px rgba(61,102,85,.1);
-    }
-
-    .login-eye {
+    .field label {
       position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #A1A1AA;
-      font-size: 14px;
-      padding: 2px;
-      line-height: 1;
+      left: 14px;
+      top: 50%; transform: translateY(-50%);
+      font-size: 14px; color: var(--tx-s);
+      pointer-events: none;
+      transition: top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, letter-spacing .18s ease;
+    }
+    .field input:focus ~ label,
+    .field input.v ~ label {
+      top: 9px; transform: none;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--blue);
+    }
+
+    /* right icon slot */
+    .fr {
+      position: absolute; right: 12px;
+      top: 50%; transform: translateY(-50%);
+      display: flex; align-items: center;
+    }
+    .fbtn {
+      background: none; border: none; cursor: pointer;
+      color: var(--tx-s); padding: 4px; border-radius: 6px;
+      display: flex; align-items: center;
       transition: color .14s;
     }
+    .fbtn:hover { color: var(--tx-m); }
+    .fchk { display: none; color: var(--ok); }
+    .fchk.on { display: flex; animation: popIn .25s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
-    .login-eye:hover { color: #52525B; }
+    /* ring ripple — subtle, monochrome */
+    .ring {
+      position: absolute; inset: -2px; border-radius: 12px;
+      border: 1px solid var(--blue);
+      animation: ringOut .5s ease-out forwards;
+      pointer-events: none; z-index: 4;
+    }
+    @keyframes ringOut { 0%{opacity:.4;transform:scale(1)} 100%{opacity:0;transform:scale(1.04)} }
 
-    .login-error {
-      font-size: 12px;
-      color: #DC2626;
-      margin: 10px 0 0;
-      display: none;
+    /* strength bar */
+    .str-bar { height: 2px; background: var(--bd); border-radius: 1px; margin-top: 6px; overflow: hidden; }
+    .str-fill { height: 100%; border-radius: 1px; width: 0; background: var(--blue); transition: width .4s cubic-bezier(.16,1,.3,1), opacity .3s; opacity: 0; }
+
+    /* error */
+    .field.e input { border-color: var(--err); box-shadow: 0 0 0 3px rgba(239,68,68,.08); animation: shk .4s both; }
+    .field.e label { color: var(--err) !important; }
+    .fmsg { font-size: 11.5px; color: var(--err); margin-top: 4px; margin-left: 2px; display: none; }
+    .field.e .fmsg { display: block; animation: fadeUp .18s ease; }
+    @keyframes shk { 0%,100%{transform:none} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+
+    /* forgot */
+    .forgot { text-align: right; margin-bottom: 20px; }
+    .forgot a { font-size: 12px; color: var(--tx-m); text-decoration: none; transition: color .14s; }
+    .forgot a:hover { color: var(--blue); }
+
+    /* submit */
+    .btn {
+      width: 100%; height: 46px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 14.5px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; position: relative; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(27,68,184,.22);
+      transition: background .16s, box-shadow .16s, transform .12s;
+      letter-spacing: -.01em;
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--blue-h);
+      box-shadow: 0 6px 22px rgba(27,68,184,.30);
+      transform: translateY(-1px);
+    }
+    .btn:active:not(:disabled) { transform: scale(.99); }
+    .btn:disabled { opacity: .7; cursor: not-allowed; transform: none !important; }
+    .btn::before {
+      content: ''; position: absolute;
+      top: 0; bottom: 0; left: -100%; width: 60%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      transform: skewX(-18deg);
+      transition: left .5s ease;
+    }
+    .btn:hover::before { left: 160%; }
+    .bi { display:flex; align-items:center; justify-content:center; gap:8px; position:relative; z-index:1; }
+    .sp { display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+    .btn.ld .lbl{display:none} .btn.ld .sp{display:block}
+
+    .alert {
+      display:none; margin-top:12px;
+      padding:10px 14px;
+      background:#FEF2F2; border:1px solid #FECACA;
+      border-radius:8px; font-size:12.5px; color:#B91C1C;
+      animation:fadeUp .2s ease;
     }
 
-    .login-error.on { display: block; }
-
-    .login-btn {
-      width: 100%;
-      height: 42px;
-      margin-top: 20px;
-      background: #2a5244;
-      color: #FAFAFA;
-      border: none;
-      border-radius: 8px;
-      font-family: 'DM Sans', system-ui, sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .14s;
+    /* divider */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0; color: var(--tx-s); font-size: 12px;
     }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--bd); }
 
-    .login-btn:hover { background: #1c3930; }
-    .login-btn:disabled { opacity: .6; cursor: not-allowed; }
-
-    .login-back {
-      display: block;
-      margin-top: 20px;
-      font-size: 12px;
-      color: #71717A;
-      text-decoration: none;
-      text-align: center;
-      transition: color .14s;
+    /* footer */
+    .footer { margin-top: 22px; text-align: center; }
+    .gl {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 11px; color: var(--tx-s);
+      text-decoration: none; padding: 5px 10px;
+      border-radius: 20px; transition: background .14s, color .14s;
     }
+    .gl:hover { background: #F8FAFC; color: var(--tx-m); }
+    .gbs { display:flex; align-items:flex-end; gap:2px; }
+    .gb  { background:var(--blue); border-radius:1.5px; transform:skewX(-14deg); }
+    .gb:nth-child(1){width:3px;height:8px;opacity:.5} .gb:nth-child(2){width:3.5px;height:11px}
+    .gnm { font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--blue); font-size:10px; }
 
-    .login-back:hover { color: #18181B; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+    @keyframes spin   { to{transform:rotate(360deg)} }
 
-    /* ── Shake animation ─────────────────────────── */
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      20%      { transform: translateX(-6px); }
-      40%      { transform: translateX(6px); }
-      60%      { transform: translateX(-4px); }
-      80%      { transform: translateX(4px); }
+    /* responsive */
+    @media (max-width: 860px) {
+      html, body { overflow: auto; }
+      .page { grid-template-columns: 1fr; height: auto; }
+      .brand { padding: 56px 36px 44px; min-height: 48vh; justify-content: flex-end; }
+      .wm { font-size: clamp(68px,15vw,96px); }
+      .form-side { padding: 52px 28px 60px; border-left: none; border-top: 1px solid #F1F5F9; }
+      .card { max-width: 400px; }
     }
-    .shake { animation: shake .38s ease; }
-
-    /* ── Mobile ──────────────────────────────────── */
-    @media (max-width: 680px) {
-      .login-left { display: none; }
-      .login-right { padding: 32px 20px; background: #F4F5F7; }
-      .login-card {
-        background: #fff;
-        border: 1px solid #E4E4E7;
-        border-radius: 16px;
-        padding: 32px 24px;
-        box-shadow: 0 2px 12px rgba(0,0,0,.06);
-      }
+    @media (max-width: 480px) {
+      .brand { padding: 44px 24px 36px; }
+      .wm { font-size: 64px; }
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
-  <script src="./supabase.js" defer></script>
 </head>
 <body>
 
-  <div class="login-left">
-    <div class="left-top">
-      <span class="left-monogram">✦</span>
-      <div class="left-brand">Milena Lima <em>Beauty</em></div>
-      <div class="left-tagline">Painel de gestão</div>
-      <div class="left-divider"></div>
-      <p class="left-desc">Gerencie pedidos, estoque, clientes e finanças da sua consultoria Mary Kay em um só lugar.</p>
+<div class="page">
+
+  <!-- ═══ LEFT ═══ -->
+  <div class="brand">
+    <div class="brand-grid"></div>
+    <div class="brand-ring"></div>
+
+    <div class="b-inner">
+      <div class="eyebrow">
+        <div class="e-bars"><div class="e-bar"></div><div class="e-bar"></div></div>
+        ERP · GrupoLima
+      </div>
+
+      <div class="wm" id="wm" aria-label="Shorti.">
+        <span class="wl">S</span><span
+        class="wl">h</span><span
+        class="wl">o</span><span
+        class="wl">r</span><span
+        class="wl">t</span><span
+        class="wl">i</span><span
+        class="wl wl-dot">.</span>
+      </div>
+
+      <div class="brand-line"></div>
     </div>
-    <div class="left-footer">© 2026 Milena Lima Beauty</div>
   </div>
 
-  <div class="login-right">
-    <div class="login-card" id="login-card">
-      <span class="login-monogram">✦</span>
-      <div class="login-brand">Acesso ao painel</div>
-      <p class="login-eyebrow">Digite suas credenciais</p>
-      <div class="login-divider"></div>
+  <!-- ═══ RIGHT ═══ -->
+  <div class="form-side">
+    <div class="card">
 
-      <form class="login-form" id="lf">
-        <label class="login-label" for="lem">E-mail</label>
-        <div class="login-input-wrap" style="margin-bottom:16px">
-          <input type="email" id="lem" class="login-input" placeholder="seu@email.com" autocomplete="email" required style="padding-right:18px">
+      <h2 class="c-title">Acesse sua conta</h2>
+      <p class="c-sub">Entre com suas credenciais para continuar.</p>
+
+      <form id="lf" novalidate>
+
+        <div class="field" id="f-em">
+          <input type="email" id="em" placeholder=" " autocomplete="email" inputmode="email">
+          <label for="em">E-mail</label>
+          <div class="fr">
+            <span class="fchk" id="emok">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2.5 7l3 3L11.5 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+          <p class="fmsg">E-mail inválido.</p>
         </div>
 
-        <label class="login-label" for="lpw">Senha</label>
-        <div class="login-input-wrap">
-          <input type="password" id="lpw" class="login-input" placeholder="••••••••" autocomplete="current-password" required>
-          <button type="button" id="leye" class="login-eye">◉</button>
+        <div class="field" id="f-pw">
+          <input type="password" id="pw" placeholder=" " autocomplete="current-password">
+          <label for="pw">Senha</label>
+          <div class="fr">
+            <button type="button" class="fbtn" id="eyeBtn" aria-label="Mostrar senha">
+              <svg id="eyeSvg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="str-bar"><div class="str-fill" id="sf"></div></div>
+          <p class="fmsg">Informe sua senha.</p>
         </div>
 
-        <p class="login-error" id="lerr">E-mail ou senha incorretos.</p>
-        <button type="submit" id="lbtn" class="login-btn">Entrar no painel</button>
+        <div class="forgot"><a href="#">Esqueceu a senha?</a></div>
+
+        <button type="submit" class="btn" id="btnGo">
+          <div class="bi">
+            <div class="sp"></div>
+            <span class="lbl">Entrar</span>
+          </div>
+        </button>
+
+        <div class="alert" id="fa"></div>
       </form>
 
-      <a href="index.html" class="login-back">← Voltar à loja</a>
+      <div class="footer">
+        <a href="grupolima.html" class="gl">
+          <div class="gbs"><div class="gb"></div><div class="gb"></div></div>
+          <span class="gnm">GrupoLima</span>
+        </a>
+      </div>
     </div>
   </div>
 
-  <script>
-    // Redirecionar se já autenticado
-    document.addEventListener('DOMContentLoaded', async () => {
-      if (window._sbClient) {
-        try {
-          const { data } = await window._sbClient.auth.getSession();
-          if (data?.session) { window.location.replace('erp.html'); }
-        } catch(e) {}
-      }
-    });
+</div>
 
-    document.getElementById('lf').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('lem').value.trim();
-      const pw    = document.getElementById('lpw');
-      const err   = document.getElementById('lerr');
-      const btn   = document.getElementById('lbtn');
-      const card  = document.getElementById('login-card');
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+<script src="./supabase.js" defer></script>
+<script>
+/* wordmark — subtle hover lift (max 8px, not 18px) */
+const letters = [...document.querySelectorAll('.wl')];
+function wave(idx) {
+  letters.forEach((l, i) => {
+    const d = Math.abs(idx - i);
+    const y = [8, 4, 1, 0][Math.min(d, 3)];
+    l.style.transform = `translateY(-${y}px)`;
+  });
+}
+function unwave() { letters.forEach(l => l.style.transform = ''); }
+letters.forEach((l, i) => {
+  l.addEventListener('mouseenter', () => wave(i));
+  l.addEventListener('mouseleave', unwave);
+});
 
-      err.classList.remove('on');
-      btn.disabled = true;
-      btn.textContent = 'Verificando…';
+/* ring ripple on keypress */
+function ring(el) {
+  const r = document.createElement('div');
+  r.className = 'ring';
+  el.appendChild(r);
+  r.addEventListener('animationend', () => r.remove());
+}
 
-      try {
-        await SBAuth.signIn(email, pw.value);
-        window.location.replace('erp.html');
-      } catch(ex) {
-        pw.value = '';
-        pw.focus();
-        err.classList.add('on');
-        card.classList.remove('shake');
-        void card.offsetWidth;
-        card.classList.add('shake');
-        btn.disabled = false;
-        btn.textContent = 'Entrar no painel';
-      }
-    });
+/* floating labels */
+document.querySelectorAll('.field input').forEach(inp => {
+  const s = () => inp.classList.toggle('v', inp.value.length > 0);
+  inp.addEventListener('input', s);
+  inp.addEventListener('blur', s);
+  s();
+});
 
-    document.getElementById('leye').addEventListener('click', () => {
-      const pw = document.getElementById('lpw');
-      pw.type = pw.type === 'password' ? 'text' : 'password';
-    });
-  </script>
-  <a href="grupolima.html" class="gl-badge">
-    <span class="gl-badge-bars">
-      <span class="gl-badge-bar"></span>
-      <span class="gl-badge-bar"></span>
-    </span>
-    <span class="gl-badge-text">GrupoLima</span>
-  </a>
+/* email — live checkmark */
+const emInp = document.getElementById('em');
+const emOk  = document.getElementById('emok');
+const fEm   = document.getElementById('f-em');
+emInp.addEventListener('keydown', () => ring(fEm));
+emInp.addEventListener('input', () => {
+  const v = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emInp.value.trim());
+  emOk.classList.toggle('on', v);
+  if (v) fEm.classList.remove('e');
+});
+
+/* password — strength bar only (monochrome) */
+const pwInp = document.getElementById('pw');
+const sf    = document.getElementById('sf');
+const fPw   = document.getElementById('f-pw');
+pwInp.addEventListener('keydown', () => ring(fPw));
+pwInp.addEventListener('input', () => {
+  const val = pwInp.value, len = val.length;
+  let score = 0;
+  if (len >= 4)  score++;
+  if (len >= 8)  score++;
+  if (/[A-Z]/.test(val) || /[0-9]/.test(val)) score++;
+  if (/[!@#$%^&*]/.test(val) && len >= 8) score++;
+
+  if (len === 0) { sf.style.width = '0'; sf.style.opacity = '0'; return; }
+  sf.style.opacity = '1';
+  const widths = ['20%', '40%', '70%', '85%', '100%'];
+  sf.style.width = widths[Math.min(score, 4)];
+});
+
+/* password toggle */
+const eyeBtn = document.getElementById('eyeBtn');
+const eyeSvg = document.getElementById('eyeSvg');
+const EYE_OFF = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+const EYE_ON  = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+eyeBtn.addEventListener('click', () => {
+  const show = pwInp.type === 'password';
+  pwInp.type = show ? 'text' : 'password';
+  eyeSvg.innerHTML = show ? EYE_OFF : EYE_ON;
+  eyeBtn.style.color = show ? 'var(--blue)' : '';
+});
+
+/* submit */
+const btn = document.getElementById('btnGo');
+const fa  = document.getElementById('fa');
+
+function setErr(id, msg) {
+  const f = document.getElementById(id);
+  f.classList.add('e');
+  if (msg) f.querySelector('.fmsg').textContent = msg;
+}
+function clr() {
+  document.querySelectorAll('.field.e').forEach(f => f.classList.remove('e'));
+  fa.style.display = 'none';
+}
+
+document.getElementById('lf').addEventListener('submit', async e => {
+  e.preventDefault();
+  clr();
+
+  const email = emInp.value.trim();
+  const pass  = pwInp.value;
+  let ok = true;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('f-em', 'E-mail inválido.'); ok = false; }
+  if (!pass) { setErr('f-pw', 'Informe sua senha.'); ok = false; }
+  if (!ok) return;
+
+  btn.disabled = true;
+  btn.classList.add('ld');
+
+  try {
+    if (typeof SBAuth !== 'undefined') {
+      await SBAuth.signIn(email, pass);
+    }
+    btn.style.background = '#059669';
+    btn.style.boxShadow  = '0 2px 12px rgba(5,150,105,.22)';
+    await new Promise(r => setTimeout(r, 700));
+    window.location.href = 'erp.html';
+  } catch (err) {
+    btn.classList.remove('ld');
+    btn.disabled = false;
+    btn.style.background = '';
+    btn.style.boxShadow  = '';
+    const m = err?.message || '';
+    fa.textContent = m.toLowerCase().includes('invalid') || m.toLowerCase().includes('credentials')
+      ? 'Credenciais incorretas. Tente novamente.'
+      : (m || 'Erro ao entrar. Tente novamente.');
+    fa.style.display = 'block';
+  }
+});
+</script>
 </body>
 </html>
