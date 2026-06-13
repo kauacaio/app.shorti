@@ -2,12 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#ffffff">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Shorti-ERP</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./erp.css">
@@ -21,95 +22,13 @@
 <body>
   <div class="toast" id="toast"></div>
 
-  <!-- ── Release Modal ─────────────────────────────── -->
-  <div class="rl-ov" id="rl-ov">
-    <div class="rl-blob" id="rl-blob"></div>
-    <div class="rl-ptcl" aria-hidden="true">
-      <span></span><span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-
-    <div class="rl-wrap">
-      <div class="rl-story" id="rl-story">
-        <div class="rl-seg act"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-      </div>
-
-      <button class="rl-x" onclick="rlClose()" aria-label="Fechar">✕</button>
-
-      <div class="rl-scenes">
-
-        <!-- Cena 0: Intro -->
-        <div class="rl-scene rl-s0 on" data-scene="0">
-          <div class="rl-glyph">✦</div>
-          <div class="rl-mask"><span class="rl-line rl-kicker">Milena Lima Beauty</span></div>
-          <div class="rl-mask"><span class="rl-line rl-big">O que há<br>de <em>novo.</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-date">Versão 2.1 · Junho 2026</span></div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Ver novidades →</button></div>
-        </div>
-
-        <!-- Cena 1: Histórico de Vendas -->
-        <div class="rl-scene" data-scene="1">
-          <div class="rl-ghost">01</div>
-          <div class="rl-num">01</div>
-          <span class="rl-pill new">Novo</span>
-          <div class="rl-mask"><span class="rl-line rl-feat-t">Histórico de<br><em>Vendas</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-feat-d">Uma tela dedicada para visualizar e filtrar todas as vendas do painel em tempo real.</span></div>
-          <div class="rl-grid">
-            <div class="rl-gc"><span class="rl-gi">🔍</span><span class="rl-gl">Busca por cliente</span></div>
-            <div class="rl-gc"><span class="rl-gi">📅</span><span class="rl-gl">Filtro por data</span></div>
-            <div class="rl-gc"><span class="rl-gi">📊</span><span class="rl-gl">KPIs dinâmicos</span></div>
-            <div class="rl-gc"><span class="rl-gi">⚡</span><span class="rl-gl">Status em 1 clique</span></div>
-          </div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Próximo →</button></div>
-        </div>
-
-        <!-- Cena 2: Fiado & Cupom -->
-        <div class="rl-scene" data-scene="2">
-          <div class="rl-ghost">02</div>
-          <div class="rl-num">02</div>
-          <span class="rl-pill amb">Novo</span>
-          <div class="rl-mask"><span class="rl-line rl-feat-t">Fiado &<br><em>Cupom</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-feat-d">Controle de vendas no fiado com cupom de compra e envio direto pelo WhatsApp.</span></div>
-          <div class="rl-grid">
-            <div class="rl-gc"><span class="rl-gi">⬤</span><span class="rl-gl">Painel A Receber</span></div>
-            <div class="rl-gc"><span class="rl-gi">📋</span><span class="rl-gl">Cupom automático</span></div>
-            <div class="rl-gc"><span class="rl-gi">⏰</span><span class="rl-gl">Alertas de vencimento</span></div>
-            <div class="rl-gc"><span class="rl-gi">💬</span><span class="rl-gl">Envio por WhatsApp</span></div>
-          </div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Próximo →</button></div>
-        </div>
-
-        <!-- Cena 3: Extrato Mensal -->
-        <div class="rl-scene" data-scene="3">
-          <div class="rl-ghost">03</div>
-          <div class="rl-num">03</div>
-          <span class="rl-pill fix">Melhoria</span>
-          <div class="rl-mask"><span class="rl-line rl-feat-t">Extrato<br><em>Mensal</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-feat-d">Demonstrativo financeiro completo com navegação por mês, KPIs de faturamento e análise de clientes.</span></div>
-          <div class="rl-grid">
-            <div class="rl-gc"><span class="rl-gi">◈</span><span class="rl-gl">Navegação por mês</span></div>
-            <div class="rl-gc"><span class="rl-gi">$</span><span class="rl-gl">KPIs mensais</span></div>
-            <div class="rl-gc"><span class="rl-gi">◎</span><span class="rl-gl">Top clientes</span></div>
-            <div class="rl-gc"><span class="rl-gi">🖨</span><span class="rl-gl">Exportar / imprimir</span></div>
-          </div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Próximo →</button></div>
-        </div>
-
-        <!-- Cena 4: Fim -->
-        <div class="rl-scene rl-s4" data-scene="4">
-          <div class="rl-ghost" style="font-size:190px;right:-8px;bottom:20px">✦</div>
-          <div class="rl-num">✦</div>
-          <div class="rl-mask"><span class="rl-line rl-fin-t">Tudo<br><em>pronto.</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-fin-s">Todas as novidades já estão disponíveis no painel.</span></div>
-          <button class="rl-cta" onclick="rlClose()">Começar →</button>
-        </div>
-
-      </div>
-    </div>
+  <!-- ── Release Modal — carrega release.html ─────────── -->
+  <script>if(localStorage.getItem('srt_rl_v1'))document.write('<style>#rl-ov{display:none!important}</style>');</script>
+  <div class="rl-ov on" id="rl-ov">
+    <button class="rl-x" onclick="rlClose()" aria-label="Fechar">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <iframe class="rl-frame" id="rl-frame" src="comercial/release.html" title="Lançamento Shorti"></iframe>
   </div>
 
   <!-- Popup extrato fechado -->
@@ -117,19 +36,19 @@
     <div class="ext-popup-inner">
       <div class="ext-popup-hd">
         <div class="ext-popup-hd-row">
-          <span class="ext-popup-badge">✦ Extrato fechado</span>
+          <span class="ext-popup-badge">
+            <span class="ext-popup-bars"><span></span><span></span></span>
+            Extrato fechado
+          </span>
           <button class="ext-popup-x" onclick="dismissPopup()" title="Fechar">✕</button>
         </div>
-        <div class="ext-popup-sparks" aria-hidden="true">
-          <span class="ext-popup-sp">✦</span>
-          <span class="ext-popup-sp">✦</span>
-          <span class="ext-popup-sp">✦</span>
-        </div>
+        <div class="ext-popup-month" id="ext-popup-month">—</div>
+        <div class="ext-popup-label">Shorti · Milena Lima Beauty</div>
       </div>
-      <div class="ext-popup-month" id="ext-popup-month">—</div>
-      <div class="ext-popup-label">Milena Lima Beauty</div>
-      <div class="ext-popup-stats" id="ext-popup-stats"></div>
-      <button class="ext-popup-btn" onclick="_extY=0;_extM=0;epage('extrato',null);dismissPopup()">Ver extrato completo →</button>
+      <div class="ext-popup-body">
+        <div class="ext-popup-stats" id="ext-popup-stats"></div>
+        <button class="ext-popup-btn" onclick="_extY=0;_extM=0;epage('extrato',null);dismissPopup()">Ver extrato completo →</button>
+      </div>
     </div>
   </div>
 
@@ -237,6 +156,25 @@
     </aside>
 
     <main class="erp-main">
+      <!-- ── Header mobile — navy, dot-grid + glow ── -->
+      <header class="erp-mob-header mob-only is-dash">
+        <div class="emh-glow emh-glow-1" aria-hidden="true"></div>
+        <div class="emh-glow emh-glow-2" aria-hidden="true"></div>
+        <div class="emh-topbar">
+          <div class="emh-id">
+            <span class="emh-bars" aria-hidden="true"><span></span><span></span></span>
+            <span class="emh-name">Shorti<b>.</b></span>
+          </div>
+          <button class="emh-bell" aria-label="Notificações" onclick="toggleNotifPanel()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="emh-bell-dot" id="notif-badge-mobile" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="emh-greet">
+          <p class="emh-greet-ctx" id="emh-ctx">Dashboard</p>
+          <h1 class="emh-greet-name" id="emh-name">Olá, <b>Milena</b></h1>
+        </div>
+      </header>
       <!-- Background orbs — profundidade sem chamar atenção -->
       <div class="erp-orbs" aria-hidden="true">
         <div class="orb orb-blue"></div>
@@ -251,6 +189,10 @@
           <button class="btn btn-primary" onclick="openCQ()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Consultar produto
+          </button>
+          <button class="topbar-bell" onclick="toggleNotifPanel()" aria-label="Notificações">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="notif-badge-desktop"></span>
           </button>
         </div>
       </div>
@@ -268,26 +210,10 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Extrato
               </button>
-              <button class="btn btn-primary" onclick="openMod('mv')">
+              <button class="btn btn-primary" onclick="if(window.innerWidth<=768)mobNav('nvenda');else epage('nvenda',null)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Nova venda
               </button>
-            </div>
-          </div>
-
-          <!-- Banner extrato fechado -->
-          <div id="dash-banner" class="dash-banner" style="display:none">
-            <div class="dash-banner-sparks" aria-hidden="true">
-              <span class="dash-banner-spark">✦</span><span class="dash-banner-spark">✦</span><span class="dash-banner-spark">✦</span>
-            </div>
-            <div class="dash-banner-icon">✦</div>
-            <div class="dash-banner-body">
-              <div class="dash-banner-title">Extrato de <span id="dash-banner-mes"></span> disponível</div>
-              <div class="dash-banner-sub">Confira o resumo de vendas e recebimentos.</div>
-            </div>
-            <div class="dash-banner-actions">
-              <button class="dash-banner-btn" onclick="_extY=0;_extM=0;epage('extrato', null)">Ver extrato →</button>
-              <button class="dash-banner-dismiss" onclick="dismissBanner()">✕</button>
             </div>
           </div>
 
@@ -328,7 +254,8 @@
               </div>
               <button class="btn btn-mini btn-outline" onclick="epage('historico',null)">Ver histórico →</button>
             </div>
-            <div id="dash-rec" class="order-list"></div>
+            <div id="dash-rec" class="order-list mob-hide"></div>
+            <div id="dash-rec-cards" class="rb-cards mob-only"></div>
           </div>
 
         </section>
@@ -345,7 +272,8 @@
             <article class="summary-card"><div>Vencido</div><div class="summary-value" id="r-vencido" style="color:#DC2626">R$ 0,00</div><div class="summary-meta" style="color:#DC2626">prazo expirado</div></article>
             <article class="summary-card"><div>Qtd. pendente</div><div class="summary-value" id="r-qtd">0</div><div class="summary-meta" style="color:#71717A">clientes com saldo</div></article>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>WhatsApp</th><th>Produto</th><th>Total</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody id="rbtt"></tbody></table></div></div>
+          <div class="card data-card mob-hide"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>WhatsApp</th><th>Produto</th><th>Total</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody id="rbtt"></tbody></table></div></div>
+          <div class="rb-cards mob-only" id="rbcards"></div>
         </section>
 
         <section class="erp-page" id="ep-historico">
@@ -380,7 +308,7 @@
           <div class="dashboard-grid" style="margin-bottom:24px" id="hv-kpis"></div>
 
           <!-- Tabela -->
-          <article class="data-card">
+          <article class="data-card mob-hide">
             <div class="table-shell">
               <table>
                 <thead><tr><th>#</th><th>Data</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th><th>Ações</th></tr></thead>
@@ -388,6 +316,7 @@
               </table>
             </div>
           </article>
+          <div class="rb-cards mob-only" id="hvcards"></div>
         </section>
 
         <!-- ── Filter Drawer — Histórico ───────────────── -->
@@ -449,7 +378,7 @@
             <button class="hv-chip solic-fc" onclick="solcFtr(this,'Recebido')">Recebido</button>
           </div>
 
-          <div class="card data-card">
+          <div class="card data-card mob-hide">
             <div class="table-shell">
               <table>
                 <thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th>Preço est.</th><th>Obs.</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead>
@@ -457,6 +386,7 @@
               </table>
             </div>
           </div>
+          <div class="rb-cards mob-only" id="solcards"></div>
         </section>
 
         <section class="erp-page" id="ep-nvenda">
@@ -478,6 +408,7 @@
               <span>Pagamento</span>
             </div>
           </div>
+          <div class="nv-step-label" id="nv-step-label">Cliente</div>
 
           <!-- ════ ETAPA 1 — CLIENTE ════ -->
           <div class="nv-panel on" id="nv-s1">
@@ -512,59 +443,80 @@
 
           <!-- ════ ETAPA 2 — PRODUTOS ════ -->
           <div class="nv-panel" id="nv-s2">
-            <article class="data-card nv-wizard-card">
-              <div class="nv-panel-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                O que vai levar?
-              </div>
+            <div class="nv-s2-grid">
 
-              <!-- Busca + scan -->
-              <div style="display:flex;gap:8px;margin-bottom:10px">
-                <input type="text" class="input-field" id="v-busca"
-                  placeholder="Buscar produto…"
-                  oninput="renderProdPicker()" onfocus="renderProdPicker()"
-                  autocomplete="off" style="flex:1">
-                <button class="btn-scan-inline" onclick="openScanner('venda')" title="Escanear EAN-13" type="button">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
-                </button>
-              </div>
-
-              <!-- Product picker -->
-              <div class="prod-picker" id="prod-picker"></div>
-              <select id="vp" onchange="vUpd()" style="display:none"></select>
-
-              <!-- Preview + add -->
-              <div id="vprev" class="vprev-card" style="display:none">
-                <img id="vprev-img" class="vprev-img" src="" alt="" style="display:none">
-                <div style="flex:1;min-width:0">
-                  <div id="vprev-nm" class="vprev-nm"></div>
-                  <div class="vprev-meta"><span id="vprev-pr"></span> · <span id="vprev-st"></span></div>
+              <!-- Coluna principal — busca e produtos -->
+              <article class="data-card nv-wizard-card nv-s2-products">
+                <div class="nv-panel-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                  O que vai levar?
                 </div>
-                <div class="qty-ctrl">
-                  <button class="qty-btn" onclick="adjVq(-1)" type="button">−</button>
-                  <input type="number" class="input-field qty-in" id="vq" value="1" min="1">
-                  <button class="qty-btn" onclick="adjVq(1)" type="button">+</button>
+
+                <!-- Busca + scan -->
+                <div style="display:flex;gap:8px;margin-bottom:10px">
+                  <input type="text" class="input-field" id="v-busca"
+                    placeholder="Buscar produto…"
+                    oninput="renderProdPicker()" onfocus="renderProdPicker()"
+                    autocomplete="off" style="flex:1">
+                  <button class="btn-scan-inline btn-scan-rgb" onclick="openScanner('venda')" title="Escanear EAN-13" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
+                  </button>
                 </div>
-                <button class="btn btn-primary" onclick="nvAddItem()" type="button" style="height:36px;padding:0 14px;font-size:13px">＋ Add</button>
-              </div>
 
-              <!-- Carrinho -->
-              <div id="nv-cart" class="nv-cart"></div>
+                <!-- Product picker -->
+                <div class="prod-picker" id="prod-picker"></div>
+                <select id="vp" onchange="vUpd()" style="display:none"></select>
 
-              <!-- Total parcial -->
-              <div class="nv-total" id="nv-total-s2" style="display:none">
-                <span class="nv-total-lbl">Subtotal</span>
-                <div class="nv-total-val" id="vt">R$ 0,00</div>
-              </div>
+                <!-- Preview + add -->
+                <div id="vprev" class="vprev-card" style="display:none">
+                  <div class="vprev-thumb" id="vprev-thumb">
+                    <img id="vprev-img" class="vprev-img" src="" alt="" style="display:none">
+                    <span id="vprev-em" class="vprev-em"></span>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div id="vprev-nm" class="vprev-nm"></div>
+                    <div class="vprev-meta"><span id="vprev-pr"></span> · <span id="vprev-st"></span></div>
+                  </div>
+                  <div class="vprev-actions">
+                    <div class="qty-ctrl">
+                      <button class="qty-btn" onclick="adjVq(-1)" type="button">−</button>
+                      <input type="number" class="input-field qty-in" id="vq" value="1" min="1">
+                      <button class="qty-btn" onclick="adjVq(1)" type="button">+</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="nvAddItem()" type="button" style="height:36px;padding:0 14px;font-size:13px">＋ Add</button>
+                  </div>
+                </div>
+              </article>
 
-              <div class="nv-panel-ft">
-                <button class="btn btn-outline" onclick="nvGoStep(1)" type="button">← Voltar</button>
-                <button class="btn btn-primary" onclick="nvGoStep(3)" id="nv-btn-s2">
-                  Ir para pagamento
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-              </div>
-            </article>
+              <!-- Coluna lateral — carrinho -->
+              <article class="data-card nv-s2-cart">
+                <div class="card-title">Carrinho</div>
+
+                <div class="nv-cart-empty" id="nv-cart-empty">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                  <p>Carrinho vazio</p>
+                  <span>Selecione produtos ao lado</span>
+                </div>
+
+                <!-- Carrinho -->
+                <div id="nv-cart" class="nv-cart"></div>
+
+                <!-- Total parcial -->
+                <div class="nv-total" id="nv-total-s2" style="display:none">
+                  <span class="nv-total-lbl">Subtotal</span>
+                  <div class="nv-total-val" id="vt">R$ 0,00</div>
+                </div>
+
+                <div class="nv-panel-ft">
+                  <button class="btn btn-outline" onclick="nvGoStep(1)" type="button">← Voltar</button>
+                  <button class="btn btn-primary" onclick="nvGoStep(3)" id="nv-btn-s2">
+                    Ir para pagamento
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </article>
+
+            </div>
           </div>
 
           <!-- ════ ETAPA 3 — PAGAMENTO ════ -->
@@ -581,11 +533,26 @@
                 <div class="form-row">
                   <span class="fl-lbl">Forma de pagamento</span>
                   <div class="pay-chips" style="margin-top:8px">
-                    <button class="pay-chip on" onclick="selPay(this,'PIX')" type="button">PIX</button>
-                    <button class="pay-chip" onclick="selPay(this,'Cartão de Crédito')" type="button">Crédito</button>
-                    <button class="pay-chip" onclick="selPay(this,'Cartão de Débito')" type="button">Débito</button>
-                    <button class="pay-chip" onclick="selPay(this,'Dinheiro')" type="button">Dinheiro</button>
-                    <button class="pay-chip" onclick="selPay(this,'Fiado')" type="button" style="border-color:#D97706;color:#D97706">Fiado</button>
+                    <button class="pay-chip on" onclick="selPay(this,'PIX')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+                      PIX
+                    </button>
+                    <button class="pay-chip" onclick="selPay(this,'Cartão de Crédito')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      Crédito
+                    </button>
+                    <button class="pay-chip" onclick="selPay(this,'Cartão de Débito')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+                      Débito
+                    </button>
+                    <button class="pay-chip" onclick="selPay(this,'Dinheiro')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                      Dinheiro
+                    </button>
+                    <button class="pay-chip pay-chip-fiado" onclick="selPay(this,'Fiado')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Fiado
+                    </button>
                   </div>
                   <input type="hidden" id="vpg" value="PIX">
                 </div>
@@ -644,7 +611,7 @@
               <p class="page-subtitle">Inventário e controle de produtos</p>
             </div>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-outline" onclick="openScanner('estoque')" title="Escanear código de barras">
+              <button class="btn btn-outline btn-scan-rgb" onclick="openScanner('estoque')" title="Escanear código de barras">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
                 Escanear
               </button>
@@ -660,7 +627,7 @@
           <div class="est-filters">
             <div class="est-search-row">
               <input type="text" class="input-field" id="est-busca" placeholder="Buscar produto…" oninput="rEst()">
-              <button class="btn btn-outline est-scn-mob" onclick="openScanner('estoque')" title="Escanear">
+              <button class="btn btn-outline est-scn-mob btn-scan-rgb" onclick="openScanner('estoque')" title="Escanear">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               </button>
             </div>
@@ -678,17 +645,8 @@
             </div>
           </div>
 
-          <!-- Hint mobile: lista oculta, orienta busca/cadastro -->
-          <div class="est-mobile-hint mob-only">
-            <div class="est-mobile-hint-icon">📦</div>
-            <p class="est-mobile-hint-title">Busque um produto acima</p>
-            <p class="est-mobile-hint-sub">Digite o nome para localizar e editar o estoque, ou cadastre um novo produto.</p>
-            <button class="btn btn-primary" style="margin-top:14px;width:100%;justify-content:center" onclick="openMod('mp')">+ Novo produto</button>
-            <button class="btn btn-outline" style="margin-top:8px;width:100%;justify-content:center;gap:6px" onclick="openScannerForNewProd()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
-              Cadastrar por código de barras
-            </button>
-          </div>
+          <!-- Resumo do estoque (mobile) -->
+          <div class="est-summary mob-only" id="est-summary"></div>
 
           <!-- Lista com grupos -->
           <div id="est-list"></div>
@@ -731,7 +689,8 @@
               <button class="btn btn-primary" onclick="newCli()">+ Cliente</button>
             </div>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Cliente</th><th>Contato</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th><th>Ações</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
+          <div class="card data-card mob-hide"><div class="table-shell"><table><thead><tr><th>Cliente</th><th>Contato</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th><th>Ações</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
+          <div class="rb-cards mob-only" id="clicards"></div>
         </section>
 
         <section class="erp-page" id="ep-financeiro">
@@ -750,7 +709,7 @@
           </div>
           <div class="card-grid-wide">
             <article class="data-card chart-card"><div class="card-title">Fluxo de caixa</div><div class="chart-shell"><canvas id="ch-flx"></canvas></div></article>
-            <article class="data-card"><div class="card-title">Lançamentos recentes</div><div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ftt"></tbody></table></div></article>
+            <article class="data-card"><div class="card-title">Lançamentos recentes</div><div class="table-shell mob-hide"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ftt"></tbody></table></div><div class="rb-cards mob-only" id="fincards"></div></article>
           </div>
         </section>
 
@@ -766,7 +725,7 @@
             <p>Na versão mobile, a lista de produtos fica oculta para dar mais espaço e foco nas buscas e no cadastro.</p>
             <p>Use o botão <strong>+ Produto</strong> para cadastrar ou editar itens.</p>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Desconto</th><th>Destaque</th><th>Ações</th></tr></thead><tbody id="ktt"></tbody></table></div></div>
+          <div class="card data-card mob-hide"><div class="table-shell"><table><thead><tr><th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Desconto</th><th>Destaque</th><th>Ações</th></tr></thead><tbody id="ktt"></tbody></table></div></div>
         </section>
 
         <section class="erp-page" id="ep-extrato">
@@ -837,7 +796,8 @@
                     <span class="card-title">Pedidos do mês</span>
                     <span id="ext-ped-count" style="font-size:12px;color:#71717A"></span>
                   </div>
-                  <div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th></tr></thead><tbody id="ext-peds-tb"></tbody></table></div>
+                  <div class="table-shell mob-hide"><table><thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th></tr></thead><tbody id="ext-peds-tb"></tbody></table></div>
+                  <div class="rb-cards mob-only" id="ext-peds-cards"></div>
                 </article>
                 <article class="data-card" style="min-width:0">
                   <div class="card-title">Top clientes</div>
@@ -854,7 +814,8 @@
                   <span class="card-title">Lançamentos financeiros</span>
                   <span id="ext-trans-count" style="font-size:12px;color:#71717A"></span>
                 </div>
-                <div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ext-trans-tb"></tbody></table></div>
+                <div class="table-shell mob-hide"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ext-trans-tb"></tbody></table></div>
+                <div class="rb-cards mob-only" id="ext-trans-cards"></div>
               </article>
 
               <!-- Rodapé -->
@@ -906,6 +867,13 @@
                 </label>
                 <label class="form-label">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
                   <input type="text" class="input-field" id="ls-wa" placeholder="5511999999999">
+                </label>
+                <label class="form-label">Chave PIX <small style="font-weight:400;opacity:.55">(CPF, e-mail, telefone ou chave aleatória)</small>
+                  <input type="text" class="input-field" id="ls-pix" placeholder="00000000000">
+                  <div class="pix-status-row">
+                    <span class="pix-badge" id="ls-pix-badge" style="display:none"></span>
+                    <button type="button" class="pix-retest-btn" id="ls-pix-retest" style="display:none" onclick="pixRetest()">🔄 Testar novamente</button>
+                  </div>
                 </label>
               </div>
             </article>
@@ -1040,6 +1008,19 @@
 
       </section>
     </main>
+  </div>
+
+  <!-- ── Central de notificações ─────────────────────── -->
+  <div class="filter-backdrop" id="notif-backdrop" onclick="closeNotifPanel()"></div>
+  <div class="filter-drawer notif-drawer" id="notif-drawer">
+    <div class="filter-drawer-hd">
+      <h3>Notificações</h3>
+      <button class="filter-drawer-close" onclick="closeNotifPanel()">✕</button>
+    </div>
+    <div class="filter-drawer-body notif-list" id="notif-list"></div>
+    <div class="filter-drawer-ft">
+      <button class="btn btn-outline" style="flex:1" onclick="markAllNotifsRead()">Marcar todas como lidas</button>
+    </div>
   </div>
 
   <div class="modal" id="mv"><div class="modal-box">
@@ -1234,7 +1215,7 @@
                   <input type="text" class="input-field" id="pe-bc"
                     placeholder="0000000000000" maxlength="13" pattern="[0-9]{13}"
                     style="font-family:monospace;letter-spacing:.06em">
-                  <button type="button" class="btn btn-outline" style="padding:0 10px;flex-shrink:0"
+                  <button type="button" class="btn btn-outline btn-scan-rgb" style="padding:0 10px;flex-shrink:0"
                     onclick="openScannerForField()" title="Escanear para preencher">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
                   </button>
@@ -1361,6 +1342,7 @@
       <div class="cupom-actions-bar">
         <button class="cupom-btn" onclick="closeMod('cupom')">Fechar</button>
         <button class="cupom-btn cupom-btn-wa" onclick="whatsappCupom()">📲 WhatsApp</button>
+        <button class="cupom-btn" id="cupom-btn-carne" style="display:none" onclick="printCarne()">🧾 Gerar carnê</button>
         <button class="cupom-btn cupom-btn-main" onclick="window.print()">🖨 Imprimir</button>
       </div>
     </div>
@@ -1383,6 +1365,57 @@
         <button class="btn btn-outline" onclick="closeMod('mconf')">Cancelar</button>
         <button class="btn btn-outline" id="mconf-alt" style="display:none"></button>
         <button class="btn" id="mconf-ok">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: alterar/testar chave Pix (segurança) -->
+  <div class="modal" id="mpix">
+    <div class="modal-box" style="max-width:440px">
+      <div class="modal-header"><h3>Alterar chave Pix</h3><button class="modal-close" onclick="pixCancelChange()">✕</button></div>
+
+      <!-- Etapa 1: riscos + confirmação de senha -->
+      <div id="mpix-step1">
+        <div class="pix-risk">
+          <div class="pix-risk-title">⚠️ Antes de continuar, confirme:</div>
+          <ul class="pix-risk-list">
+            <li>Verifique se a chave pertence à <strong>sua própria conta</strong> — se estiver errada, o dinheiro dos clientes irá para outra pessoa e não será possível recuperar.</li>
+            <li>Essa chave fica visível para os clientes no comprovante de venda (QR Code Pix).</li>
+            <li>Nunca compartilhe sua chave Pix, e-mail ou senha com terceiros.</li>
+          </ul>
+        </div>
+        <div class="form-grid" style="margin-top:14px">
+          <label class="form-label full">E-mail
+            <input type="email" class="input-field" id="mpix-email" placeholder="seu@email.com" autocomplete="username">
+          </label>
+          <label class="form-label full">Senha <small style="font-weight:400;opacity:.55">(confirme sua senha para continuar)</small>
+            <input type="password" class="input-field" id="mpix-pass" placeholder="••••••••" autocomplete="current-password">
+          </label>
+        </div>
+        <div class="pix-err" id="mpix-err" style="display:none"></div>
+      </div>
+
+      <!-- Etapa 2: QR de teste de R$ 1,00 -->
+      <div id="mpix-step2" style="display:none">
+        <p class="pix-test-info">Escaneie o QR Code abaixo com o app do seu banco e envie <strong>R$ 1,00</strong> para confirmar que a chave está correta antes de divulgar para os clientes.</p>
+        <div class="cpt-pix-body" style="justify-content:center">
+          <div class="cpt-pix-qr"><canvas id="mpix-qr"></canvas><img id="mpix-img" alt="QR Pix de teste" style="display:none"></div>
+          <div class="cpt-pix-info">
+            <div class="cpt-pix-val">R$ 1,00</div>
+            <div class="cpt-pix-key" id="mpix-key"></div>
+          </div>
+        </div>
+        <button class="cpt-pix-copy" type="button" onclick="copyPixCode(_mpixPayload, this)">📋 Copiar código Pix de teste</button>
+        <p class="pix-test-q">O R$ 1,00 caiu certo na sua conta?</p>
+      </div>
+
+      <div class="modal-actions" id="mpix-actions-1">
+        <button class="btn btn-outline" onclick="pixCancelChange()">Cancelar</button>
+        <button class="btn btn-primary" onclick="pixConfirmStep1()">Confirmar e gerar teste</button>
+      </div>
+      <div class="modal-actions" id="mpix-actions-2" style="display:none">
+        <button class="btn btn-outline" onclick="pixTestResult(false)">⚠️ Não caiu / errado</button>
+        <button class="btn btn-success" onclick="pixTestResult(true)">✅ Caiu certo!</button>
       </div>
     </div>
   </div>
@@ -1457,17 +1490,26 @@
 
       <!-- ── Painel QR code (Scanner por celular) ── -->
       <div class="scn-phone-panel" id="scn-phone-panel" style="display:none">
+        <!-- Reconectando a um celular pareado anteriormente -->
+        <div class="scn-reconnect-state" id="scn-reconnect-state">
+          <div class="scn-reconnect-spinner"></div>
+          <p class="scn-reconnect-txt">Conectando ao celular pareado anteriormente…</p>
+        </div>
         <div class="scn-qr-wrap">
           <canvas id="scn-qr-canvas" width="200" height="200"></canvas>
           <img id="scn-qr-img" width="200" height="200" alt="QR Code" style="display:none;border-radius:6px">
         </div>
         <p id="scn-qr-url" style="display:none;font-size:10px;color:rgba(255,255,255,.3);word-break:break-all;text-align:center;padding:0 8px;margin-top:4px"></p>
+        <p class="scn-qr-net-hint" id="scn-qr-net-hint" style="display:none"></p>
         <div class="scn-phone-status" id="scn-phone-status">
           <span class="scn-phone-dot" id="scn-phone-dot"></span>
           <span id="scn-phone-status-txt">Aguardando celular...</span>
         </div>
         <p class="scn-phone-hint-txt">Escaneie o QR code com seu celular<br>para usar a câmera do celular como scanner</p>
-        <button class="scn-disconnect-btn" onclick="disconnectPhone()" title="Encerrar sessão do celular">✕ Desconectar</button>
+        <div class="scn-phone-actions">
+          <button class="scn-refresh-btn" id="scn-refresh-btn" onclick="refreshPhoneQr()" title="Gerar um novo QR code">↻ Gerar novo QR</button>
+          <button class="scn-disconnect-btn" onclick="disconnectPhone()" title="Encerrar sessão do celular">✕ Desconectar</button>
+        </div>
       </div>
 
       <!-- Câmera + frame -->
@@ -1477,6 +1519,9 @@
         <!-- Overlay escuro nas bordas -->
         <div class="scn-vignette" aria-hidden="true"></div>
 
+        <!-- Flash verde ao detectar um código -->
+        <div class="scn-flash" id="scn-flash" aria-hidden="true"></div>
+
         <!-- Frame animado -->
         <div class="scn-frame" aria-hidden="true">
           <!-- 4 cantos -->
@@ -1484,6 +1529,8 @@
           <div class="scn-corner scn-corner-tr"></div>
           <div class="scn-corner scn-corner-bl"></div>
           <div class="scn-corner scn-corner-br"></div>
+          <!-- Alvo pulsante: indica onde centralizar o produto -->
+          <div class="scn-center-pulse" aria-hidden="true"></div>
           <!-- Linha de scan -->
           <div class="scn-line" id="scn-line"></div>
         </div>
@@ -1587,7 +1634,24 @@
 
   <!-- ── Modal Consultar Produto ──────────────────────────── -->
 
-  <script src="./app.js" defer></script>
+  <script src="./core.js" defer></script>
+  <script src="./app/ui.js" defer></script>
+  <script src="./app/extrato.js" defer></script>
+  <script src="./app/dashboard.js" defer></script>
+  <script src="./app/pedidos.js" defer></script>
+  <script src="./app/solicita.js" defer></script>
+  <script src="./app/estoque.js" defer></script>
+  <script src="./app/clientes.js" defer></script>
+  <script src="./app/catalogo.js" defer></script>
+  <script src="./app/pix.js" defer></script>
+  <script src="./app/vendas.js" defer></script>
+  <script src="./app/financeiro.js" defer></script>
+  <script src="./app/scanner.js" defer></script>
+  <script src="./app/consulta.js" defer></script>
+  <script src="./app/charts.js" defer></script>
+  <script src="./app/loja.js" defer></script>
+  <script src="./app/notificacoes.js" defer></script>
+  <script src="./app/init.js" defer></script>
   <a href="grupolima.html" class="gl-badge">
     <span class="gl-badge-bars">
       <span class="gl-badge-bar"></span>
@@ -1678,60 +1742,16 @@
     l.addEventListener('click', () => { if (window.innerWidth <= 768) closeSidebar(); });
   });
 
-  /* ── Release Modal ── */
+  /* ── Release Modal — carrega release.html ── */
   (function () {
-    const KEY    = 'mlb_rl_v22';
-    const ov     = document.getElementById('rl-ov');
-    const blob   = document.getElementById('rl-blob');
-    const segs   = document.querySelectorAll('.rl-seg');
-    const scenes = document.querySelectorAll('.rl-scene');
-    let   cur    = 0;
+    const KEY = 'srt_rl_v1';
+    const ov  = document.getElementById('rl-ov');
 
-    const blobCfg = [
-      { color: 'rgba(196,137,122,.12)', x: '50%', y: '46%' },
-      { color: 'rgba(196,137,122,.18)', x: '37%', y: '52%' },
-      { color: 'rgba(217,119,6,.13)',   x: '63%', y: '40%' },
-      { color: 'rgba(99,102,241,.15)',  x: '45%', y: '57%' },
-      { color: 'rgba(196,137,122,.11)', x: '50%', y: '46%' },
-    ];
-
-    function applyBlob(n) {
-      const b = blobCfg[n] || blobCfg[0];
-      blob.style.backgroundColor = b.color;
-      blob.style.left = b.x;
-      blob.style.top  = b.y;
-    }
-
-    function applyStory(n) {
-      segs.forEach((s, i) => {
-        s.classList.remove('done', 'act');
-        if (i < n)  s.classList.add('done');
-        if (i === n) s.classList.add('act');
-      });
-    }
-
-    function show() { ov.classList.add('on'); applyBlob(0); applyStory(0); }
-
-    function goTo(n) {
-      scenes[cur].classList.remove('on');
-      scenes[cur].classList.add('out');
-      const prev = cur;
-      setTimeout(() => scenes[prev].classList.remove('out'), 560);
-      cur = n;
-      scenes[cur].classList.add('on');
-      applyBlob(n);
-      applyStory(n);
-    }
-
-    window.rlNext  = () => { if (cur < scenes.length - 1) goTo(cur + 1); };
     window.rlClose = () => {
       ov.classList.remove('on');
       ov.classList.add('out');
-      scenes.forEach(s => s.classList.remove('on'));
       localStorage.setItem(KEY, '1');
     };
-
-    if (!localStorage.getItem(KEY)) setTimeout(show, 500);
   })();
   </script>
 </body>

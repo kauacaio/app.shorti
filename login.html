@@ -7,6 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Shorti — Entrar</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -45,8 +46,9 @@
       background: #F8FAFC;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
+      text-align: center;
       padding: 72px 80px;
       overflow: hidden;
     }
@@ -58,7 +60,7 @@
       width: 520px; height: 520px;
       border-radius: 50%;
       border: 1px solid rgba(27,68,184,.08);
-      top: 50%; left: 55%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
@@ -68,9 +70,68 @@
       width: 340px; height: 340px;
       border-radius: 50%;
       border: 1px solid rgba(27,68,184,.06);
-      top: 50%; left: 55%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
+    }
+
+    /* orbiting hollow shapes */
+    .brand-orbit {
+      position: absolute;
+      width: 0; height: 0;
+      top: 50%; left: 50%;
+      pointer-events: none;
+      animation: orbitSpin 35s linear infinite;
+    }
+    @keyframes orbitSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .orbit-item { position: absolute; top: 0; left: 0; }
+    .orbit-counter {
+      position: absolute;
+      animation: orbitCounter 35s linear infinite;
+    }
+    @keyframes orbitCounter {
+      from { transform: translate(-50%,-50%) rotate(0deg); }
+      to   { transform: translate(-50%,-50%) rotate(-360deg); }
+    }
+    .orbit-float {
+      display: block;
+      animation: orbitFloat 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes orbitFloat {
+      from { transform: translateY(-5px); }
+      to   { transform: translateY(5px); }
+    }
+    /* organic, subtle color drift across the brand palette (blue ↔ violet) */
+    @keyframes hueDrift {
+      0%, 100% { filter: hue-rotate(0deg); }
+      50%      { filter: hue-rotate(36deg); }
+    }
+    .shape { display: block; }
+    .shape-diamond { border: 1.5px solid rgba(27,68,184,.16); border-radius: 4px; transform: rotate(45deg); animation: hueDrift 9s ease-in-out infinite; }
+    .shape-diamond.shape-lg { width: 24px; height: 24px; }
+    .shape-diamond.shape-sm { width: 14px; height: 14px; animation-delay: -4.5s; }
+    .shape-circle { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(124,58,237,.16); animation: hueDrift 11s ease-in-out infinite; animation-delay: -3s; }
+    .shape-square { width: 18px; height: 18px; border: 1.5px solid rgba(27,68,184,.13); border-radius: 3px; animation: hueDrift 13s ease-in-out infinite; animation-delay: -7s; }
+    .shape-tri svg { display: block; animation: hueDrift 10s ease-in-out infinite; animation-delay: -1.5s; }
+
+    /* giant translucent wordmark, peeking in at the bottom */
+    .brand-watermark {
+      position: absolute; inset: 0;
+      display: flex; align-items: flex-end; justify-content: center;
+      overflow: hidden; pointer-events: none; z-index: 0;
+    }
+    .brand-watermark span {
+      font-size: clamp(260px, 42vw, 640px);
+      font-weight: 900;
+      letter-spacing: -.05em;
+      line-height: 1;
+      color: rgba(27,68,184,.035);
+      white-space: nowrap;
+      user-select: none;
+      transform: translateY(55%);
     }
 
     /* dot grid */
@@ -83,31 +144,43 @@
     }
 
     /* brand content */
-    .b-inner { position: relative; z-index: 1; }
+    .b-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
 
     .eyebrow {
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
       font-size: 10px; font-weight: 600;
       letter-spacing: .15em; text-transform: uppercase;
       color: var(--tx-s); margin-bottom: 24px;
       opacity: 0; animation: fadeUp .5s ease .05s forwards;
     }
     .e-bars { display: flex; align-items: flex-end; gap: 2px; }
-    .e-bar  { background: var(--blue); border-radius: 1.5px; transform: skewX(-14deg); }
+    .e-bar  {
+      background: var(--tx-s); border-radius: 1.5px; transform: skewX(-14deg);
+    }
     .e-bar:nth-child(1) { width: 3px; height: 8px; opacity: .5; }
-    .e-bar:nth-child(2) { width: 3.5px; height: 11px; }
+    .e-bar:nth-child(2) { width: 3.5px; height: 11px; opacity: .8; }
 
     /* wordmark */
+    .wm-row {
+      display: flex; align-items: flex-end; gap: .18em;
+      font-size: clamp(84px, 11.5vw, 134px);
+      margin-bottom: 28px;
+    }
+    .wm-bars { display: flex; align-items: flex-end; gap: .09em; height: .75em; }
+    .wm-bars span {
+      display: block; border-radius: .07em; transform: skewX(-14deg);
+    }
+    .wm-bars span:nth-child(1) { width: .16em; height: .46em; background: rgba(100,116,139,.28); }
+    .wm-bars span:nth-child(2) { width: .2em; height: .75em; background: linear-gradient(180deg, #94A3B8 0%, #475569 100%); }
     .wm {
       display: block;
-      font-size: clamp(84px, 11.5vw, 134px);
+      font-size: 1em;
       font-weight: 900;
       letter-spacing: -.055em;
-      line-height: .92;
+      line-height: .75em;
       color: var(--tx);
       white-space: nowrap;
       user-select: none;
-      margin-bottom: 28px;
     }
     .wl {
       display: inline-block;
@@ -128,10 +201,24 @@
 
     .brand-line {
       width: 48px; height: 2px;
+      margin: 0 auto;
       background: linear-gradient(90deg, var(--blue) 0%, rgba(27,68,184,.2) 100%);
       border-radius: 2px;
       opacity: 0; animation: fadeUp .5s ease .52s forwards;
     }
+
+    /* tagline — letters fade in sequentially */
+    .b-tagline {
+      margin: 18px auto 0;
+      font-size: 15px; line-height: 1.6; text-align: center;
+      color: var(--tx-m); max-width: 360px;
+    }
+    .b-tagline .bl {
+      display: inline-block;
+      opacity: 0;
+      animation: charIn .5s ease forwards;
+    }
+    @keyframes charIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 
     /* ════ RIGHT ═════════════════════════════════════ */
     .form-side {
@@ -285,6 +372,30 @@
     }
     .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--bd); }
 
+    /* demo / test account */
+    .btn-demo {
+      width: 100%; height: 46px;
+      background: #fff; color: var(--blue);
+      border: 1.5px solid var(--blue-l);
+      border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: -.01em;
+      cursor: pointer; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background .14s, border-color .14s, transform .12s;
+    }
+    .btn-demo:hover {
+      background: var(--blue-l);
+      border-color: var(--blue);
+      transform: translateY(-1px);
+    }
+    .btn-demo:active { transform: scale(.99); }
+    .demo-note {
+      margin-top: 10px; text-align: center;
+      font-size: 11.5px; color: var(--tx-s);
+    }
+
     /* footer */
     .footer { margin-top: 22px; text-align: center; }
     .gl {
@@ -307,13 +418,13 @@
       html, body { overflow: auto; }
       .page { grid-template-columns: 1fr; height: auto; }
       .brand { padding: 56px 36px 44px; min-height: 48vh; justify-content: flex-end; }
-      .wm { font-size: clamp(68px,15vw,96px); }
+      .wm-row { font-size: clamp(68px,15vw,96px); }
       .form-side { padding: 52px 28px 60px; border-left: none; border-top: 1px solid #F1F5F9; }
       .card { max-width: 400px; }
     }
     @media (max-width: 480px) {
       .brand { padding: 44px 24px 36px; }
-      .wm { font-size: 64px; }
+      .wm-row { font-size: 64px; }
     }
   </style>
 </head>
@@ -325,6 +436,31 @@
   <div class="brand">
     <div class="brand-grid"></div>
     <div class="brand-ring"></div>
+    <div class="brand-watermark"><span>Shorti</span></div>
+
+    <div class="brand-orbit">
+      <div class="orbit-item" style="transform:translate(244px,89px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:1.6s"><div class="shape shape-diamond shape-lg"></div></div></div>
+      </div>
+      <div class="orbit-item" style="transform:translate(-130px,109px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:2s; animation-delay:.2s"><div class="shape shape-circle"></div></div></div>
+      </div>
+      <div class="orbit-item" style="transform:translate(-236px,-110px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:1.8s; animation-delay:.55s"><div class="shape shape-square"></div></div></div>
+      </div>
+      <div class="orbit-item" style="transform:translate(85px,-147px)">
+        <div class="orbit-counter">
+          <div class="orbit-float" style="animation-duration:2.2s; animation-delay:.35s">
+            <div class="shape shape-tri">
+              <svg width="22" height="20" viewBox="0 0 22 20" fill="none"><polygon points="11,1 21,19 1,19" stroke="rgba(27,68,184,.18)" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="orbit-item" style="transform:translate(-45px,256px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:1.9s; animation-delay:.8s"><div class="shape shape-diamond shape-sm"></div></div></div>
+      </div>
+    </div>
 
     <div class="b-inner">
       <div class="eyebrow">
@@ -332,17 +468,21 @@
         ERP · GrupoLima
       </div>
 
-      <div class="wm" id="wm" aria-label="Shorti.">
-        <span class="wl">S</span><span
-        class="wl">h</span><span
-        class="wl">o</span><span
-        class="wl">r</span><span
-        class="wl">t</span><span
-        class="wl">i</span><span
-        class="wl wl-dot">.</span>
+      <div class="wm-row">
+        <div class="wm-bars"><span></span><span></span></div>
+        <div class="wm" id="wm" aria-label="Shorti.">
+          <span class="wl">S</span><span
+          class="wl">h</span><span
+          class="wl">o</span><span
+          class="wl">r</span><span
+          class="wl">t</span><span
+          class="wl">i</span><span
+          class="wl wl-dot">.</span>
+        </div>
       </div>
 
       <div class="brand-line"></div>
+      <p class="b-tagline" id="btag">Vendas, estoque e clientes em um só lugar.</p>
     </div>
   </div>
 
@@ -395,6 +535,14 @@
         <div class="alert" id="fa"></div>
       </form>
 
+      <div class="divider">ou</div>
+
+      <a href="erp.html?local" class="btn-demo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Acessar conta de testes
+      </a>
+      <p class="demo-note">Sem cadastro. Dados de demonstração, prontos pra explorar.</p>
+
       <div class="footer">
         <a href="grupolima.html" class="gl">
           <div class="gbs"><div class="gb"></div><div class="gb"></div></div>
@@ -423,6 +571,30 @@ letters.forEach((l, i) => {
   l.addEventListener('mouseenter', () => wave(i));
   l.addEventListener('mouseleave', unwave);
 });
+
+/* tagline — letters fade in one by one after the wordmark settles */
+const btag = document.getElementById('btag');
+const btagChars = [...btag.textContent];
+btag.textContent = '';
+btagChars.forEach((ch, i) => {
+  const s = document.createElement('span');
+  s.className = 'bl';
+  s.textContent = ch === ' ' ? ' ' : ch;
+  s.style.animationDelay = (0.62 + i * 0.018) + 's';
+  btag.appendChild(s);
+});
+
+/* idle ripple — a little wave passes through "Shorti." every few seconds */
+function autoWave() {
+  let i = -1;
+  const step = setInterval(() => {
+    i++;
+    if (i > letters.length + 1) { clearInterval(step); unwave(); return; }
+    wave(i);
+  }, 80);
+}
+setTimeout(autoWave, 2200);
+setInterval(autoWave, 6000);
 
 /* ring ripple on keypress */
 function ring(el) {

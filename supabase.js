@@ -142,6 +142,23 @@ const SBSolics = {
   }
 };
 
+/* ── Notificações ───────────────────────────────────── */
+const SBNotifs = {
+  async list() {
+    const { data, error } = await _sbClient.from('notifications').select('*').order('id');
+    if (error) throw error;
+    return data.map(_rowToNotif);
+  },
+  async upsert(n) {
+    const { error } = await _sbClient.from('notifications').upsert(_notifToRow(n));
+    if (error) throw error;
+  },
+  async delete(id) {
+    const { error } = await _sbClient.from('notifications').delete().eq('id', id);
+    if (error) throw error;
+  }
+};
+
 /* ── Configurações ──────────────────────────────────── */
 const SBSettings = {
   async get() {
@@ -239,6 +256,14 @@ function _solicToRow(s) {
   return { id: s.id, nm: s.nm, q: s.q, pr: s.pr ?? null, obs: s.obs || '', st: s.st, dt: s.dt };
 }
 
+function _rowToNotif(r) {
+  return { id: r.id, key: r.key, type: r.type, icon: r.icon, title: r.title, msg: r.msg, link: r.link || '', read: !!r.read, dt: r.dt };
+}
+
+function _notifToRow(n) {
+  return { id: n.id, key: n.key, type: n.type, icon: n.icon, title: n.title, msg: n.msg, link: n.link || '', read: !!n.read, dt: n.dt };
+}
+
 /* ── Modo local: substitui Supabase por localStorage ── */
 if (_localMode) {
 
@@ -256,6 +281,73 @@ if (_localMode) {
     },
     del(k, id) { _LS.set(k, _LS.get(k).filter(x => x.id !== id)); },
   };
+
+  /* ── Conta de testes: dados de demonstração na primeira visita ── */
+  if (!localStorage.getItem('mlb_local_seeded')) {
+    _LS.set('prods', [
+      { id: 1,  em: '💧', nm: 'Sérum Vitamina C',            cat: 'pele',        pr: 189.90, pd: 159.90, st: 42, dt: 'sale', img: '', bump: 13, description: 'Sérum facial com vitamina C para uniformizar o tom da pele.', feats: ['Vitamina C', 'Anti-manchas', 'FPS 30'], bc: '7891234567890' },
+      { id: 2,  em: '🧴', nm: 'Hidratante Corporal',          cat: 'corpo',       pr: 79.90,  pd: null,   st: 28, dt: '',     img: '', bump: null, description: 'Hidratante corporal de absorção rápida, toque seco.', feats: ['Hidratação 24h', 'Toque seco'], bc: '7896543210987' },
+      { id: 3,  em: '💋', nm: 'Batom Matte',                  cat: 'maquiagem',   pr: 59.90,  pd: null,   st: 3,  dt: 'new',  img: '', bump: null, description: 'Batom matte de alta cobertura e longa duração.', feats: ['Longa duração', 'Acabamento matte'], bc: '7894561237890' },
+      { id: 4,  em: '🧼', nm: 'Sabonete Facial',              cat: 'pele',        pr: 39.90,  pd: null,   st: 0,  dt: '',     img: '', bump: null, description: 'Sabonete facial para todos os tipos de pele.', feats: ['Limpeza profunda', 'pH balanceado'], bc: '7891112223334' },
+      { id: 5,  em: '🌸', nm: 'Perfume Floral 75ml',          cat: 'fragrancias', pr: 149.90, pd: 129.90, st: 15, dt: 'sale', img: '', bump: null, description: 'Fragrância floral de longa fixação.', feats: ['Floral', 'Longa fixação'], bc: '7895556667778' },
+      { id: 6,  em: '💄', nm: 'Base Líquida FPS 15',          cat: 'maquiagem',   pr: 99.90,  pd: null,   st: 18, dt: '',     img: '', bump: null, description: 'Base de cobertura média com proteção solar.', feats: ['Cobertura média', 'FPS 15'], bc: '7893334445556' },
+      { id: 7,  em: '✨', nm: 'Máscara de Cílios',            cat: 'maquiagem',   pr: 69.90,  pd: null,   st: 22, dt: 'new',  img: '', bump: null, description: 'Máscara de cílios com efeito volume.', feats: ['Efeito volume', 'Longa duração'], bc: '7897778889990' },
+      { id: 8,  em: '🧖', nm: 'Creme Anti-idade Noturno',     cat: 'pele',        pr: 219.90, pd: null,   st: 9,  dt: '',     img: '', bump: null, description: 'Creme noturno com ação anti-idade.', feats: ['Ação noturna', 'Anti-idade'], bc: '7892223334445' },
+      { id: 9,  em: '🧽', nm: 'Esfoliante Corporal',          cat: 'corpo',       pr: 69.90,  pd: null,   st: 31, dt: '',     img: '', bump: null, description: 'Esfoliante corporal para pele macia.', feats: ['Esfoliação suave', 'Pele macia'], bc: '7894445556667' },
+      { id: 10, em: '🌿', nm: 'Óleo Corporal Relaxante',      cat: 'corpo',       pr: 89.90,  pd: null,   st: 14, dt: '',     img: '', bump: null, description: 'Óleo corporal com aroma relaxante.', feats: ['Aroma relaxante', 'Hidratação profunda'], bc: '7896667778889' },
+      { id: 11, em: '🌺', nm: 'Perfume Amadeirado 50ml',      cat: 'fragrancias', pr: 139.90, pd: null,   st: 7,  dt: '',     img: '', bump: null, description: 'Fragrância amadeirada para o dia a dia.', feats: ['Amadeirado', 'Versátil'], bc: '7891231231230' },
+      { id: 12, em: '💅', nm: 'Kit Pincéis de Maquiagem',     cat: 'maquiagem',   pr: 119.90, pd: 99.90,  st: 11, dt: 'sale', img: '', bump: null, description: 'Kit com pincéis essenciais para maquiagem.', feats: ['5 peças', 'Cerdas macias'], bc: '7894564564560' },
+      { id: 13, em: '🩹', nm: 'Protetor Solar Facial FPS 50', cat: 'pele',        pr: 99.90,  pd: null,   st: 2,  dt: '',     img: '', bump: null, description: 'Protetor solar facial de alta proteção.', feats: ['FPS 50', 'Toque seco'], bc: '7897897897890' },
+    ]);
+
+    _LS.set('clis', [
+      { id: 1, nm: 'Camila Souza',   tel: '11987654321', em: 'camila.souza@email.com',   ci: 'São Paulo',  es: 'SP', an: '1990-04-12', pe: 'Mista',     gasto: 379.60, ult: '2026-06-10' },
+      { id: 2, nm: 'Patrícia Alves', tel: '11976543210', em: 'patricia.alves@email.com', ci: 'Campinas',   es: 'SP', an: '1985-11-03', pe: 'Seca',      gasto: 359.60, ult: '2026-06-08' },
+      { id: 3, nm: 'Juliana Costa',  tel: '11965432109', em: 'juliana.costa@email.com',  ci: 'Guarulhos',  es: 'SP', an: '1993-07-22', pe: 'Oleosa',    gasto: 269.70, ult: '2026-06-04' },
+      { id: 4, nm: 'Fernanda Lima',  tel: '11954321098', em: 'fernanda.lima@email.com',  ci: 'São Paulo',  es: 'SP', an: '1988-02-15', pe: 'Normal',    gasto: 429.70, ult: '2026-06-11' },
+      { id: 5, nm: 'Bruna Ferreira', tel: '11943210987', em: 'bruna.ferreira@email.com', ci: 'Osasco',     es: 'SP', an: '1995-09-30', pe: 'Sensível',  gasto: 219.90, ult: '2026-05-20' },
+    ]);
+
+    _LS.set('peds', [
+      { id: 2001, cid: 1, prod: '2 produtos',                  q: 2, tot: 219.80, pag: 'PIX',               parc: 1, dtpag: '2026-06-09', st: 'Entregue',  dt: '2026-06-09',
+        itens: [{ pid: 1,  nm: 'Sérum Vitamina C',  em: '💧', q: 1, pr: 159.90, sub: 159.90 }, { pid: 3, nm: 'Batom Matte', em: '💋', q: 1, pr: 59.90, sub: 59.90 }] },
+      { id: 2002, cid: 2, prod: 'Hidratante Corporal',         q: 2, tot: 159.80, pag: 'Cartão de Crédito', parc: 2, dtpag: '2026-06-06', st: 'Enviado',   dt: '2026-06-06',
+        itens: [{ pid: 2,  nm: 'Hidratante Corporal', em: '🧴', q: 2, pr: 79.90, sub: 159.80 }] },
+      { id: 2003, cid: 3, prod: '3 produtos',                  q: 3, tot: 269.70, pag: 'Fiado',             parc: 1, dtpag: '2026-06-20', st: 'Pendente',  dt: '2026-06-04',
+        itens: [{ pid: 6, nm: 'Base Líquida FPS 15', em: '💄', q: 1, pr: 99.90, sub: 99.90 }, { pid: 7, nm: 'Máscara de Cílios', em: '✨', q: 1, pr: 69.90, sub: 69.90 }, { pid: 12, nm: 'Kit Pincéis de Maquiagem', em: '💅', q: 1, pr: 99.90, sub: 99.90 }] },
+      { id: 2004, cid: 4, prod: 'Perfume Floral 75ml',         q: 1, tot: 129.90, pag: 'Dinheiro',          parc: 1, dtpag: '2026-05-28', st: 'Entregue',  dt: '2026-05-28',
+        itens: [{ pid: 5, nm: 'Perfume Floral 75ml', em: '🌸', q: 1, pr: 129.90, sub: 129.90 }] },
+      { id: 2005, cid: 5, prod: 'Creme Anti-idade Noturno',    q: 1, tot: 219.90, pag: 'Fiado',             parc: 1, dtpag: '2026-06-15', st: 'Pendente',  dt: '2026-05-20',
+        itens: [{ pid: 8, nm: 'Creme Anti-idade Noturno', em: '🧖', q: 1, pr: 219.90, sub: 219.90 }] },
+      { id: 2006, cid: 1, prod: '2 produtos',                  q: 2, tot: 159.80, pag: 'PIX',               parc: 1, dtpag: '2026-06-10', st: 'Confirmado', dt: '2026-06-10',
+        itens: [{ pid: 9, nm: 'Esfoliante Corporal', em: '🧽', q: 1, pr: 69.90, sub: 69.90 }, { pid: 10, nm: 'Óleo Corporal Relaxante', em: '🌿', q: 1, pr: 89.90, sub: 89.90 }] },
+      { id: 2007, cid: 2, prod: 'Protetor Solar Facial FPS 50', q: 2, tot: 199.80, pag: 'Cartão de Débito', parc: 1, dtpag: '2026-06-08', st: 'Entregue', dt: '2026-06-08',
+        itens: [{ pid: 13, nm: 'Protetor Solar Facial FPS 50', em: '🩹', q: 2, pr: 99.90, sub: 199.80 }] },
+      { id: 2008, cid: 4, prod: '2 produtos',                  q: 2, tot: 299.80, pag: 'PIX',               parc: 1, dtpag: '2026-06-11', st: 'Confirmado', dt: '2026-06-11',
+        itens: [{ pid: 11, nm: 'Perfume Amadeirado 50ml', em: '🌺', q: 1, pr: 139.90, sub: 139.90 }, { pid: 1, nm: 'Sérum Vitamina C', em: '💧', q: 1, pr: 159.90, sub: 159.90 }] },
+    ]);
+
+    _LS.set('trans', [
+      { id: 3001, tp: 'receita', ds: 'Venda #2001 · Camila Souza',     vl: 219.80, dt: '2026-06-09' },
+      { id: 3002, tp: 'receita', ds: 'Venda #2002 · Patrícia Alves',   vl: 159.80, dt: '2026-06-06' },
+      { id: 3003, tp: 'despesa', ds: 'Reposição de estoque · Skincare', vl: 480.00, dt: '2026-06-05' },
+      { id: 3004, tp: 'receita', ds: 'Venda #2004 · Fernanda Lima',    vl: 129.90, dt: '2026-05-28' },
+      { id: 3005, tp: 'despesa', ds: 'Embalagens e etiquetas',         vl: 65.00,  dt: '2026-05-30' },
+      { id: 3006, tp: 'receita', ds: 'Venda #2007 · Patrícia Alves',   vl: 199.80, dt: '2026-06-08' },
+      { id: 3007, tp: 'receita', ds: 'Venda #2006 · Camila Souza',     vl: 159.80, dt: '2026-06-10' },
+      { id: 3008, tp: 'despesa', ds: 'Frete de reposição',             vl: 120.00, dt: '2026-06-02' },
+      { id: 3009, tp: 'receita', ds: 'Venda #2008 · Fernanda Lima',    vl: 299.80, dt: '2026-06-11' },
+      { id: 3010, tp: 'despesa', ds: 'Compra de novos produtos · Perfumaria', vl: 540.00, dt: '2026-06-01' },
+    ]);
+
+    _LS.set('solics', [
+      { id: 101, nm: 'Sabonete Facial',              q: 20, pr: 39.90,  obs: 'Estoque zerado, repor com urgência.', st: 'Pendente',   dt: '2026-06-10' },
+      { id: 102, nm: 'Protetor Solar Facial FPS 50', q: 15, pr: 99.90,  obs: 'Apenas 2 unidades restantes.',        st: 'Solicitado', dt: '2026-06-08' },
+      { id: 103, nm: 'Batom Matte',                  q: 10, pr: 59.90,  obs: '',                                     st: 'Recebido',   dt: '2026-06-01' },
+    ]);
+
+    localStorage.setItem('mlb_local_seeded', '1');
+  }
 
   /* Produtos */
   SBProds.list        = async () => _LS.get('prods').map(_rowToProduct);
@@ -292,23 +384,32 @@ if (_localMode) {
     if (r) { r.st = st; _LS.set('solics', rows); }
   };
 
+  /* Notificações */
+  SBNotifs.list   = async () => _LS.get('notifs').map(_rowToNotif);
+  SBNotifs.upsert = async n  => _LS.upsert('notifs', _notifToRow(n));
+  SBNotifs.delete = async id => _LS.del('notifs', id);
+
   /* Configurações */
   SBSettings.get = async () => { const s = _LS.get('settings', null); return s ? s.data : null; };
   SBSettings.set = async s  => _LS.set('settings', { data: s });
 
   /* Auth — sessão local sempre válida */
   SBAuth.getSession = async () => ({ user: { email: 'local@teste.dev' } });
+  SBAuth.signIn     = async (email, password) => {
+    if (!password) throw new Error('Senha obrigatória');
+    return { user: { email } };
+  };
   SBAuth.signOut    = async () => {
     if (confirm('Sair do modo local?')) window.location.replace('login.html');
   };
   SBAuth.onChange = () => ({ data: { subscription: { unsubscribe: () => {} } } });
 
-  /* Badge visual "MODO LOCAL" */
+  /* Badge visual "CONTA DE TESTES" */
   document.addEventListener('DOMContentLoaded', () => {
     const b = document.createElement('div');
     b.id = 'local-mode-badge';
-    b.title = 'Modo local ativo — dados salvos no localStorage, sem sincronizar com o banco real';
-    b.innerHTML = '🧪 LOCAL';
+    b.title = 'Conta de testes — dados de demonstração salvos só neste navegador. Clique para restaurar.';
+    b.innerHTML = '🧪<span class="lmb-txt"> CONTA DE TESTES</span>';
     b.style.cssText = [
       'position:fixed', 'bottom:72px', 'right:12px', 'z-index:9999',
       'background:#F59E0B', 'color:#fff', 'font-size:11px', 'font-weight:700',
@@ -318,10 +419,10 @@ if (_localMode) {
     ].join(';');
     document.body.appendChild(b);
 
-    /* Botão de reset dos dados locais */
+    /* Botão de reset: restaura os dados de demonstração originais */
     b.addEventListener('click', () => {
-      if (confirm('Limpar todos os dados do modo local?')) {
-        ['prods','clis','peds','trans','solics','settings'].forEach(k =>
+      if (confirm('Restaurar os dados de demonstração? Suas alterações neste navegador serão perdidas.')) {
+        ['prods','clis','peds','trans','solics','notifs','settings','seeded'].forEach(k =>
           localStorage.removeItem('mlb_local_' + k)
         );
         location.reload();

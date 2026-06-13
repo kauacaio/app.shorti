@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milena Lima Beauty · Sua Consultora Mary Kay</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="description" content="Produtos Mary Kay 100% originais com consultoria personalizada grátis. +500 clientes satisfeitas. Fale agora no WhatsApp.">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:    #0B0B0D;
+      --bg2:   #101013;
+      --gold:  #C8A96E;
+      --goldl: #E2C08A;
+      --cream: #F5F0E8;
+      --rose:  #D4788A;
+      --tx:    #EDE8E0;
+      --txm:   rgba(237,232,224,.62);
+      --txs:   rgba(237,232,224,.35);
+      --bd:    rgba(255,255,255,.07);
+      --card:  #14141A;
+      --wpp:   #25D366;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── UTIL ─────────────────────────────────── */
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 0 32px; }
+    @media (max-width: 600px) { .wrap { padding: 0 20px; } }
+
+    /* ── NAV ──────────────────────────────────── */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--bd);
+      backdrop-filter: blur(24px) saturate(160%);
+      background: rgba(11,11,13,.82);
+    }
+    .nav-row {
+      max-width: 1140px; margin: 0 auto; padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 600; letter-spacing: .01em;
+      color: var(--cream); text-decoration: none;
+    }
+    .nav-logo em { font-style: italic; color: var(--gold); }
+    .nav-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--wpp); color: #fff;
+      border: none; border-radius: 100px;
+      padding: 10px 20px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 18px rgba(37,211,102,.28);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .nav-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 28px rgba(37,211,102,.42); }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 120px 0 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero-orb {
+      position: absolute; border-radius: 50%; pointer-events: none;
+    }
+    .hero-orb-1 {
+      width: 700px; height: 700px;
+      top: -180px; right: -120px;
+      background: radial-gradient(circle, rgba(200,169,110,.1) 0%, transparent 65%);
+    }
+    .hero-orb-2 {
+      width: 500px; height: 500px;
+      bottom: -100px; left: -80px;
+      background: radial-gradient(circle, rgba(212,120,138,.07) 0%, transparent 65%);
+    }
+    /* fine grid */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 20%, transparent 100%);
+      mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 20%, transparent 100%);
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 720px; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 10px;
+      border: 1px solid rgba(200,169,110,.28);
+      border-radius: 100px;
+      padding: 6px 16px 6px 10px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 36px;
+      opacity: 0; animation: fadeUp .5s ease .08s forwards;
+    }
+    .hero-tag-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+
+    h1.hero-h {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(48px, 8.5vw, 104px);
+      font-weight: 700;
+      line-height: .92;
+      letter-spacing: -.03em;
+      color: var(--cream);
+      margin-bottom: 28px;
+      opacity: 0; animation: fadeUp .75s cubic-bezier(.16,1,.3,1) .18s forwards;
+    }
+    h1.hero-h em {
+      font-style: italic;
+      background: linear-gradient(130deg, var(--goldl) 0%, var(--gold) 45%, var(--rose) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 17px); font-weight: 300;
+      line-height: 1.75; color: var(--txm);
+      max-width: 520px; margin-bottom: 44px;
+      opacity: 0; animation: fadeUp .75s ease .32s forwards;
+    }
+    .hero-ctas {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      opacity: 0; animation: fadeUp .75s ease .44s forwards;
+    }
+    .btn-wpp {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--wpp); color: #fff;
+      border: none; border-radius: 100px;
+      padding: 16px 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 4px 36px rgba(37,211,102,.38);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .btn-wpp:hover { transform: translateY(-2px); box-shadow: 0 8px 48px rgba(37,211,102,.55); }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--bd);
+      border-radius: 100px;
+      padding: 16px 28px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 500;
+      color: var(--txm); cursor: pointer; text-decoration: none;
+      transition: background .18s, color .18s;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,.09); color: var(--tx); }
+    .hero-proof {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 52px;
+      opacity: 0; animation: fadeUp .75s ease .56s forwards;
+    }
+    .proof-avatars { display: flex; }
+    .proof-av {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--bg);
+      background: linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; margin-right: -9px;
+    }
+    .proof-copy { font-size: 13px; color: var(--txm); padding-left: 18px; }
+    .proof-copy strong { color: var(--tx); font-weight: 600; }
+    .proof-stars { color: #FBBF24; letter-spacing: .04em; font-size: 13px; }
+
+    /* ── TICKER ───────────────────────────────── */
+    .ticker {
+      border-top: 1px solid var(--bd);
+      border-bottom: 1px solid var(--bd);
+      overflow: hidden; padding: 14px 0;
+      background: rgba(200,169,110,.03);
+    }
+    .ticker-track {
+      display: flex; gap: 0; width: max-content;
+      animation: ticker 28s linear infinite;
+    }
+    .ticker-item {
+      padding: 0 28px;
+      white-space: nowrap;
+      font-size: 11.5px; font-weight: 600;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--txs);
+      border-right: 1px solid var(--bd);
+    }
+    .ticker-item span { color: var(--gold); }
+    @keyframes ticker { to { transform: translateX(-50%); } }
+
+    /* ── NUMBERS ──────────────────────────────── */
+    .numbers { padding: 88px 0; }
+    .num-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--bd); border-radius: 20px;
+      overflow: hidden; background: var(--bd); gap: 1px;
+    }
+    .num-cell {
+      background: var(--card);
+      padding: 44px 32px;
+      text-align: center;
+      transition: background .2s;
+    }
+    .num-cell:hover { background: #1a1a22; }
+    .num-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 58px; font-weight: 700; line-height: 1;
+      background: linear-gradient(135deg, var(--goldl) 0%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 10px; display: block;
+    }
+    .num-lbl { font-size: 13px; color: var(--txm); line-height: 1.4; }
+    @media (max-width: 700px) { .num-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ── PAIN / SOLUTION ──────────────────────── */
+    .pain { padding: 96px 0; border-top: 1px solid var(--bd); }
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+    }
+    .eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 18px;
+    }
+    .sec-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(34px, 4.5vw, 56px);
+      font-weight: 700; line-height: 1.04;
+      letter-spacing: -.025em;
+      color: var(--cream); margin-bottom: 20px;
+    }
+    .sec-title em { font-style: italic; color: var(--gold); }
+    .sec-body { font-size: 15px; color: var(--txm); line-height: 1.75; }
+
+    .feat-list { list-style: none; margin-top: 40px; display: flex; flex-direction: column; gap: 14px; }
+    .feat-item {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 18px 20px;
+      background: var(--card); border: 1px solid var(--bd);
+      border-radius: 14px; transition: border-color .2s, transform .2s;
+      cursor: default;
+    }
+    .feat-item:hover { border-color: rgba(200,169,110,.28); transform: translateX(4px); }
+    .feat-ico {
+      width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px;
+      background: rgba(200,169,110,.1); border: 1px solid rgba(200,169,110,.18);
+      display: flex; align-items: center; justify-content: center; font-size: 17px;
+    }
+    .feat-title { font-size: 13.5px; font-weight: 600; color: var(--tx); margin-bottom: 3px; }
+    .feat-desc { font-size: 12.5px; color: var(--txm); line-height: 1.5; }
+
+    .story-cards { display: flex; flex-direction: column; gap: 14px; }
+    .story-card {
+      background: var(--card); border: 1px solid var(--bd);
+      border-radius: 16px; padding: 26px;
+      position: relative; overflow: hidden;
+    }
+    .story-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .story-card.bad::before { background: rgba(239,68,68,.5); }
+    .story-card.good::before { background: linear-gradient(90deg, var(--gold), var(--rose)); }
+    .story-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .story-card.bad .story-tag { color: rgba(239,68,68,.7); }
+    .story-card.good .story-tag { color: var(--gold); }
+    .story-text { font-size: 14px; color: var(--txm); line-height: 1.65; font-style: italic; }
+    .story-text strong { color: var(--tx); font-style: normal; }
+
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; gap: 48px; } }
+
+    /* ── HOW IT WORKS ─────────────────────────── */
+    .how {
+      padding: 96px 0;
+      background: var(--bg2);
+      border-top: 1px solid var(--bd);
+      border-bottom: 1px solid var(--bd);
+    }
+    .how-header { text-align: center; margin-bottom: 60px; }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      background: var(--bd); gap: 1px;
+      border: 1px solid var(--bd); border-radius: 20px; overflow: hidden;
+    }
+    .step {
+      background: var(--card); padding: 44px 36px;
+      position: relative; overflow: hidden;
+      transition: background .2s;
+    }
+    .step:hover { background: #1a1a22; }
+    .step-n {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 80px; font-weight: 700; line-height: 1;
+      color: rgba(200,169,110,.1);
+      position: absolute; top: 16px; right: 24px;
+      user-select: none; pointer-events: none;
+    }
+    .step-ico {
+      width: 50px; height: 50px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(200,169,110,.15) 0%, rgba(212,120,138,.08) 100%);
+      border: 1px solid rgba(200,169,110,.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 22px;
+    }
+    .step-title { font-size: 17px; font-weight: 700; color: var(--cream); margin-bottom: 10px; letter-spacing: -.02em; }
+    .step-desc { font-size: 13.5px; color: var(--txm); line-height: 1.7; }
+    @media (max-width: 768px) { .steps-grid { grid-template-columns: 1fr; } }
+
+    /* ── TESTIMONIALS ─────────────────────────── */
+    .testimonials { padding: 96px 0; }
+    .testi-header { margin-bottom: 56px; }
+    .testi-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .testi-card {
+      background: var(--card); border: 1px solid var(--bd);
+      border-radius: 18px; padding: 28px;
+      transition: border-color .2s, transform .2s;
+    }
+    .testi-card:hover { border-color: rgba(200,169,110,.28); transform: translateY(-5px); }
+    .t-stars { color: #FBBF24; font-size: 13px; margin-bottom: 14px; letter-spacing: .08em; }
+    .t-text { font-size: 14px; color: var(--txm); line-height: 1.75; margin-bottom: 22px; font-style: italic; }
+    .t-author { display: flex; align-items: center; gap: 11px; }
+    .t-av {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 15px; color: #fff;
+    }
+    .t-name { font-size: 13px; font-weight: 600; color: var(--tx); }
+    .t-city { font-size: 11.5px; color: var(--txs); margin-top: 2px; }
+    @media (max-width: 768px) { .testi-grid { grid-template-columns: 1fr; } }
+
+    /* ── URGENCY ──────────────────────────────── */
+    .urgency {
+      padding: 80px 0;
+      background: linear-gradient(160deg, rgba(200,169,110,.05) 0%, rgba(212,120,138,.04) 100%);
+      border-top: 1px solid rgba(200,169,110,.14);
+      border-bottom: 1px solid rgba(200,169,110,.14);
+    }
+    .urgency-inner { max-width: 600px; margin: 0 auto; text-align: center; }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.28);
+      border-radius: 100px;
+      padding: 7px 18px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: #F87171; margin-bottom: 28px;
+    }
+    .live-dot { animation: blink 1s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+    .urg-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(30px, 5vw, 50px);
+      font-weight: 700; line-height: 1.07;
+      color: var(--cream); margin-bottom: 16px;
+    }
+    .urg-title em { font-style: italic; color: var(--gold); }
+    .urg-sub { font-size: 15px; color: var(--txm); line-height: 1.6; margin-bottom: 36px; }
+    .slots-row {
+      display: flex; align-items: center; gap: 14px;
+      max-width: 380px; margin: 0 auto 40px;
+    }
+    .slots-bar { flex: 1; height: 6px; background: rgba(255,255,255,.09); border-radius: 100px; overflow: hidden; }
+    .slots-fill { height: 100%; width: 73%; background: linear-gradient(90deg, var(--gold), var(--rose)); border-radius: 100px; }
+    .slots-lbl { font-size: 12px; color: var(--txs); white-space: nowrap; }
+
+    /* ── FINAL CTA ────────────────────────────── */
+    .final {
+      padding: 120px 0;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .final-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 65% 75% at 50% 55%, rgba(200,169,110,.06) 0%, transparent 70%);
+    }
+    .final-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+    .final-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 24px; }
+    .final-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(44px, 7.5vw, 84px);
+      font-weight: 700; line-height: .92;
+      letter-spacing: -.03em;
+      color: var(--cream); margin-bottom: 28px;
+    }
+    .final-title em { font-style: italic; color: var(--gold); }
+    .final-sub { font-size: 16px; color: var(--txm); line-height: 1.7; margin-bottom: 48px; }
+    .btn-wpp-xl {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--wpp); color: #fff;
+      border: none; border-radius: 100px;
+      padding: 20px 48px;
+      font-family: 'Inter', sans-serif;
+      font-size: 17px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 8px 52px rgba(37,211,102,.42);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-wpp-xl:hover { transform: translateY(-3px); box-shadow: 0 16px 64px rgba(37,211,102,.58); }
+    .wpp-svg { width: 22px; height: 22px; flex-shrink: 0; }
+    .guarantee { margin-top: 24px; font-size: 13px; color: var(--txs); display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+    /* ── FOOTER ───────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--bd);
+      padding: 36px 0;
+    }
+    .foot-row {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+    }
+    .foot-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px; font-weight: 600; color: var(--txm);
+    }
+    .foot-brand em { color: var(--gold); font-style: italic; }
+    .foot-copy { font-size: 12px; color: var(--txs); }
+    .foot-links { display: flex; gap: 20px; }
+    .foot-link { font-size: 12px; color: var(--txs); text-decoration: none; transition: color .14s; }
+    .foot-link:hover { color: var(--txm); }
+    @media (max-width: 600px) { .foot-row { flex-direction: column; text-align: center; } .foot-links { justify-content: center; } }
+
+    /* ── FLOAT WPP ────────────────────────────── */
+    .fab-wpp {
+      position: fixed; bottom: 24px; right: 24px; z-index: 300;
+      width: 58px; height: 58px; border-radius: 50%;
+      background: var(--wpp); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 28px rgba(37,211,102,.48);
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .fab-wpp:hover { transform: scale(1.1); box-shadow: 0 8px 40px rgba(37,211,102,.62); }
+
+    /* ── ANIMATIONS ───────────────────────────── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal.on { opacity: 1; transform: none; }
+    .reveal-d1 { transition-delay: .08s; }
+    .reveal-d2 { transition-delay: .16s; }
+    .reveal-d3 { transition-delay: .24s; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <div class="nav-row">
+    <a href="index.html" class="nav-logo">Milena Lima <em>Beauty</em></a>
+    <a href="https://wa.me/5511999999999?text=Oi+Milena!+Quero+conhecer+os+produtos" class="nav-btn" target="_blank" rel="noopener">
+      💬 Falar agora
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="wrap hero-inner">
+    <div class="hero-tag">
+      <span class="hero-tag-dot"></span>
+      Consultora Oficial Mary Kay
+    </div>
+    <h1 class="hero-h">
+      Sua pele merece<br>
+      o cuidado <em>certo.</em><br>
+      Não qualquer um.
+    </h1>
+    <p class="hero-sub">
+      Mais de 500 mulheres já transformaram sua rotina de beleza com produtos Mary Kay 100% originais e consultoria personalizada. Chegou a sua vez.
+    </p>
+    <div class="hero-ctas">
+      <a href="https://wa.me/5511999999999?text=Oi+Milena!+Quero+conhecer+os+produtos" class="btn-wpp" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Consultoria grátis agora
+      </a>
+      <a href="index.html" class="btn-outline">Ver produtos →</a>
+    </div>
+    <div class="hero-proof">
+      <div class="proof-avatars">
+        <div class="proof-av">💄</div>
+        <div class="proof-av">🌸</div>
+        <div class="proof-av">✨</div>
+      </div>
+      <div class="proof-copy">
+        <span class="proof-stars">★★★★★</span>
+        &nbsp;<strong>+500 clientes</strong> · Nota <strong>4.9/5</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">Skincare <span>✦</span></span>
+    <span class="ticker-item">Maquiagem <span>✦</span></span>
+    <span class="ticker-item">Mary Kay Original <span>✦</span></span>
+    <span class="ticker-item">Hidratação <span>✦</span></span>
+    <span class="ticker-item">Fragrâncias <span>✦</span></span>
+    <span class="ticker-item">Consultoria Grátis <span>✦</span></span>
+    <span class="ticker-item">Corpo &amp; Banho <span>✦</span></span>
+    <span class="ticker-item">Proteção Solar <span>✦</span></span>
+    <span class="ticker-item">Skincare <span>✦</span></span>
+    <span class="ticker-item">Maquiagem <span>✦</span></span>
+    <span class="ticker-item">Mary Kay Original <span>✦</span></span>
+    <span class="ticker-item">Hidratação <span>✦</span></span>
+    <span class="ticker-item">Fragrâncias <span>✦</span></span>
+    <span class="ticker-item">Consultoria Grátis <span>✦</span></span>
+    <span class="ticker-item">Corpo &amp; Banho <span>✦</span></span>
+    <span class="ticker-item">Proteção Solar <span>✦</span></span>
+  </div>
+</div>
+
+<!-- NUMBERS -->
+<section class="numbers">
+  <div class="wrap">
+    <div class="num-grid">
+      <div class="num-cell reveal">
+        <span class="num-val">500+</span>
+        <span class="num-lbl">Clientes satisfeitas</span>
+      </div>
+      <div class="num-cell reveal reveal-d1">
+        <span class="num-val">4.9★</span>
+        <span class="num-lbl">Avaliação média</span>
+      </div>
+      <div class="num-cell reveal reveal-d2">
+        <span class="num-val">100%</span>
+        <span class="num-lbl">Produtos originais Mary Kay</span>
+      </div>
+      <div class="num-cell reveal reveal-d3">
+        <span class="num-val">3+</span>
+        <span class="num-lbl">Anos de experiência</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN / SOLUTION -->
+<section class="pain">
+  <div class="wrap">
+    <div class="two-col">
+      <div>
+        <p class="eyebrow">O que vai mudar</p>
+        <h2 class="sec-title">Cansada de <em>desperdiçar</em><br>no produto errado?</h2>
+        <p class="sec-body">Cada pele é única. Sem orientação especializada, você pode investir em produtos que não servem para você, ou pior, que causam reação.</p>
+        <ul class="feat-list">
+          <li class="feat-item reveal">
+            <div class="feat-ico">✦</div>
+            <div>
+              <div class="feat-title">Consultoria personalizada inclusa</div>
+              <div class="feat-desc">Analiso seu tipo de pele e objetivo. Indico exatamente o que funciona pra você, sem achismo.</div>
+            </div>
+          </li>
+          <li class="feat-item reveal reveal-d1">
+            <div class="feat-ico">🔒</div>
+            <div>
+              <div class="feat-title">Só produtos 100% originais</div>
+              <div class="feat-desc">Sou consultora oficial Mary Kay. Garantia de autenticidade em cada produto entregue.</div>
+            </div>
+          </li>
+          <li class="feat-item reveal reveal-d2">
+            <div class="feat-ico">📦</div>
+            <div>
+              <div class="feat-title">Entrega para todo o Brasil</div>
+              <div class="feat-desc">Rápido, rastreado e com acompanhamento. Da minha mão direto pra sua porta.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="story-cards">
+        <div class="story-card bad reveal">
+          <div class="story-tag">Antes</div>
+          <p class="story-text">"Comprei um sérum que vi no Instagram. Tive reação alérgica. <strong>Perdi R$ 180 e fiquei com a pele inflamada por semanas.</strong>"</p>
+        </div>
+        <div class="story-card good reveal reveal-d1">
+          <div class="story-tag">Com Milena Lima Beauty</div>
+          <p class="story-text">"A Milena analisou minha pele, indicou os produtos certos para meu tipo. <strong>Em 30 dias minha pele estava completamente diferente.</strong>"</p>
+        </div>
+        <div class="story-card good reveal reveal-d2">
+          <div class="story-tag">Resultado real</div>
+          <p class="story-text">"Ela me acompanhou durante todo o processo. Tirou dúvidas, ajustou os produtos. <strong>É atendimento de verdade, não só venda.</strong>"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="wrap">
+    <div class="how-header">
+      <p class="eyebrow" style="text-align:center">Como funciona</p>
+      <h2 class="sec-title" style="text-align:center;max-width:560px;margin:0 auto">
+        Simples assim.<br><em>Três passos.</em>
+      </h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step reveal">
+        <span class="step-n">01</span>
+        <div class="step-ico">💬</div>
+        <div class="step-title">Fala com a Milena</div>
+        <p class="step-desc">Manda uma mensagem no WhatsApp. Respondo em minutos, sem julgamento, sem pressão. Só querendo te ajudar de verdade.</p>
+      </div>
+      <div class="step reveal reveal-d1">
+        <span class="step-n">02</span>
+        <div class="step-ico">✦</div>
+        <div class="step-title">Consultoria personalizada</div>
+        <p class="step-desc">Analiso seu tipo de pele e rotina atual. Indico os produtos ideais para o seu objetivo e o seu bolso. Sem enrolação.</p>
+      </div>
+      <div class="step reveal reveal-d2">
+        <span class="step-n">03</span>
+        <div class="step-ico">🌟</div>
+        <div class="step-title">Recebe e transforma</div>
+        <p class="step-desc">Seus produtos chegam em casa. Acompanho sua evolução, tiro dúvidas e ajusto o que for preciso. Suporte real, de verdade.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="wrap">
+    <div class="testi-header">
+      <p class="eyebrow">O que dizem</p>
+      <h2 class="sec-title">Resultados <em>reais.</em><br>Pessoas reais.</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"Nunca tinha tido uma rotina de skincare de verdade. A Milena me ajudou a montar a minha do zero e em dois meses minha pele estava completamente diferente."</p>
+        <div class="t-author">
+          <div class="t-av">A</div>
+          <div>
+            <div class="t-name">Ana Paula S.</div>
+            <div class="t-city">São Paulo, SP</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d1">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"Comprei desconfiada, mas a entrega foi rápida, o produto chegou original e o atendimento foi impecável. Já indiquei pra três amigas, todas compraram também."</p>
+        <div class="t-author">
+          <div class="t-av">C</div>
+          <div>
+            <div class="t-name">Camila R.</div>
+            <div class="t-city">Curitiba, PR</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d2">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"Ela não só vendeu o produto: me ensinou a usar, me acompanhou, respondeu toda vez que tive dúvida. Isso é diferencial de verdade. Não encontrei isso em lugar nenhum."</p>
+        <div class="t-author">
+          <div class="t-av">J</div>
+          <div>
+            <div class="t-name">Juliana M.</div>
+            <div class="t-city">Belo Horizonte, MG</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- URGENCY -->
+<section class="urgency">
+  <div class="wrap">
+    <div class="urgency-inner">
+      <div class="live-badge">
+        <span class="live-dot">●</span>
+        Vagas limitadas este mês
+      </div>
+      <h2 class="urg-title">Agenda de consultoria<br><em>quase cheia.</em></h2>
+      <p class="urg-sub">Atendo de forma personalizada, por isso tenho vagas limitadas por mês. Se você está lendo isso, ainda dá tempo. Mas não espere muito.</p>
+      <div class="slots-row">
+        <div class="slots-bar"><div class="slots-fill"></div></div>
+        <div class="slots-lbl">7 de 10 vagas preenchidas</div>
+      </div>
+      <a href="https://wa.me/5511999999999?text=Oi+Milena!+Quero+garantir+minha+vaga+de+consultoria" class="btn-wpp" target="_blank" rel="noopener">
+        💬 Garantir minha vaga agora
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="final-glow"></div>
+  <div class="wrap final-inner">
+    <p class="final-eyebrow">Pronta para começar?</p>
+    <h2 class="final-title">
+      Sua melhor<br>
+      pele começa<br>
+      com uma <em>conversa.</em>
+    </h2>
+    <p class="final-sub">Manda uma mensagem agora. Consultoria gratuita, sem compromisso, sem enrolação.</p>
+    <a href="https://wa.me/5511999999999?text=Oi+Milena!+Quero+minha+consultoria+de+beleza" class="btn-wpp-xl" target="_blank" rel="noopener">
+      <svg class="wpp-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Falar com Milena no WhatsApp
+    </a>
+    <p class="guarantee">🔒 &nbsp; 100% sem spam · Resposta em até 1 hora · Consultoria gratuita</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="foot-brand">Milena Lima <em>Beauty</em></div>
+      <div class="foot-copy">© 2026 · Consultora Oficial Mary Kay</div>
+      <div class="foot-links">
+        <a href="index.html" class="foot-link">Ver loja →</a>
+        <a href="login.html" class="foot-link">Área restrita</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp -->
+<a href="https://wa.me/5511999999999" class="fab-wpp" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" fill="white" width="28" height="28"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script>
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Shorti · Manifesto</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    font-family:'Inter',system-ui,sans-serif; background:#04060C; color:#fff;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+
+  /* ══ APP SHELL ═════════════════════════════════ */
+  .app { position:fixed; inset:0; overflow:hidden; }
+
+  /* ══ TOP BAR ════════════════════════════════════ */
+  .topbar { position:absolute; top:24px; left:0; right:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 24px; transition: color .3s; }
+  @media(min-width:760px){ .topbar { top:34px; padding:0 64px; } }
+  .tb-id { display:flex; align-items:flex-end; gap:8px; }
+  .tb-lb { display:flex; align-items:flex-end; gap:2px; height:11px; }
+  .tb-lb span { display:block; border-radius:2px; transform:skewX(-14deg); background:rgba(255,255,255,.85); transition:background .3s; }
+  .tb-lb span:nth-child(1){ width:4px; height:7px; opacity:.45; }
+  .tb-lb span:nth-child(2){ width:4.5px; height:11px; }
+  .tb-name { font-size:15px; line-height:11px; font-weight:900; letter-spacing:-.05em; color:#fff; transition:color .3s; }
+  .tb-name b { color:#4D7EFF; }
+  .tb-r { display:flex; align-items:center; gap:16px; }
+  .tb-count { font-size:11px; font-weight:800; letter-spacing:.18em; color:rgba(255,255,255,.35); font-variant-numeric:tabular-nums; transition:color .3s; }
+  .tb-close {
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.7);
+    cursor:pointer; backdrop-filter:blur(8px); transition:.2s; text-decoration:none;
+  }
+  .tb-close:hover { background:rgba(255,255,255,.16); color:#fff; transform:rotate(90deg); }
+  #app.light .tb-name { color:#0F172A; }
+  #app.light .tb-lb span { background:rgba(15,23,42,.55); }
+  #app.light .tb-lb span:nth-child(2){ background:#0F172A; }
+  #app.light .tb-count { color:rgba(15,23,42,.35); }
+  #app.light .tb-close { background:rgba(15,23,42,.06); border-color:rgba(15,23,42,.12); color:rgba(15,23,42,.5); }
+  #app.light .tb-close:hover { background:rgba(15,23,42,.12); color:#0F172A; }
+
+  /* ══ DOTS NAV ═══════════════════════════════════ */
+  .dots { position:absolute; top:26px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:7px; }
+  @media(min-width:760px){ .dots { top:38px; } }
+  .dot-btn { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.25); border:none; padding:0; cursor:pointer; transition:.25s; }
+  .dot-btn.on { background:#fff; width:22px; border-radius:4px; }
+  #app.light .dot-btn { background:rgba(15,23,42,.16); }
+  #app.light .dot-btn.on { background:#0F172A; }
+
+  /* ══ ARROW NAV ══════════════════════════════════ */
+  .arrows { position:absolute; right:24px; bottom:28px; z-index:50; display:flex; gap:10px; }
+  @media(min-width:760px){ .arrows { right:64px; bottom:44px; } }
+  .arrow-btn {
+    width:46px; height:46px; border-radius:50%; border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.06); backdrop-filter:blur(8px); color:rgba(255,255,255,.8);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.2s;
+  }
+  .arrow-btn:hover:not(:disabled) { background:rgba(255,255,255,.16); color:#fff; }
+  .arrow-btn:disabled { opacity:.22; cursor:default; }
+  #app.light .arrow-btn { background:rgba(15,23,42,.05); border-color:rgba(15,23,42,.12); color:rgba(15,23,42,.55); }
+  #app.light .arrow-btn:hover:not(:disabled) { background:rgba(15,23,42,.1); color:#0F172A; }
+
+  /* ══ STAGE / SLIDES ═════════════════════════════ */
+  .stage { position:relative; width:100%; height:100%; overflow:hidden; }
+  .slide {
+    position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
+    align-items:center; text-align:center;
+    padding:104px 24px 64px;
+    opacity:0; visibility:hidden; z-index:1;
+    transform: scale(.94);
+    transition: opacity .55s ease, transform .65s cubic-bezier(.16,1,.3,1);
+  }
+  @media(min-width:640px){ .slide { padding:120px 64px 70px; } }
+  @media(min-width:1100px){ .slide { padding:120px 110px 80px; } }
+
+  .slide.active  { opacity:1; visibility:visible; transform:scale(1) translateX(0); z-index:3; }
+  .slide.enter-r { transform: translateX(70px) scale(.92); }
+  .slide.enter-l { transform: translateX(-70px) scale(.92); }
+  .slide.exit-l  { opacity:0; visibility:visible; transform: translateX(-70px) scale(.92); z-index:2; }
+  .slide.exit-r  { opacity:0; visibility:visible; transform: translateX(70px) scale(.92); z-index:2; }
+
+  .slide.dark   { background:#04060C; color:#fff; }
+  .slide.white  { background:#fff; color:#0F172A; }
+  .slide.blue   { background:linear-gradient(155deg,#1B44B8 0%,#0E2670 100%); color:#fff; }
+  .slide.amber  { background:linear-gradient(155deg,#1a1206 0%,#04060C 60%); color:#fff; }
+  .slide.purple { background:linear-gradient(155deg,#1a0f2e 0%,#04060C 60%); color:#fff; }
+
+  .slide.dark::before, .slide.amber::before, .slide.purple::before {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.5; z-index:0;
+    background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 30px 30px;
+    mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+  }
+  .slide.white::before {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.6; z-index:0;
+    background-image: radial-gradient(rgba(15,23,42,.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    mask-image: radial-gradient(circle at 50% 20%, #000 0%, transparent 70%);
+  }
+
+  /* glow blobs */
+  .glow { position:absolute; border-radius:50%; filter:blur(90px); pointer-events:none; opacity:.5; z-index:0; animation: glowfloat 10s ease-in-out infinite; }
+  .glow2 { position:absolute; border-radius:50%; filter:blur(100px); pointer-events:none; opacity:.38; z-index:0; animation: glowfloat 13s ease-in-out infinite reverse; }
+  @keyframes glowfloat { 0%,100%{ transform:translate(0,0) scale(1) } 50%{ transform:translate(-30px,24px) scale(1.2) } }
+  .slide.dark .glow    { width:38vw; height:38vw; max-width:480px; max-height:480px; background:#1B44B8; top:-12vw; right:-10vw; }
+  .slide.dark .glow2   { width:26vw; height:26vw; max-width:340px; max-height:340px; background:#A78BFA; bottom:6%; left:-8vw; }
+  .slide.amber .glow   { width:40vw; height:40vw; max-width:500px; max-height:500px; background:#F59E0B; bottom:-14vw; left:-10vw; opacity:.32; }
+  .slide.amber .glow2  { width:28vw; height:28vw; max-width:360px; max-height:360px; background:#FCD34D; top:10%; right:-6vw; opacity:.18; }
+  .slide.purple .glow  { width:40vw; height:40vw; max-width:500px; max-height:500px; background:#A78BFA; top:-12vw; right:-10vw; opacity:.38; }
+  .slide.purple .glow2 { width:28vw; height:28vw; max-width:360px; max-height:360px; background:#4D7EFF; bottom:-8vw; left:-6vw; opacity:.22; }
+  .slide.blue .glow    { width:44vw; height:44vw; max-width:560px; max-height:560px; background:#4D7EFF; top:-14vw; left:-12vw; opacity:.4; }
+
+  /* ══ TEXT ═══════════════════════════════════════ */
+  .kicker {
+    position:relative; z-index:1; display:inline-flex; align-items:center; gap:9px;
+    font-size:clamp(11px,1vw,13px); font-weight:800; letter-spacing:.24em; text-transform:uppercase;
+    color:rgba(255,255,255,.4); margin-bottom:20px;
+  }
+  .kicker .dot { width:6px; height:6px; border-radius:50%; background:#4D7EFF; flex-shrink:0; animation: dotpulse 1.4s ease-in-out infinite; }
+  @keyframes dotpulse { 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.35; transform:scale(1.5) } }
+  .white .kicker { color:#94A3B8; }
+
+  .h {
+    position:relative; z-index:1; max-width:920px; margin-left:auto; margin-right:auto;
+    font-size:clamp(38px,8.5vw,92px); font-weight:900; letter-spacing:-.045em; line-height:1.08;
+    margin-bottom:22px;
+  }
+  .h em { font-style:italic; color:#4D7EFF; }
+  .white .h em { color:#1B44B8; }
+  .blue .h em  { color:#fff; -webkit-text-stroke:1.5px #fff; }
+
+  .p {
+    position:relative; z-index:1; max-width:560px; margin-left:auto; margin-right:auto;
+    font-size:clamp(15px,1.7vw,19px); font-weight:300; line-height:1.6; color:rgba(255,255,255,.6);
+  }
+  .white .p { color:#64748B; }
+
+  .tap-hint {
+    position:relative; z-index:1; margin-top:36px;
+    font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(255,255,255,.28); display:flex; align-items:center; gap:8px;
+    animation: tapnudge 1.6s ease-in-out infinite;
+  }
+  @keyframes tapnudge { 0%,100%{transform:translateX(0);opacity:.28} 50%{transform:translateX(6px);opacity:.55} }
+
+  .footer-tag {
+    position:relative; z-index:1; margin-top:14px;
+    font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(255,255,255,.22);
+  }
+
+  /* ══ NAV ZONES ══════════════════════════════════ */
+  .nav { position:absolute; inset:0; z-index:40; display:flex; }
+  .nav-l { flex:0 0 32%; cursor:pointer; }
+  .nav-r { flex:1; cursor:pointer; }
+
+  /* ══ REVEAL "Shorti." ═══════════════════════════ */
+  .reveal {
+    position:relative; z-index:1; display:flex; align-items:flex-end; justify-content:center; width:100%; gap:.16em; margin:10px 0 24px;
+    font-size:clamp(56px,14vw,128px);
+    opacity:0; transform:scale(.4) rotate(-10deg);
+  }
+  .slide.active .reveal { animation: revealpop .9s cubic-bezier(.34,1.56,.64,1) .2s forwards; }
+  @keyframes revealpop { to{opacity:1; transform:scale(1) rotate(0)} }
+  .reveal .rb { display:flex; align-items:flex-end; gap:.08em; height:.75em; }
+  .reveal .rb span { display:block; border-radius:.06em; transform:skewX(-14deg); background:rgba(255,255,255,.45); }
+  .reveal .rb span:nth-child(1){ width:.16em; height:.46em; }
+  .reveal .rb span:nth-child(2){ width:.2em; height:.75em; background:#fff; }
+  .reveal .word { position:relative; font-size:1em; line-height:.75em; font-weight:900; letter-spacing:-.06em; overflow:hidden; }
+  .reveal .word b { color:#4D7EFF; }
+  .reveal .word::after {
+    content:''; position:absolute; inset:0; left:-150%;
+    background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%);
+    transform:skewX(-20deg);
+  }
+  .slide.active .reveal .word::after { animation: shinesweep 1.4s ease 1.1s forwards; }
+  @keyframes shinesweep { to{ left:150% } }
+
+  /* ══ FINAL CTA ══════════════════════════════════ */
+  .cta-wrap {
+    position:absolute; left:0; right:0; bottom:36px; z-index:45;
+    display:flex; justify-content:center; padding:0 24px;
+    opacity:0; pointer-events:none; transform:translateY(14px);
+    transition:opacity .4s ease, transform .4s ease;
+  }
+  .cta-wrap.show { opacity:1; pointer-events:auto; transform:none; }
+  @media(min-width:640px){ .cta-wrap{ bottom:54px; } }
+  .cta-row { position:relative; z-index:1; display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+  .cta-btn {
+    position:relative; z-index:1; display:inline-flex; align-items:center; gap:12px;
+    background:#fff; color:#1B44B8; border:none; border-radius:13px; padding:18px 32px;
+    font-size:16px; font-weight:800; letter-spacing:-.01em; text-decoration:none;
+    box-shadow:0 8px 30px rgba(0,0,0,.25); transition:transform .2s, box-shadow .2s;
+    overflow:hidden; animation: ctapulse 2.4s ease-in-out infinite;
+  }
+  .cta-btn:hover { transform:translateY(-2px) scale(1.03); box-shadow:0 12px 40px rgba(0,0,0,.32); }
+  .cta-btn::after {
+    content:''; position:absolute; top:0; left:-60%; width:35%; height:100%;
+    background:linear-gradient(115deg, transparent, rgba(27,68,184,.22), transparent);
+    transform:skewX(-18deg); animation: shine 2.6s ease-in-out infinite;
+  }
+  @keyframes shine { 0%{left:-60%} 55%{left:130%} 100%{left:130%} }
+  @keyframes ctapulse { 0%,100%{ box-shadow:0 8px 30px rgba(0,0,0,.25), 0 0 0 0 rgba(255,255,255,.0) } 50%{ box-shadow:0 8px 30px rgba(0,0,0,.25), 0 0 0 10px rgba(255,255,255,.08) } }
+  .cta-ghost {
+    display:inline-flex; align-items:center; gap:10px; padding:18px 28px; border-radius:13px;
+    border:1px solid rgba(255,255,255,.18); color:#fff; text-decoration:none;
+    font-size:15px; font-weight:700; letter-spacing:-.01em; transition:.2s; backdrop-filter:blur(8px);
+  }
+  .cta-ghost:hover { background:rgba(255,255,255,.1); }
+
+  /* ══ ENTRY ANIM ═════════════════════════════════ */
+  .slide.active .a-up    { animation: aup    .65s cubic-bezier(.16,1,.3,1) forwards; }
+  .slide.active .a-down  { animation: adown  .65s cubic-bezier(.16,1,.3,1) forwards; }
+  .slide.active .a-left  { animation: aleft  .65s cubic-bezier(.16,1,.3,1) forwards; }
+  .slide.active .a-right { animation: aright .65s cubic-bezier(.16,1,.3,1) forwards; }
+  .a-up    { opacity:0; transform:translateY(18px); }
+  .a-down  { opacity:0; transform:translateY(-18px); }
+  .a-left  { opacity:0; transform:translateX(32px); }
+  .a-right { opacity:0; transform:translateX(-32px); }
+  .slide.active .a1 { animation-delay:.05s; }
+  .slide.active .a2 { animation-delay:.15s; }
+  .slide.active .a3 { animation-delay:.25s; }
+  .slide.active .a4 { animation-delay:.35s; }
+  @keyframes aup    { to{opacity:1; transform:none} }
+  @keyframes adown  { to{opacity:1; transform:none} }
+  @keyframes aleft  { to{opacity:1; transform:none} }
+  @keyframes aright { to{opacity:1; transform:none} }
+</style>
+</head>
+<body>
+
+  <div class="app" id="app">
+
+    <div class="topbar" id="topbar">
+      <div class="tb-id">
+        <div class="tb-lb"><span></span><span></span></div>
+        <div class="tb-name">Shorti<b>.</b></div>
+      </div>
+      <div class="tb-r">
+        <span class="tb-count" id="tbCount">01 / 07</span>
+        <a class="tb-close" href="shorti.html" aria-label="Voltar">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="dots" id="dots"></div>
+
+    <div class="stage" id="stage">
+
+      <!-- 1 — Capa -->
+      <div class="slide dark active">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-down a1"><span class="dot"></span>Manifesto</p>
+        <div class="reveal">
+          <div class="rb"><span></span><span></span></div>
+          <div class="word">Shorti<b>.</b></div>
+        </div>
+        <h1 class="h a-up a2">Isso aqui<br>é o Shorti.</h1>
+        <p class="p a-left a3">Não é uma comparação com nada. É uma apresentação de quem a gente é.</p>
+        <p class="footer-tag a-up a4">GrupoLima · 2026</p>
+        <div class="tap-hint a-right a4">Use as setas ou arraste →</div>
+      </div>
+
+      <!-- 2 — Pra quem (blue) -->
+      <div class="slide blue">
+        <div class="glow"></div>
+        <p class="kicker a-down a1"><span class="dot"></span>Pra quem existimos</p>
+        <h1 class="h a-up a2">Pra quem vende todo santo dia,<br>na correria, com o que tem.</h1>
+        <p class="p a-right a3">Pra quem atende cliente pelo zap, anota fiado de cabeça, guarda o estoque na memória e fecha o caixa cansada, mas no esquema.</p>
+      </div>
+
+      <!-- 3 — O que acreditamos (white) -->
+      <div class="slide white">
+        <p class="kicker a-down a1"><span class="dot"></span>O que acreditamos</p>
+        <h1 class="h a-up a2">Quem revende beleza<br>merece um sistema <em>de verdade.</em></h1>
+        <p class="p a-left a3">Não um caderno. Não uma planilha que ninguém atualiza. Um sistema pensado pra essa rotina, não encaixado nela.</p>
+      </div>
+
+      <!-- 4 — Como somos (dark) -->
+      <div class="slide dark">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-down a1"><span class="dot"></span>Como somos</p>
+        <h1 class="h a-up a2">Simples. Rápido.<br>No bolso.</h1>
+        <p class="p a-right a3">Cabe na tela do celular, porque é ali que o seu negócio acontece. Sem curso, sem manual, sem TI.</p>
+      </div>
+
+      <!-- 5 — O que muda (purple) -->
+      <div class="slide purple">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-down a1"><span class="dot"></span>O que muda</p>
+        <h1 class="h a-up a2">Cada venda registrada.<br>Cada cliente lembrado.<br>Cada real, contado.</h1>
+        <p class="p a-left a3">Não é sobre números maiores. É sobre enxergar, com clareza, o que já é seu.</p>
+      </div>
+
+      <!-- 6 — Em resumo (amber) -->
+      <div class="slide amber">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-down a1"><span class="dot"></span>Em resumo</p>
+        <h1 class="h a-up a2">A gente não vende um sistema.<br>A gente dá <em style="color:#FCD34D">clareza</em> pra quem vende beleza.</h1>
+        <p class="p a-right a3">Shorti é isso: o que faltava.</p>
+      </div>
+
+      <!-- 7 — CTA final (blue) -->
+      <div class="slide blue">
+        <div class="glow"></div>
+        <p class="kicker a-down a1"><span class="dot"></span>Se você se viu aqui</p>
+        <h1 class="h a-up a2">Então você já<br>precisa do Shorti.</h1>
+        <p class="p a-left a3">Entra, mexe, sente na prática. Sem cadastro e sem compromisso.</p>
+        <p class="footer-tag a-up a4">GrupoLima · 2026</p>
+      </div>
+
+    </div>
+
+    <div class="nav" id="nav">
+      <div class="nav-l" id="navL"></div>
+      <div class="nav-r" id="navR"></div>
+    </div>
+
+    <div class="cta-wrap" id="ctaWrap">
+      <div class="cta-row">
+        <a class="cta-btn" href="../erp.html?local">
+          Acessar conta de testes
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a class="cta-ghost" href="investidores.html">Ver a apresentação</a>
+        <a class="cta-ghost" href="shorti.html">Voltar</a>
+      </div>
+    </div>
+
+    <div class="arrows">
+      <button class="arrow-btn" id="prevBtn" aria-label="Anterior">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="arrow-btn" id="nextBtn" aria-label="Próximo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+  </div>
+
+<script>
+(function () {
+  const slides  = document.querySelectorAll('.slide');
+  const stage   = document.getElementById('stage');
+  const app     = document.getElementById('app');
+  const dots    = document.getElementById('dots');
+  const tbCount = document.getElementById('tbCount');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const ctaWrap = document.getElementById('ctaWrap');
+  const total   = slides.length;
+  let cur = 0;
+
+  /* build dots */
+  for (let i = 0; i < total; i++) {
+    const b = document.createElement('button');
+    b.className = 'dot-btn';
+    b.setAttribute('aria-label', 'Slide ' + (i + 1));
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  }
+  const dotEls = dots.querySelectorAll('.dot-btn');
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function update() {
+    app.classList.toggle('light', slides[cur].classList.contains('white'));
+    dotEls.forEach((d, i) => d.classList.toggle('on', i === cur));
+    tbCount.textContent = pad(cur + 1) + ' / ' + total;
+    prevBtn.disabled = cur === 0;
+    nextBtn.disabled = cur === total - 1;
+    ctaWrap.classList.toggle('show', cur === total - 1);
+    startAuto();
+  }
+
+  /* navegação automática a cada 10s, reinicia a cada interação */
+  let autoTimer = null;
+  function startAuto() {
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(() => {
+      goTo(cur < total - 1 ? cur + 1 : 0);
+    }, 10000);
+  }
+
+  function goTo(newIdx) {
+    if (newIdx === cur || newIdx < 0 || newIdx >= total) return;
+    const dir = newIdx > cur ? 1 : -1;
+    const oldSlide = slides[cur];
+    const newSlide = slides[newIdx];
+
+    newSlide.classList.remove('exit-l', 'exit-r', 'enter-l', 'enter-r', 'active');
+    newSlide.classList.add(dir === 1 ? 'enter-r' : 'enter-l');
+    void newSlide.offsetWidth;
+
+    requestAnimationFrame(() => {
+      newSlide.classList.remove('enter-r', 'enter-l');
+      newSlide.classList.add('active');
+      oldSlide.classList.remove('active');
+      oldSlide.classList.add(dir === 1 ? 'exit-l' : 'exit-r');
+    });
+
+    setTimeout(() => {
+      oldSlide.style.transition = 'none';
+      oldSlide.classList.remove('exit-l', 'exit-r', 'enter-l', 'enter-r');
+      void oldSlide.offsetWidth;
+      oldSlide.style.transition = '';
+    }, 700);
+
+    cur = newIdx;
+    update();
+  }
+
+  function next() { if (cur < total - 1) goTo(cur + 1); }
+  function prev() { if (cur > 0) goTo(cur - 1); }
+
+  document.getElementById('navR').addEventListener('click', next);
+  document.getElementById('navL').addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+
+  /* keyboard */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
+
+  /* swipe */
+  let tx = 0, ty = 0;
+  stage.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+  stage.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+  }, {passive:true});
+
+  update();
+})();
+</script>
+</body>
+</html>
