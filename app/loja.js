@@ -108,15 +108,28 @@ async function rBioSecurity() {
   const card  = $('bio-security-card');
   const badge = $('bio-badge');
   const btn   = $('bio-toggle');
+  const hint  = $('bio-hint');
   if (!card || !badge || !btn) return;
 
   const userId = window._userId;
-  if (!userId || typeof isBioAvailable !== 'function' || !(await isBioAvailable())) {
+  if (!userId) {
     card.style.display = 'none';
     return;
   }
 
   card.style.display = '';
+
+  if (typeof isBioAvailable !== 'function' || !(await isBioAvailable())) {
+    badge.className = 'pub-badge pub-badge-off';
+    badge.textContent = '● Não disponível';
+    btn.textContent = 'Indisponível neste dispositivo';
+    btn.disabled = true;
+    if (hint) hint.textContent = 'Seu navegador ou dispositivo não tem biometria configurada (digital, Face ID ou Windows Hello), ou o acesso não está em uma conexão segura (HTTPS).';
+    return;
+  }
+
+  btn.disabled = false;
+  if (hint) hint.textContent = 'Use a biometria (digital, Face ID, Windows Hello) para destravar o Shorti mais rápido neste aparelho, sem digitar a senha.';
   if (isBioEnrolled(userId)) {
     badge.className = 'pub-badge pub-badge-on';
     badge.textContent = '● Ativada';
