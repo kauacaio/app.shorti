@@ -447,14 +447,20 @@
     @media (max-width: 860px) {
       html, body { overflow: auto; }
       .page { grid-template-columns: 1fr; height: auto; }
-      .brand { padding: 56px 36px 44px; min-height: 48vh; justify-content: flex-end; }
-      .wm-row { font-size: clamp(68px,15vw,96px); transform: translateX(-.315em); }
-      .form-side { padding: 52px 28px 60px; border-left: none; border-top: 1px solid #F1F5F9; }
+      .brand { padding: 40px 28px 32px; min-height: auto; justify-content: center; }
+      .brand::after { width: 320px; height: 320px; }
+      .brand-ring { width: 220px; height: 220px; }
+      .brand-watermark, .brand-orbit { display: none; }
+      .wm-row { font-size: clamp(56px,17vw,84px); transform: translateX(-.315em); margin-bottom: 18px; }
+      .eyebrow { margin-bottom: 16px; }
+      .form-side { padding: 40px 24px 48px; border-left: none; border-top: 1px solid #F1F5F9; }
       .card { max-width: 400px; }
     }
     @media (max-width: 480px) {
-      .brand { padding: 44px 24px 36px; }
-      .wm-row { font-size: 64px; }
+      .brand { padding: 32px 20px 28px; }
+      .brand::after { width: 260px; height: 260px; }
+      .brand-ring { width: 180px; height: 180px; }
+      .wm-row { font-size: 52px; }
     }
   </style>
 </head>

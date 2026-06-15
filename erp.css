@@ -176,10 +176,11 @@ img, svg { display: block; max-width: 100%; }
 }
 .erp-logo-icon {
   width: 32px; height: 32px; flex-shrink: 0;
-  background: var(--gl); border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 3px 10px var(--gl-glow-s);
+  display: flex; align-items: flex-end; justify-content: center; gap: 3px;
 }
+.li-bar { display: block; border-radius: 2px; transform: skewX(-10deg); }
+.li-bar-1 { width: 6px; height: 14px; background: #94A3B8; }
+.li-bar-2 { width: 7px; height: 22px; background: linear-gradient(180deg, #94A3B8 0%, #475569 100%); }
 .erp-logo-text {
   font-size: 16px; font-weight: 800;
   color: var(--tx); letter-spacing: -.03em; white-space: nowrap;
