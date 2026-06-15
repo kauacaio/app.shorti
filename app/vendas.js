@@ -382,7 +382,7 @@ function vUpd() {
   }
 }
 
-function saveV() {
+async function saveV() {
   if (!_nvCart.length) { showToast('Adicione ao menos um produto'); return; }
   const cid  = parseInt($('vc')?.value);
   const pag  = $('vpg')?.value;
@@ -391,7 +391,7 @@ function saveV() {
   const c = DB.clis.find(x => x.id === cid);
   if (!c) { showToast('Selecione um cliente'); return; }
   const tot  = _nvCart.reduce((a, b) => a + b.sub, 0);
-  const id   = DB.nid.ped++;
+  const id   = await nextId('ped');
   const pagLabel = parc > 1 ? `${pag} ${parc}×` : pag;
   const isPending = dtpag > td();
   const itens = _nvCart.map(i => ({ pid: i.pid, nm: i.nm, em: i.em, q: i.q, pr: i.pr, sub: i.sub }));
@@ -402,7 +402,7 @@ function saveV() {
   c.gasto += tot;
   c.ult = td();
   if (!isFiado) {
-    const tr = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+    const tr = { id: await nextId('t'), tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
     DB.trans.push(tr);
     sbSync(() => SBTrans.upsert(tr));
   }
@@ -530,7 +530,7 @@ function selTrTp(btn, val) {
   btn.classList.add('on');
 }
 
-function saveMV() {
+async function saveMV() {
   if (!_mvCart.length) { showToast('Adicione ao menos um produto'); return; }
   const cid   = parseInt($('mvc')?.value);
   const pag   = $('mvpg')?.value;
@@ -539,7 +539,7 @@ function saveMV() {
   const c = DB.clis.find(x => x.id === cid);
   if (!c) { showToast('Selecione um cliente'); return; }
   const tot       = _mvCart.reduce((a, b) => a + b.sub, 0);
-  const id        = DB.nid.ped++;
+  const id        = await nextId('ped');
   const pagLabel  = parc > 1 ? `${pag} ${parc}×` : pag;
   const isPending = dtpag > td();
   const itens     = _mvCart.map(i => ({ pid: i.pid, nm: i.nm, em: i.em, q: i.q, pr: i.pr, sub: i.sub }));
@@ -550,7 +550,7 @@ function saveMV() {
   c.gasto += tot;
   c.ult = td();
   if (!isFiado) {
-    const mtr = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+    const mtr = { id: await nextId('t'), tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
     DB.trans.push(mtr);
     sbSync(() => SBTrans.upsert(mtr));
   }

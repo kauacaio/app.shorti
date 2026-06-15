@@ -36,15 +36,16 @@ function rFin() {
   rFlxChart();
 }
 
-function saveTr() {
+async function saveTr() {
+  const ds = $('tr-ds').value;
+  if (!ds) { showToast('Informe a descrição'); return; }
   const o = {
-    id: DB.nid.t++,
+    id: await nextId('t'),
     tp: $('tr-tp').value,
-    ds: $('tr-ds').value,
+    ds,
     vl: parseFloat($('tr-vl').value) || 0,
     dt: $('tr-dt').value || td()
   };
-  if (!o.ds) { showToast('Informe a descrição'); return; }
   DB.trans.push(o);
   rFin();
   closeMod('mt');

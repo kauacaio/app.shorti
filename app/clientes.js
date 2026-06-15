@@ -180,7 +180,7 @@ function editCli(id) {
   openMod('mc');
 }
 
-function saveCli() {
+async function saveCli() {
   const eid = $('nc-id')?.value;
   const nm  = $('nc-nm').value.trim();
   if (!nm) { showToast('Informe o nome'); return; }
@@ -193,7 +193,7 @@ function saveCli() {
     const c = DB.clis.find(x => x.id === parseInt(eid));
     if (c) { Object.assign(c, fields); sbSync(() => SBClis.upsert({ ...c })); }
   } else {
-    const c = { id: DB.nid.c++, ...fields, gasto: 0, ult: '' };
+    const c = { id: await nextId('c'), ...fields, gasto: 0, ult: '' };
     DB.clis.push(c);
     sbSync(() => SBClis.upsert(c));
   }

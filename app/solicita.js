@@ -115,7 +115,7 @@ function delSolic(id) {
   });
 }
 
-function saveSolic() {
+async function saveSolic() {
   const nm = $('sl-nm')?.value.trim();
   if (!nm) { showToast('Informe o produto'); return; }
   const eid = $('sl-id')?.value;
@@ -129,7 +129,7 @@ function saveSolic() {
     if (s) { Object.assign(s, { nm, q, pr, obs, st }); sbSync(() => SBSolics.upsert(s)); }
     showToast('Solicitação atualizada ✓');
   } else {
-    const s = { id: DB.nid.s++, nm, q, pr, obs, st: 'Pendente', dt: td() };
+    const s = { id: await nextId('s'), nm, q, pr, obs, st: 'Pendente', dt: td() };
     DB.solics.push(s);
     sbSync(() => SBSolics.upsert(s));
     showToast('Solicitação criada ✓');

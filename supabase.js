@@ -145,6 +145,18 @@ const SBAdmin = {
   }
 };
 
+/* ── IDs sequenciais (V6 — alocação atômica por tenant) ──
+   Pede ao Postgres o próximo id da tabela via next_id(),
+   evitando que dois dispositivos calculem o mesmo
+   max(id)+1 e se sobrescrevam num upsert. */
+const SBIds = {
+  async next(table) {
+    const { data, error } = await _sbClient.rpc('next_id', { p_name: table });
+    if (error) throw error;
+    return data;
+  }
+};
+
 /* ── Produtos ───────────────────────────────────────── */
 const SBProds = {
   async list(tenantId) {

@@ -94,7 +94,7 @@ function confirmSaveProd() {
   }
 }
 
-function saveProd() {
+async function saveProd() {
   const eid = $('pe-id')?.value;
   const featsRaw = $('pe-feats')?.value || '';
   const o = {
@@ -121,7 +121,7 @@ function saveProd() {
     const p = DB.prods.find(x => x.id === parseInt(eid));
     if (p) { Object.assign(p, o); saved = p; }
   } else {
-    o.id = DB.nid.p++;
+    o.id = await nextId('p');
     DB.prods.push(o);
     saved = o;
   }

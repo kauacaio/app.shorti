@@ -60,10 +60,10 @@ function receberPed(id) {
   const p = DB.peds.find(x => x.id === id);
   if (!p) return;
   const c = DB.clis.find(x => x.id === p.cid);
-  askConfirm(`Confirmar recebimento de ${brl(p.tot)}${c ? ' de ' + esc(c.nm) : ''}?\n\nUm lançamento de receita será registrado no financeiro.`, () => {
+  askConfirm(`Confirmar recebimento de ${brl(p.tot)}${c ? ' de ' + esc(c.nm) : ''}?\n\nUm lançamento de receita será registrado no financeiro.`, async () => {
     p.pag = 'Recebido';
     p.st  = 'Entregue';
-    const t = { id: DB.nid.t++, tp: 'receita', ds: `Recebimento pedido #${p.id}`, vl: p.tot, dt: td() };
+    const t = { id: await nextId('t'), tp: 'receita', ds: `Recebimento pedido #${p.id}`, vl: p.tot, dt: td() };
     DB.trans.push(t);
     rReceber();
     rFin();
@@ -199,7 +199,7 @@ function editPed(id) {
   openMod('med');
 }
 
-function savePedEdit() {
+async function savePedEdit() {
   const id    = parseInt($('med-id')?.value);
   const p     = DB.peds.find(x => x.id === id);
   if (!p) return;
@@ -223,7 +223,7 @@ function savePedEdit() {
   const nowFiado = pag === 'Fiado';
   const tr = DB.trans.find(t => t.ds === `Pedido #${id}`);
   if (wasfiado && !nowFiado) {
-    const newTr = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
+    const newTr = { id: await nextId('t'), tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
     DB.trans.push(newTr);
     sbSync(() => SBTrans.upsert(newTr));
   } else if (!wasfiado && nowFiado && tr) {

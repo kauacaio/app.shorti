@@ -104,6 +104,22 @@ async function initDB() {
   safe(() => Tenants.pingActivity());
 }
 
+/* ── Geração de IDs (V6) ──────────────────────────────
+   Pede o próximo id ao Postgres via RPC next_id(), que faz
+   um incremento atômico por tenant — evita que dois
+   dispositivos calculem o mesmo max(id)+1 e um upsert
+   sobrescreva o registro do outro. Em modo local (sem
+   Supabase) usa o contador local de sempre. */
+const _ID_TABLE = { p: 'products', c: 'clients', ped: 'orders', t: 'transactions', s: 'solicitacoes' };
+
+async function nextId(kind) {
+  if (_sbReady && !window._localMode && _ID_TABLE[kind]) {
+    try { return await SBIds.next(_ID_TABLE[kind]); }
+    catch(e) { console.warn('[nextId]', e.message); }
+  }
+  return DB.nid[kind]++;
+}
+
 async function doLogout() {
   if (typeof nvHasProgress === 'function' && nvHasProgress()) {
     nvConfirmLeave(() => doLogout());
