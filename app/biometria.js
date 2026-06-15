@@ -105,7 +105,9 @@ function showBioLock() {
       }
     }
 
+    /* Alguns navegadores (ex.: Safari/iOS) só abrem o prompt de biometria
+       em resposta direta a um gesto do usuário, então não chamamos
+       attempt() automaticamente — o usuário toca em "Desbloquear". */
     btn.onclick = attempt;
-    attempt();
   });
 }
