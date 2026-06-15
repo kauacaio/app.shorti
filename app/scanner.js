@@ -396,9 +396,9 @@ function _bindPhoneEvents(ch) {
 async function _fetchTunnelUrl(attempts = 3, delayMs = 1200) {
   for (let i = 0; i < attempts; i++) {
     try {
-      const r = await fetch('http://localhost:3001/api/tunnel');
+      const r = await fetch(`${location.protocol}//${location.hostname}:3000/api/tunnel`);
       const j = await r.json();
-      if (j.url) return j.url;
+      if (j.url) return j;
     } catch(e) {}
     if (i < attempts - 1) await new Promise(res => setTimeout(res, delayMs));
   }
@@ -422,7 +422,8 @@ async function _startPhonePairing() {
   _phoneSid       = [...Array(14)].map(() => Math.random().toString(36)[2]).join('');
   _phoneConnected = false;
 
-  let baseUrl   = await _fetchTunnelUrl();
+  const tunnel  = await _fetchTunnelUrl();
+  let baseUrl   = tunnel?.url;
   let viaTunnel = !!baseUrl;
 
   if (!baseUrl) {
@@ -438,7 +439,7 @@ async function _startPhonePairing() {
     }
     baseUrl = `${location.protocol}//${host}:${location.port}`;
   }
-  _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}`;
+  _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}${tunnel?.key ? `&key=${tunnel.key}` : ''}`;
   await _renderQR(_phoneQrUrl);
   _setQrNetHint(viaTunnel);
   _phoneSetStatus('waiting', 'Aguardando celular...');

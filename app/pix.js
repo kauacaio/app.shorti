@@ -69,8 +69,8 @@ let _mpixPayload  = '';
 
 /* Persiste DB.settings (local + Supabase) */
 function _pixPersistSettings() {
-  try { localStorage.setItem('mlb_settings', JSON.stringify(DB.settings)); } catch(e) {}
-  sbSync(() => SBSettings.set(DB.settings));
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(DB.settings)); } catch(e) {}
+  sbSync(() => SBSettings.set(DB.settings, window._tenant?.id));
 }
 
 /* Abre o fluxo de confirmação ao alterar a chave Pix (riscos + senha) */

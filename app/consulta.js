@@ -81,9 +81,9 @@ async function _cqSetupQR(){
   }
   _phoneSid=[...Array(14)].map(()=>Math.random().toString(36)[2]).join('');
   _phoneConnected=false;
-  let base;try{const r=await fetch('http://localhost:3001/api/tunnel');base=(await r.json()).url||null;}catch(e){base=null;}
-  if(!base){const h=await _getLocalIP()||location.hostname;base=`https://${h}:${location.port}`;}
-  _phoneQrUrl=`${base}/mobile-scan.html?s=${_phoneSid}`;
+  let base,key;try{const r=await fetch(`${location.protocol}//${location.hostname}:3000/api/tunnel`);const j=await r.json();base=j.url||null;key=j.key;}catch(e){base=null;}
+  if(!base){const h=await _getLocalIP()||location.hostname;base=`https://${h}:${location.port}`;key=null;}
+  _phoneQrUrl=`${base}/mobile-scan.html?s=${_phoneSid}${key?`&key=${key}`:''}`;
   await _cqRenderQR(_phoneQrUrl);
   _phoneChannel=window._sbClient.channel(`erp-scan-${_phoneSid}`,{config:{broadcast:{self:false}}});
   _phoneChannel

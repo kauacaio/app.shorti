@@ -85,7 +85,7 @@ async function rGreeting() {
   const emhN  = $('emh-name');
   if (hi) hi.textContent = `${greet}, ${nome}! ${emoji}`;
   if (dt) dt.textContent = `${dias[now.getDay()]}, ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
-  if (emhN) emhN.innerHTML = `${greet}, <b>${nome}</b>`;
+  if (emhN) emhN.innerHTML = `${greet}, <b>${esc(nome)}</b>`;
 }
 
 function rMet() {
@@ -202,10 +202,10 @@ function rDashRec(page) {
       : (p.itens?.[0]?.nm || p.prod);
     const [bg, fg] = avatarColors[idx % avatarColors.length].split(',');
     return `<div class="order-item" onclick="editPed(${p.id})">
-      <div class="order-avatar" style="background:var(${bg});color:var(${fg})">${ini}</div>
+      <div class="order-avatar" style="background:var(${bg});color:var(${fg})">${esc(ini)}</div>
       <div class="order-info">
-        <div class="order-name">${nm}</div>
-        <div class="order-product">${prod} · ${fdt(p.dt)}</div>
+        <div class="order-name">${esc(nm)}</div>
+        <div class="order-product">${esc(prod)} · ${fdt(p.dt)}</div>
       </div>
       <div class="order-right">
         <div class="order-value">${brl(p.tot)}</div>
@@ -224,10 +224,10 @@ function rDashRec(page) {
     const [bg, fg] = avatarColors[idx % avatarColors.length].split(',');
     return `<div class="rb-card" style="cursor:pointer" onclick="editPed(${p.id})">
       <div class="rb-card-top">
-        <div class="order-avatar" style="background:var(${bg});color:var(${fg})">${ini}</div>
+        <div class="order-avatar" style="background:var(${bg});color:var(${fg})">${esc(ini)}</div>
         <div class="rb-card-info">
-          <div class="rb-card-name">${nm}</div>
-          <div class="rb-card-prod">${prod} · ${fdt(p.dt)}</div>
+          <div class="rb-card-name">${esc(nm)}</div>
+          <div class="rb-card-prod">${esc(prod)} · ${fdt(p.dt)}</div>
         </div>
         <div class="rb-card-val">${brl(p.tot)}</div>
       </div>
@@ -300,7 +300,7 @@ function rDashAttention(page) {
         <div class="atn-row">
           <div class="atn-dot atn-dot-red"></div>
           <div class="atn-row-info">
-            <span class="atn-row-name">${nm}</span>
+            <span class="atn-row-name">${esc(nm)}</span>
             <span class="atn-row-sub">há ${dias} dia${dias!==1?'s':''}</span>
           </div>
           <span class="atn-row-val">${brl(p.tot)}</span>
@@ -311,7 +311,7 @@ function rDashAttention(page) {
         <div class="atn-row" onclick="epage('estoque',null)">
           <div class="atn-dot atn-dot-orange"></div>
           <div class="atn-row-info">
-            <span class="atn-row-name">${p.em || ''} ${p.nm}</span>
+            <span class="atn-row-name">${esc(p.em || '')} ${esc(p.nm)}</span>
             <span class="atn-row-sub">${p.st === 0 ? 'Esgotado' : `${p.st} un. restante${p.st!==1?'s':''}`}</span>
           </div>
           <button class="atn-row-btn atn-row-btn-orange" onclick="event.stopPropagation();openMod('msolic')">Solicitar</button>
@@ -346,9 +346,9 @@ function rDashLow() {
     const pct = Math.min(100, Math.round((p.st/10)*100));
     const barCls = p.st===0?'stock-bar-out':p.st<=2?'stock-bar-low':'stock-bar-ok';
     return `<div class="stock-item">
-      <div class="stock-emoji">${p.em||'📦'}</div>
+      <div class="stock-emoji">${esc(p.em||'📦')}</div>
       <div class="stock-info">
-        <div class="stock-name">${p.nm}</div>
+        <div class="stock-name">${esc(p.nm)}</div>
         <div class="stock-bar-wrap"><div class="stock-bar-fill ${barCls}" style="width:${pct}%"></div></div>
       </div>
       <span class="xb ${p.st===0?'xb-red':'xb-gold'}">${p.st} un.</span>

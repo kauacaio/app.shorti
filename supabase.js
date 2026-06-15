@@ -50,13 +50,107 @@ const SBAuth = {
   onChange(cb) {
     if (!_sbClient) return { data: { subscription: { unsubscribe: () => {} } } };
     return _sbClient.auth.onAuthStateChange(cb);
+  },
+
+  /* ── MFA (TOTP) ── usado pelo painel GrupoLima para exigir 2FA ── */
+  async mfaLevel() {
+    const { data, error } = await _sbClient.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (error) throw error;
+    return data; // { currentLevel, nextLevel, currentAuthenticationMethods }
+  },
+  async mfaListFactors() {
+    const { data, error } = await _sbClient.auth.mfa.listFactors();
+    if (error) throw error;
+    return data; // { all, totp, phone }
+  },
+  async mfaEnroll() {
+    const { data, error } = await _sbClient.auth.mfa.enroll({ factorType: 'totp', issuer: 'Shorti' });
+    if (error) throw error;
+    return data; // { id, totp: { qr_code, secret, uri } }
+  },
+  async mfaChallenge(factorId) {
+    const { data, error } = await _sbClient.auth.mfa.challenge({ factorId });
+    if (error) throw error;
+    return data; // { id }
+  },
+  async mfaVerify(factorId, challengeId, code) {
+    const { data, error } = await _sbClient.auth.mfa.verify({ factorId, challengeId, code });
+    if (error) throw error;
+    return data;
+  },
+  async mfaUnenroll(factorId) {
+    const { error } = await _sbClient.auth.mfa.unenroll({ factorId });
+    if (error) throw error;
+  }
+};
+
+/* ── Tenants ────────────────────────────────────────── */
+const Tenants = {
+  async getByOwner() {
+    const { data: sess } = await _sbClient.auth.getSession();
+    const uid = sess?.session?.user?.id;
+    if (!uid) return null;
+    const { data, error } = await _sbClient.from('tenants')
+      .select('id,slug,nome').eq('owner_user_id', uid).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  async getBySlug(slug) {
+    const { data, error } = await _sbClient.from('tenants')
+      .select('id,slug,nome').eq('slug', slug).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  async create({ slug, nome }) {
+    const { data: sess } = await _sbClient.auth.getSession();
+    const uid = sess?.session?.user?.id;
+    if (!uid) throw new Error('Sessão inválida');
+    const { data, error } = await _sbClient.from('tenants')
+      .insert({ slug, nome, owner_user_id: uid })
+      .select('id,slug,nome').single();
+    if (error) throw error;
+    return data;
+  },
+  async isAdmin() {
+    const { data, error } = await _sbClient.rpc('is_grupolima_admin');
+    if (error) { console.warn('[isAdmin]', error.message); return false; }
+    return !!data;
+  },
+  async pingActivity() {
+    const { error } = await _sbClient.rpc('ping_tenant_activity');
+    if (error) throw error;
+  }
+};
+
+/* ── Painel GrupoLima (admin) ────────────────────────── */
+const SBAdmin = {
+  async listTenants() {
+    const { data, error } = await _sbClient.from('admin_tenant_overview')
+      .select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+  async invite({ email, nome }) {
+    const { data: sess } = await _sbClient.auth.getSession();
+    const token = sess?.session?.access_token;
+    if (!token) throw new Error('Sessão inválida');
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-invite-tenant`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ email, nome })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body.ok === false) throw new Error(body.error || 'Erro ao convidar');
+    return body;
   }
 };
 
 /* ── Produtos ───────────────────────────────────────── */
 const SBProds = {
-  async list() {
-    const { data, error } = await _sbClient.from('products').select('*').order('id');
+  async list(tenantId) {
+    let q = _sbClient.from('products').select('*').order('id');
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q;
     if (error) throw error;
     return data.map(_rowToProduct);
   },
@@ -105,6 +199,24 @@ const SBPeds = {
   async updateStatus(id, st) {
     const { error } = await _sbClient.from('orders').update({ st }).eq('id', id);
     if (error) throw error;
+  }
+};
+
+/* ── Pedidos vindos da loja (visitante anônimo) ──────── */
+const SBStorefront = {
+  async createOrder({ slug, nome, tel, itens }) {
+    const { data, error } = await _sbClient.rpc('create_storefront_order', {
+      p_slug: slug, p_nome: nome, p_tel: tel, p_itens: itens
+    });
+    if (error) throw error;
+    return data?.[0] || null;
+  },
+  /* Configurações públicas da loja (sem pix/pixVerified) — anon não tem
+     mais select direto em store_settings, só via esta RPC. */
+  async getSettings(slug) {
+    const { data, error } = await _sbClient.rpc('get_storefront_settings', { p_slug: slug });
+    if (error) throw error;
+    return data;
   }
 };
 
@@ -161,14 +273,17 @@ const SBNotifs = {
 
 /* ── Configurações ──────────────────────────────────── */
 const SBSettings = {
-  async get() {
-    const { data, error } = await _sbClient.from('store_settings').select('data').eq('id', 1).single();
+  async get(tenantId) {
+    let q = _sbClient.from('store_settings').select('data');
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q.single();
     if (error) throw error;
     return data?.data ?? null;
   },
-  async set(settings) {
-    const { error } = await _sbClient.from('store_settings')
-      .upsert({ id: 1, data: settings, updated_at: new Date().toISOString() });
+  async set(settings, tenantId) {
+    const row = { data: settings, updated_at: new Date().toISOString() };
+    if (tenantId) row.tenant_id = tenantId;
+    const { error } = await _sbClient.from('store_settings').upsert(row);
     if (error) throw error;
   }
 };
@@ -369,6 +484,52 @@ if (_localMode) {
   SBPeds.upsert = async p  => _LS.upsert('peds', _orderToRow(p));
   SBPeds.delete = async id => _LS.del('peds', id);
 
+  /* Pedidos vindos da loja (visitante anônimo) ──
+     Espelha a RPC create_storefront_order: recebe só {pid, q} e recalcula
+     nome/preço/subtotal a partir do catálogo local — nunca confia em
+     valores vindos do cliente. */
+  SBStorefront.createOrder = async ({ nome, tel, itens }) => {
+    const prods = _LS.get('prods');
+    const fullItens = [];
+    let tot = 0;
+    for (const it of itens) {
+      const p = prods.find(x => x.id === it.pid);
+      const q = Number(it.q);
+      if (!p || !(q > 0)) continue;
+      const pr = p.pd != null ? p.pd : p.pr;
+      const sub = pr * q;
+      tot += sub;
+      fullItens.push({ pid: p.id, nm: p.nm, em: p.em, q, pr, sub });
+    }
+    if (!fullItens.length) throw new Error('Itens inválidos');
+
+    const clis = _LS.get('clis');
+    let cli = clis.find(c => c.tel === tel);
+    if (cli) {
+      cli.nm = nome;
+    } else {
+      cli = { id: (clis.length ? Math.max(...clis.map(c => c.id)) : 200) + 1, nm: nome, tel, em: '', ci: '', es: '', an: '', pe: 'Normal', gasto: 0, ult: '' };
+      clis.push(cli);
+    }
+    _LS.set('clis', clis);
+
+    const peds = _LS.get('peds');
+    const id = (peds.length ? Math.max(...peds.map(p => p.id)) : 2000) + 1;
+    const q = fullItens.reduce((a, b) => a + b.q, 0);
+    const prod = fullItens.length === 1 ? fullItens[0].nm : `${fullItens.length} produtos`;
+    const ped = { id, cid: cli.id, prod, q, tot, pag: 'A combinar', parc: 1, dtpag: td(), itens: fullItens, st: 'Pendente', dt: td() };
+    peds.push(ped);
+    _LS.set('peds', peds);
+
+    return { order_id: id, client_id: cli.id };
+  };
+  SBStorefront.getSettings = async () => {
+    const s = _LS.get('settings', null);
+    if (!s?.data) return null;
+    const { pix, pixVerified, ...pub } = s.data;
+    return pub;
+  };
+
   /* Transações */
   SBTrans.list   = async () => _LS.get('trans').map(_rowToTrans);
   SBTrans.upsert = async t  => _LS.upsert('trans', _transToRow(t));
@@ -392,6 +553,21 @@ if (_localMode) {
   /* Configurações */
   SBSettings.get = async () => { const s = _LS.get('settings', null); return s ? s.data : null; };
   SBSettings.set = async s  => _LS.set('settings', { data: s });
+
+  /* Tenants — modo local opera sempre num único tenant fixo */
+  Tenants.getByOwner   = async () => ({ id: 'local-tenant', slug: 'local', nome: 'Conta de Testes' });
+  Tenants.getBySlug    = async (slug) => ({ id: 'local-tenant', slug, nome: 'Conta de Testes' });
+  Tenants.create       = async ({ slug, nome }) => ({ id: 'local-tenant', slug, nome });
+  Tenants.isAdmin      = async () => true;
+  Tenants.pingActivity = async () => {};
+
+  /* Painel GrupoLima — modo local mostra tenants de exemplo */
+  SBAdmin.listTenants = async () => ([
+    { id: 'local-tenant', slug: 'milena-lima-beauty', nome: 'Milena Lima Beauty', created_at: '2026-05-02T10:00:00Z', last_active_at: '2026-06-13T18:40:00Z', published: true,  whatsapp: '5511999999999', pix: 'milena@pix.com.br', pix_verified: true,  produtos: 13, clientes: 5, pedidos: 8, faturamento: 1538.40 },
+    { id: 'local-tenant-2', slug: 'bella-estetica',     nome: 'Bella Estética',     created_at: '2026-05-20T14:30:00Z', last_active_at: '2026-06-12T09:15:00Z', published: true,  whatsapp: '5511988888888', pix: '',                pix_verified: false, produtos: 7,  clientes: 2, pedidos: 3, faturamento: 420.00 },
+    { id: 'local-tenant-3', slug: 'espaco-ana',         nome: 'Espaço Ana',         created_at: '2026-06-10T08:00:00Z', last_active_at: null,                  published: false, whatsapp: '',              pix: '',                pix_verified: false, produtos: 0,  clientes: 0, pedidos: 0, faturamento: 0 }
+  ]);
+  SBAdmin.invite = async ({ email, nome }) => ({ ok: true, local: true });
 
   /* Auth — sessão local sempre válida */
   SBAuth.getSession = async () => ({ user: { email: 'local@teste.dev' } });

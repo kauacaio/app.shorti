@@ -48,8 +48,8 @@ function epage(id, el) {
 function openMod(id) {
   if (id === 'mv') {
     const s1 = $('mvc'), s2 = $('mvp');
-    if (s1) s1.innerHTML = DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
-    if (s2) { s2.innerHTML = DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm} — ${brl(p.pd ?? p.pr)}${p.pd ? ' 🏷' : ''}</option>`).join(''); mvUpd(); }
+    if (s1) s1.innerHTML = DB.clis.map(c => `<option value="${c.id}">${esc(c.nm)}</option>`).join('');
+    if (s2) { s2.innerHTML = DB.prods.map(p => `<option value="${p.id}">${esc(p.em)} ${esc(p.nm)} — ${brl(p.pd ?? p.pr)}${p.pd ? ' 🏷' : ''}</option>`).join(''); mvUpd(); }
     if ($('mvdtpag')) $('mvdtpag').value = td();
     if ($('mvpg')) { $('mvpg').value = 'PIX'; mvPayChg('PIX'); }
     _mvCart = [];
@@ -59,7 +59,7 @@ function openMod(id) {
     const currentId = parseInt($('pe-id')?.value) || 0;
     const pb = $('pe-bump');
     if (pb) pb.innerHTML = '<option value="">Nenhum</option>' +
-      DB.prods.filter(p => p.id !== currentId).map(p => `<option value="${p.id}">${p.em} ${p.nm}</option>`).join('');
+      DB.prods.filter(p => p.id !== currentId).map(p => `<option value="${p.id}">${esc(p.em)} ${esc(p.nm)}</option>`).join('');
     /* Novo produto: reset title + preview */
     if (!currentId) {
       if ($('mp-title')) $('mp-title').textContent = 'Novo Produto';
@@ -141,7 +141,7 @@ function askConfirm(opts, onYes) {
 function showExistingProductModal(prod) {
   askConfirm({
     title: 'Produto já cadastrado',
-    msg:   `<strong>${prod.nm}</strong> já usa este código de barras.<br>O que deseja fazer?`,
+    msg:   `<strong>${esc(prod.nm)}</strong> já usa este código de barras.<br>O que deseja fazer?`,
     type:  'warn',
     btnLabel: '✏️ Ver / Editar',
     altLabel: '🛒 Fazer venda',

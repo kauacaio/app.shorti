@@ -99,8 +99,8 @@ function rExtrato() {
         const pagCl = p.pag === 'Fiado' ? 'style="color:#d97706;font-weight:600"' : '';
         return `<tr>
           <td style="color:#94a3b8">#${p.id}</td>
-          <td style="font-weight:500">${c ? c.nm : '—'}</td>
-          <td>${p.prod}</td>
+          <td style="font-weight:500">${c ? esc(c.nm) : '—'}</td>
+          <td>${esc(p.prod)}</td>
           <td style="font-weight:600">${brl(p.tot)}</td>
           <td ${pagCl}>${p.pag}</td>
           <td><span class="xb ${extStCl[p.st]||'xb-gray'}">${p.st}</span></td>
@@ -116,8 +116,8 @@ function rExtrato() {
           return `<div class="rb-card">
             <div class="rb-card-top">
               <div class="rb-card-info">
-                <div class="rb-card-name">${c ? c.nm : '—'}</div>
-                <div class="rb-card-prod">${p.prod}</div>
+                <div class="rb-card-name">${c ? esc(c.nm) : '—'}</div>
+                <div class="rb-card-prod">${esc(p.prod)}</div>
               </div>
               <div class="rb-card-val">${brl(p.tot)}</div>
             </div>
@@ -140,7 +140,7 @@ function rExtrato() {
           const c = DB.clis.find(x => x.id === parseInt(cid));
           return `<div class="ext-rank-item">
             <div class="ext-rank-pos ${i===0?'top1':''}">${i+1}</div>
-            <div class="ext-rank-nm">${c ? c.nm : `#${cid}`}</div>
+            <div class="ext-rank-nm">${c ? esc(c.nm) : `#${cid}`}</div>
             <div class="ext-rank-val">${brl(tot)}</div>
           </div>`;
         }).join('');
@@ -159,7 +159,7 @@ function rExtrato() {
       : sorted.map(([nm,tot],i) => `
           <div class="ext-rank-item">
             <div class="ext-rank-pos ${i===0?'top1':''}">${i+1}</div>
-            <div class="ext-rank-nm">${nm}</div>
+            <div class="ext-rank-nm">${esc(nm)}</div>
             <div class="ext-rank-val">${brl(tot)}</div>
           </div>`).join('');
   }
@@ -173,7 +173,7 @@ function rExtrato() {
       $('ext-trans-tb').innerHTML = [...transMes].reverse().map(t => `
         <tr>
           <td style="color:#94a3b8">${fdt(t.dt)}</td>
-          <td>${t.ds}</td>
+          <td>${esc(t.ds)}</td>
           <td><span class="xb ${t.tp==='receita'?'xb-green':'xb-red'}">${t.tp==='receita'?'Receita':'Despesa'}</span></td>
           <td class="${t.tp==='receita'?'revenue':'expense'}" style="font-weight:600">${t.tp==='receita'?'+':'-'} ${brl(t.vl)}</td>
         </tr>`).join('');
@@ -186,7 +186,7 @@ function rExtrato() {
         <div class="rb-card">
           <div class="rb-card-top">
             <div class="rb-card-info">
-              <div class="rb-card-name">${t.ds}</div>
+              <div class="rb-card-name">${esc(t.ds)}</div>
               <div class="rb-card-prod">${fdt(t.dt)}</div>
             </div>
             <div class="rb-card-val ${t.tp==='receita'?'revenue':'expense'}">${t.tp==='receita'?'+':'-'} ${brl(t.vl)}</div>

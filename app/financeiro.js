@@ -14,7 +14,7 @@ function rFin() {
   $('ftt').innerHTML = recentes.map(t => `
     <tr>
       <td>${fdt(t.dt)}</td>
-      <td>${t.ds}</td>
+      <td>${esc(t.ds)}</td>
       <td><span class="xb ${t.tp === 'receita' ? 'xb-green' : 'xb-red'}">${t.tp === 'receita' ? 'Receita' : 'Despesa'}</span></td>
       <td class="${t.tp === 'receita' ? 'revenue' : 'expense'}">${t.tp === 'receita' ? '+' : '-'} ${brl(t.vl)}</td>
     </tr>`).join('');
@@ -24,7 +24,7 @@ function rFin() {
       <div class="rb-card">
         <div class="rb-card-top">
           <div class="rb-card-info">
-            <div class="rb-card-name">${t.ds}</div>
+            <div class="rb-card-name">${esc(t.ds)}</div>
             <div class="rb-card-prod">${fdt(t.dt)}</div>
           </div>
           <div class="rb-card-val ${t.tp === 'receita' ? 'revenue' : 'expense'}">${t.tp === 'receita' ? '+' : '-'} ${brl(t.vl)}</div>

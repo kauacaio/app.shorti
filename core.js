@@ -4,6 +4,13 @@
    ===================================================== */
 
 const $ = id => document.getElementById(id);
+
+/* Escapa texto antes de interpolar em innerHTML — usar sempre em campos
+   que podem conter dados de terceiros (nome/telefone de clientes, itens
+   de pedidos da loja, observações, etc.). */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[c]));
 const brl = v => 'R$ ' + (+v).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+,)/g, '$1.');
 const fdt = d => { if (!d) return '—'; const [y, m, dd] = d.split('-'); return `${dd}/${m}/${y}`; };
 const td = () => new Date().toISOString().split('T')[0];
@@ -35,14 +42,18 @@ const DB = {
       { title: 'Parcelamento em até 12x',     desc: 'Sem juros no cartão' },
       { title: '100% Originais Mary Kay',     desc: 'Garantia de autenticidade' },
       { title: 'Consultoria personalizada',   desc: 'Atendimento exclusivo grátis' }
-    ]
+    ],
+    theme: { template: 'classico', primary: '#3D6655', accent: '#C4897A', font: 'elegante' },
+    published: true
   }
 };
 
-/* ── Configurações persistidas ───────────────────── */
+/* ── Configurações persistidas (chave por loja/slug) ── */
+const SETTINGS_KEY = 'mlb_settings_' + (new URLSearchParams(location.search).get('loja') || 'default');
+
 function loadSettings() {
   try {
-    const raw = localStorage.getItem('mlb_settings');
+    const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return;
     const saved = JSON.parse(raw);
     const s = DB.settings;
@@ -56,6 +67,8 @@ function loadSettings() {
     if (saved.heroProof !== undefined) s.heroProof = saved.heroProof;
     if (saved.marquee   !== undefined) s.marquee   = saved.marquee;
     if (saved.benefits  && Array.isArray(saved.benefits)) s.benefits  = saved.benefits;
+    if (saved.theme     && typeof saved.theme === 'object') Object.assign(s.theme, saved.theme);
+    if (saved.published !== undefined) s.published = saved.published;
   } catch(e) {}
 }
 loadSettings();
@@ -88,6 +101,7 @@ async function initDB() {
   if (solics)   { DB.solics = solics; if (solics.length) DB.nid.s   = Math.max(...solics.map(x => x.id)) + 1; }
   if (notifs)   { DB.notifs = notifs; if (notifs.length) DB.nid.notif = Math.max(...notifs.map(x => x.id)) + 1; }
   if (settings) Object.assign(DB.settings, settings);
+  safe(() => Tenants.pingActivity());
 }
 
 async function doLogout() {

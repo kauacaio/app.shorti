@@ -12,7 +12,13 @@ const http   = require('http');
 const fs     = require('fs');
 const path   = require('path');
 const url    = require('url');
+const crypto = require('crypto');
 const { spawn } = require('child_process');
+
+/* Token gerado a cada execução — exigido (?key=... ou cookie) para
+   qualquer requisição que chegue pelo túnel público (porta 3001).
+   Sem ele, quem tiver a URL do serveo.net não consegue carregar nada. */
+const TUNNEL_TOKEN = crypto.randomBytes(24).toString('hex');
 
 /* ── MIME types ──────────────────────────────────── */
 const mime = {
@@ -29,21 +35,45 @@ const mime = {
   '.woff': 'font/woff',
 };
 
-let _tunnelUrl  = null;  // preenchido quando localtunnel conectar
-let _externalIp = null;  // IP público da máquina (senha do localtunnel)
+let _tunnelUrl = null; // preenchido quando o túnel SSH conectar
 
-/* ── Handler de requisições (compartilhado entre HTTP e HTTPS) ── */
-function handler(req, res) {
-  /* CORS para o localtunnel funcionar */
-  res.setHeader('Access-Control-Allow-Origin', '*');
+/* Lê o cookie "tt" (token do túnel) de uma requisição. */
+function _getCookie(req, name) {
+  const raw = req.headers.cookie || '';
+  for (const part of raw.split(';')) {
+    const i = part.indexOf('=');
+    if (i === -1) continue;
+    if (part.slice(0, i).trim() === name) return part.slice(i + 1).trim();
+  }
+  return null;
+}
 
-  const parsed = url.parse(req.url);
+/* ── Handler de requisições ─────────────────────────────────────────
+   opts.tunnel = true  → porta 3001, exposta via serveo.net à internet.
+   opts.tunnel = false → porta 3000, só acessível na rede local (PC). */
+function handler(req, res, opts = {}) {
+  const parsed = url.parse(req.url, true);
   let pathname = parsed.pathname;
 
-  /* Endpoint: retorna URL do túnel + IP externo (senha do localtunnel) */
+  if (opts.tunnel) {
+    /* Exige ?key=<token> (ou cookie já validado) para qualquer recurso
+       servido pelo túnel público. Sem o token correto, ninguém que só
+       tenha a URL do serveo.net consegue acessar o app. */
+    const key = parsed.query.key || _getCookie(req, 'tt');
+    if (key !== TUNNEL_TOKEN) {
+      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Acesso negado: link de teste inválido ou expirado.');
+      return;
+    }
+    if (parsed.query.key) {
+      res.setHeader('Set-Cookie', `tt=${TUNNEL_TOKEN}; Path=/; SameSite=Lax; Max-Age=43200`);
+    }
+  }
+
+  /* Endpoint: retorna URL do túnel (e, só na rede local, o token de acesso) */
   if (pathname === '/api/tunnel') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ url: _tunnelUrl, password: _externalIp }));
+    res.end(JSON.stringify({ url: _tunnelUrl, key: opts.tunnel ? undefined : TUNNEL_TOKEN }));
     return;
   }
 
@@ -68,18 +98,20 @@ function handler(req, res) {
   });
 }
 
-/* ── Servidor HTTPS — porta 3000 (PC) ── */
+/* ── Servidor HTTPS — porta 3000 (PC, rede local) ── */
 const tlsOpts = {
   key:  fs.readFileSync(path.join(__dirname, 'key.pem')),
   cert: fs.readFileSync(path.join(__dirname, 'cert.pem')),
 };
-https.createServer(tlsOpts, handler).listen(3000, '0.0.0.0', () => {
+https.createServer(tlsOpts, (req, res) => handler(req, res, { tunnel: false })).listen(3000, '0.0.0.0', () => {
   console.log('✅ HTTPS  → https://192.168.3.48:3000/erp.html');
 });
 
-/* ── Servidor HTTP — porta 3001 (localtunnel) ── */
-http.createServer(handler).listen(3001, '127.0.0.1', () => {
-  console.log('🔁 HTTP   → http://localhost:3001  (para localtunnel)');
+/* ── Servidor HTTP — porta 3001 (exposta via túnel SSH) ── */
+http.createServer((req, res) => handler(req, res, { tunnel: true })).listen(3001, '127.0.0.1', () => {
+  console.log('🔁 HTTP   → http://localhost:3001  (para o túnel SSH)');
+  console.log('🔑 Token do túnel: ' + TUNNEL_TOKEN);
+  console.log('   (gerado automaticamente; sem ele, o link público não abre nada)');
   startTunnel();
 });
 
@@ -105,7 +137,7 @@ function startTunnel() {
       _tunnelUrl = match[0].replace(/^http:/, 'https:');
       console.log('');
       console.log('📱 QR code URL (celular):');
-      console.log('   ' + _tunnelUrl + '/mobile-scan.html');
+      console.log('   ' + _tunnelUrl + '/mobile-scan.html?key=' + TUNNEL_TOKEN);
       console.log('');
     }
   });
@@ -118,7 +150,7 @@ function startTunnel() {
       _tunnelUrl = match[0].replace(/^http:/, 'https:');
       console.log('');
       console.log('📱 QR code URL (celular):');
-      console.log('   ' + _tunnelUrl + '/mobile-scan.html');
+      console.log('   ' + _tunnelUrl + '/mobile-scan.html?key=' + TUNNEL_TOKEN);
       console.log('');
     }
   });

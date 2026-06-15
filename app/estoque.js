@@ -241,7 +241,7 @@ function showProdDetail(id) {
       const stCls = {Pendente:'xb-gold',Confirmado:'xb-blue',Enviado:'xb-gray',Entregue:'xb-green'};
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F3F4F6">
         <div>
-          <div style="font-size:13px;font-weight:500;color:var(--tx)">${c?.nm||'—'}</div>
+          <div style="font-size:13px;font-weight:500;color:var(--tx)">${c ? esc(c.nm) : '—'}</div>
           <div style="font-size:11.5px;color:var(--tx-m)">${fdt(ped.dt)}</div>
         </div>
         <span class="xb ${stCls[ped.st]||'xb-gray'}">${ped.st}</span>

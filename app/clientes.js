@@ -27,41 +27,41 @@ function rClis() {
   }
 
   if (cardsEl) cardsEl.innerHTML = clis.map(c => {
-    const ini   = c.nm.trim()[0]?.toUpperCase() || '?';
+    const ini   = esc(c.nm.trim()[0]?.toUpperCase() || '?');
     const color = _cliColor(c.nm);
     return `<div class="rb-card" style="cursor:pointer" onclick="openCliProfile(${c.id})">
       <div class="rb-card-top">
         <span class="cli-avatar" style="background:${color}">${ini}</span>
         <div class="rb-card-info">
-          <div class="rb-card-name">${c.nm}</div>
-          <div class="rb-card-prod">${c.tel || c.em || '—'}</div>
+          <div class="rb-card-name">${esc(c.nm)}</div>
+          <div class="rb-card-prod">${esc(c.tel || c.em || '—')}</div>
         </div>
         <div class="rb-card-val">${brl(c.gasto)}</div>
       </div>
       <div class="rb-card-bottom">
-        <span class="rb-card-due">${c.ci ? `${c.ci}${c.es ? '/' + c.es : ''}` : '—'}</span>
+        <span class="rb-card-due">${c.ci ? `${esc(c.ci)}${c.es ? '/' + esc(c.es) : ''}` : '—'}</span>
         <span class="rb-card-due">Últ. pedido: ${fdt(c.ult)}</span>
       </div>
     </div>`;
   }).join('');
 
   $('ctt').innerHTML = clis.map(c => {
-    const ini   = c.nm.trim()[0]?.toUpperCase() || '?';
+    const ini   = esc(c.nm.trim()[0]?.toUpperCase() || '?');
     const color = _cliColor(c.nm);
-    const tel   = c.tel ? `<a href="tel:${c.tel}" onclick="event.stopPropagation()" style="color:inherit">${c.tel}</a>` : '—';
+    const tel   = c.tel ? `<a href="tel:${esc(c.tel)}" onclick="event.stopPropagation()" style="color:inherit">${esc(c.tel)}</a>` : '—';
     return `<tr style="cursor:pointer" onclick="openCliProfile(${c.id})">
       <td>
         <div class="cli-row-name">
           <span class="cli-avatar" style="background:${color}">${ini}</span>
           <div>
-            <div class="cli-row-nm">${c.nm}</div>
-            ${c.em ? `<div class="cli-row-sub">${c.em}</div>` : ''}
+            <div class="cli-row-nm">${esc(c.nm)}</div>
+            ${c.em ? `<div class="cli-row-sub">${esc(c.em)}</div>` : ''}
           </div>
         </div>
       </td>
       <td>${tel}</td>
-      <td>${c.ci ? `${c.ci}${c.es ? '/' + c.es : ''}` : '—'}</td>
-      <td>${c.pe || '—'}</td>
+      <td>${c.ci ? `${esc(c.ci)}${c.es ? '/' + esc(c.es) : ''}` : '—'}</td>
+      <td>${esc(c.pe || '—')}</td>
       <td style="font-weight:600">${brl(c.gasto)}</td>
       <td>${fdt(c.ult)}</td>
       <td class="table-actions" onclick="event.stopPropagation()">
@@ -98,9 +98,9 @@ function openCliProfile(id) {
   const locIco   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
   const bthIco   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
   const infoRows = [
-    c.tel ? mkRow(phoneIco, c.tel) : '',
-    c.em  ? mkRow(emailIco, c.em)  : '',
-    locStr ? mkRow(locIco, locStr)  : '',
+    c.tel ? mkRow(phoneIco, esc(c.tel)) : '',
+    c.em  ? mkRow(emailIco, esc(c.em))  : '',
+    locStr ? mkRow(locIco, esc(locStr))  : '',
     c.an  ? mkRow(bthIco, fdt(c.an)) : '',
   ].filter(Boolean).join('');
   if ($('mcp-info')) $('mcp-info').innerHTML = infoRows || `<span style="font-size:12px;color:#94A3B8">Sem contato cadastrado</span>`;
@@ -126,7 +126,7 @@ function openCliProfile(id) {
     } else {
       const sorted = [...peds].sort((a,b) => (b.dt||'').localeCompare(a.dt||''));
       histEl.innerHTML = sorted.map(p => {
-        const prodNm = p.itens?.length ? p.itens.map(i => i.nm).join(', ') : (p.prod || '—');
+        const prodNm = esc(p.itens?.length ? p.itens.map(i => i.nm).join(', ') : (p.prod || '—'));
         const pagCls = p.pag === 'Fiado' ? 'color:#D97706;font-weight:600' : '';
         return `<div class="mcp-hist-row">
           <span class="mcp-hist-date">${fdt(p.dt)}</span>
@@ -206,7 +206,7 @@ function saveCli() {
 function delCli(id) {
   const c = DB.clis.find(x => x.id === id);
   if (!c) return;
-  askConfirm({ title: 'Excluir cliente?', msg: `<strong>${c.nm}</strong> será removido permanentemente.`, type: 'danger', btnLabel: 'Excluir' }, () => {
+  askConfirm({ title: 'Excluir cliente?', msg: `<strong>${esc(c.nm)}</strong> será removido permanentemente.`, type: 'danger', btnLabel: 'Excluir' }, () => {
     DB.clis = DB.clis.filter(x => x.id !== id);
     rClis(); rNV();
     showToast('Cliente excluído');

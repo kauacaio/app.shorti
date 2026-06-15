@@ -43,7 +43,7 @@
           <button class="ext-popup-x" onclick="dismissPopup()" title="Fechar">✕</button>
         </div>
         <div class="ext-popup-month" id="ext-popup-month">—</div>
-        <div class="ext-popup-label">Shorti · Milena Lima Beauty</div>
+        <div class="ext-popup-label" id="ext-popup-label">Shorti · Milena Lima Beauty</div>
       </div>
       <div class="ext-popup-body">
         <div class="ext-popup-stats" id="ext-popup-stats"></div>
@@ -69,7 +69,7 @@
         </div>
         <div class="erp-workspace">
           <div class="erp-workspace-dot"></div>
-          <div class="erp-workspace-name">Milena Lima Beauty</div>
+          <div class="erp-workspace-name" id="erp-workspace-name">Milena Lima Beauty</div>
         </div>
       </div>
 
@@ -136,6 +136,12 @@
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span class="nl-text">Configurar loja</span>
         </button>
+
+        <div class="nav-group" id="nav-group-admin" style="display:none"><span class="nl-text">Admin</span></div>
+        <a class="nav-link" id="nav-link-admin" href="admin.html" title="Painel GrupoLima" style="display:none">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>
+          <span class="nl-text">Painel GrupoLima</span>
+        </a>
 
       </nav>
 
@@ -756,7 +762,7 @@
                 <div class="ext-doc-hd-left">
                   <h2 class="ext-doc-title">Extrato Mensal</h2>
                   <p class="ext-doc-meta">
-                    <strong>Milena Lima Beauty</strong>
+                    <strong id="ext-doc-tenant-name">Milena Lima Beauty</strong>
                     <span>Consultora Oficial Mary Kay</span>
                     <span id="ext-subtitle">Demonstrativo financeiro completo</span>
                   </p>
@@ -853,71 +859,156 @@
           <div class="page-header">
             <div>
               <h2>Configurar Loja</h2>
-              <p class="page-subtitle">Edite os textos exibidos na tela de vendas</p>
+              <p class="page-subtitle">Edite o conteúdo, a aparência e a publicação da sua loja</p>
             </div>
             <button class="btn btn-primary" onclick="saveLojaSettings()">Salvar alterações</button>
           </div>
 
-          <div class="card-grid-wide" style="margin-bottom:20px">
-            <article class="data-card">
-              <div class="card-title" style="margin-bottom:16px">Banner & Contato</div>
+          <div class="loja-tabs">
+            <button class="loja-tab-btn on" onclick="lojaTab('conteudo', this)">Conteúdo</button>
+            <button class="loja-tab-btn" onclick="lojaTab('aparencia', this)">Aparência</button>
+            <button class="loja-tab-btn" onclick="lojaTab('publicacao', this)">Publicação</button>
+          </div>
+
+          <div class="loja-tab-panel" id="loja-tab-conteudo">
+            <div class="card-grid-wide" style="margin-bottom:20px">
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Banner & Contato</div>
+                <div class="form-grid">
+                  <label class="form-label full">Texto do banner promocional <small style="font-weight:400;opacity:.55">(use *PALAVRA* para destaque)</small>
+                    <input type="text" class="input-field" id="ls-banner" placeholder="Frete *GRÁTIS* em compras acima de R$ 150">
+                  </label>
+                  <label class="form-label">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
+                    <input type="text" class="input-field" id="ls-wa" placeholder="5511999999999">
+                  </label>
+                  <label class="form-label">Chave PIX <small style="font-weight:400;opacity:.55">(CPF, e-mail, telefone ou chave aleatória)</small>
+                    <input type="text" class="input-field" id="ls-pix" placeholder="00000000000">
+                    <div class="pix-status-row">
+                      <span class="pix-badge" id="ls-pix-badge" style="display:none"></span>
+                      <button type="button" class="pix-retest-btn" id="ls-pix-retest" style="display:none" onclick="pixRetest()">🔄 Testar novamente</button>
+                    </div>
+                  </label>
+                </div>
+              </article>
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Ticker de texto</div>
+                <div class="form-grid">
+                  <label class="form-label full">Texto do marquee <small style="font-weight:400;opacity:.55">(separe os itens com ·)</small>
+                    <input type="text" class="input-field" id="ls-marquee">
+                  </label>
+                </div>
+              </article>
+            </div>
+
+            <article class="data-card" style="margin-bottom:20px">
+              <div class="card-title" style="margin-bottom:16px">Hero — seção principal</div>
               <div class="form-grid">
-                <label class="form-label full">Texto do banner promocional <small style="font-weight:400;opacity:.55">(use *PALAVRA* para destaque)</small>
-                  <input type="text" class="input-field" id="ls-banner" placeholder="Frete *GRÁTIS* em compras acima de R$ 150">
+                <label class="form-label">Kicker (acima do título)
+                  <input type="text" class="input-field" id="ls-kicker">
                 </label>
-                <label class="form-label">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
-                  <input type="text" class="input-field" id="ls-wa" placeholder="5511999999999">
+                <label class="form-label">Prova social
+                  <input type="text" class="input-field" id="ls-proof" placeholder="+500 clientes · Avaliação 4.9/5">
                 </label>
-                <label class="form-label">Chave PIX <small style="font-weight:400;opacity:.55">(CPF, e-mail, telefone ou chave aleatória)</small>
-                  <input type="text" class="input-field" id="ls-pix" placeholder="00000000000">
-                  <div class="pix-status-row">
-                    <span class="pix-badge" id="ls-pix-badge" style="display:none"></span>
-                    <button type="button" class="pix-retest-btn" id="ls-pix-retest" style="display:none" onclick="pixRetest()">🔄 Testar novamente</button>
-                  </div>
+                <label class="form-label">Linha 1 do título
+                  <input type="text" class="input-field" id="ls-hl1">
+                </label>
+                <label class="form-label">Linha 2 — itálico colorido
+                  <input type="text" class="input-field" id="ls-hl2">
+                </label>
+                <label class="form-label">Linha 3 do título
+                  <input type="text" class="input-field" id="ls-hl3">
+                </label>
+                <label class="form-label">Linha 4 — itálico colorido
+                  <input type="text" class="input-field" id="ls-hl4">
+                </label>
+                <label class="form-label full">Sub-texto
+                  <textarea class="input-field" rows="2" id="ls-sub"></textarea>
                 </label>
               </div>
             </article>
+
             <article class="data-card">
-              <div class="card-title" style="margin-bottom:16px">Ticker de texto</div>
-              <div class="form-grid">
-                <label class="form-label full">Texto do marquee <small style="font-weight:400;opacity:.55">(separe os itens com ·)</small>
-                  <input type="text" class="input-field" id="ls-marquee">
-                </label>
+              <div class="card-title" style="margin-bottom:16px">Barra de benefícios</div>
+              <div id="ls-benefits-grid" class="form-grid"></div>
+            </article>
+          </div>
+
+          <div class="loja-tab-panel" id="loja-tab-aparencia" style="display:none">
+            <article class="data-card" style="margin-bottom:20px">
+              <div class="card-title" style="margin-bottom:16px">Modelo da loja</div>
+              <div class="tpl-grid">
+                <button type="button" class="tpl-card" data-template="classico" onclick="selectLojaTemplate('classico', this)">
+                  <span class="tpl-preview tpl-preview--classico">
+                    <span class="tpl-p-hero"><span class="tpl-p-text"></span><span class="tpl-p-img"></span></span>
+                    <span class="tpl-p-grid"><span></span><span></span><span></span></span>
+                  </span>
+                  <span class="tpl-name">Clássico</span>
+                </button>
+                <button type="button" class="tpl-card" data-template="moderno" onclick="selectLojaTemplate('moderno', this)">
+                  <span class="tpl-preview tpl-preview--moderno">
+                    <span class="tpl-p-hero-full"><span class="tpl-p-text"></span></span>
+                    <span class="tpl-p-grid tpl-p-grid--bento"><span></span><span></span><span></span><span></span></span>
+                  </span>
+                  <span class="tpl-name">Moderno</span>
+                </button>
+                <button type="button" class="tpl-card" data-template="minimal" onclick="selectLojaTemplate('minimal', this)">
+                  <span class="tpl-preview tpl-preview--minimal">
+                    <span class="tpl-p-hero-center"><span class="tpl-p-text tpl-p-text--center"></span></span>
+                    <span class="tpl-p-grid tpl-p-grid--col2"><span></span><span></span></span>
+                  </span>
+                  <span class="tpl-name">Minimalista</span>
+                </button>
+              </div>
+              <input type="hidden" id="ls-template" value="classico">
+            </article>
+
+            <div class="card-grid-wide" style="margin-bottom:20px">
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Cores</div>
+                <div class="form-grid">
+                  <label class="form-label">Cor principal
+                    <input type="color" class="input-field input-color" id="ls-color-primary" oninput="sendPreviewUpdate()">
+                  </label>
+                  <label class="form-label">Cor de destaque
+                    <input type="color" class="input-field input-color" id="ls-color-accent" oninput="sendPreviewUpdate()">
+                  </label>
+                </div>
+              </article>
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Fonte</div>
+                <div class="form-grid">
+                  <label class="form-label full">Estilo da fonte
+                    <select class="input-field" id="ls-font" onchange="sendPreviewUpdate()">
+                      <option value="elegante">Elegante (Cormorant + DM Sans)</option>
+                      <option value="moderno">Moderna (Poppins + Inter)</option>
+                      <option value="minimal">Minimalista (Inter)</option>
+                      <option value="classica">Clássica (Playfair + Lato)</option>
+                      <option value="suave">Suave (Quicksand + Nunito)</option>
+                      <option value="sofisticada">Sofisticada (Marcellus + Manrope)</option>
+                    </select>
+                  </label>
+                </div>
+              </article>
+            </div>
+
+            <article class="data-card">
+              <div class="card-title" style="margin-bottom:16px">Prévia em tempo real</div>
+              <div class="loja-preview-wrap">
+                <iframe id="loja-preview" class="loja-preview-frame"></iframe>
               </div>
             </article>
           </div>
 
-          <article class="data-card" style="margin-bottom:20px">
-            <div class="card-title" style="margin-bottom:16px">Hero — seção principal</div>
-            <div class="form-grid">
-              <label class="form-label">Kicker (acima do título)
-                <input type="text" class="input-field" id="ls-kicker">
-              </label>
-              <label class="form-label">Prova social
-                <input type="text" class="input-field" id="ls-proof" placeholder="+500 clientes · Avaliação 4.9/5">
-              </label>
-              <label class="form-label">Linha 1 do título
-                <input type="text" class="input-field" id="ls-hl1">
-              </label>
-              <label class="form-label">Linha 2 — itálico colorido
-                <input type="text" class="input-field" id="ls-hl2">
-              </label>
-              <label class="form-label">Linha 3 do título
-                <input type="text" class="input-field" id="ls-hl3">
-              </label>
-              <label class="form-label">Linha 4 — itálico colorido
-                <input type="text" class="input-field" id="ls-hl4">
-              </label>
-              <label class="form-label full">Sub-texto
-                <textarea class="input-field" rows="2" id="ls-sub"></textarea>
-              </label>
-            </div>
-          </article>
-
-          <article class="data-card">
-            <div class="card-title" style="margin-bottom:16px">Barra de benefícios</div>
-            <div id="ls-benefits-grid" class="form-grid"></div>
-          </article>
+          <div class="loja-tab-panel" id="loja-tab-publicacao" style="display:none">
+            <article class="data-card">
+              <div class="card-title" style="margin-bottom:16px">Status da loja</div>
+              <div class="pub-status-row">
+                <span class="pub-badge" id="ls-pub-badge"></span>
+                <button type="button" class="btn btn-outline" id="ls-pub-toggle" onclick="toggleLojaPublicada()"></button>
+              </div>
+              <p class="pub-hint">Quando despublicada, sua loja exibe uma página de "Loja indisponível" para os visitantes. O painel do ERP continua acessível normalmente.</p>
+            </article>
+          </div>
         </section>
 
         <!-- ── Consultar Produto ──────────────────────── -->
@@ -1427,7 +1518,7 @@
     <div class="form-grid">
       <label class="form-label full">Cliente<select class="input-field" id="med-c" style="margin-top:4px"></select></label>
       <label class="form-label">Pagamento<select class="input-field" id="med-pg" style="margin-top:4px">
-        <option>PIX</option><option>Dinheiro</option><option>Cartão de Débito</option><option>Cartão de Crédito</option><option>Boleto</option><option>Fiado</option><option>Recebido</option>
+        <option>A combinar</option><option>PIX</option><option>Dinheiro</option><option>Cartão de Débito</option><option>Cartão de Crédito</option><option>Boleto</option><option>Fiado</option><option>Recebido</option>
       </select></label>
       <label class="form-label">Parcelas<input type="number" class="input-field" id="med-parc" min="1" max="12" value="1" style="margin-top:4px"></label>
       <label class="form-label">Data de pagamento<input type="date" class="input-field" id="med-dtpag" style="margin-top:4px"></label>

@@ -121,18 +121,18 @@ function nvBuildSummary() {
   if ($('vt'))   $('vt').textContent   = brl(tot);
   if ($('vt-sub')) $('vt-sub').textContent = parc > 1 ? `${parc}× de ${brl(tot/parc)}` : '';
 
-  const ini = cli ? cli.nm.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : '?';
+  const ini = esc(cli ? cli.nm.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : '?');
   let html = `<div class="nv-res-cli">
     <div class="cli-ava" style="width:34px;height:34px;font-size:12px">${ini}</div>
     <div>
-      <div style="font-size:13.5px;font-weight:600;color:var(--tx)">${cli?.nm||'—'}</div>
-      <div style="font-size:11.5px;color:var(--tx-m)">${cli?.tel||''}</div>
+      <div style="font-size:13.5px;font-weight:600;color:var(--tx)">${esc(cli?.nm||'—')}</div>
+      <div style="font-size:11.5px;color:var(--tx-m)">${esc(cli?.tel||'')}</div>
     </div>
   </div>`;
 
   html += _nvCart.map(i => `
     <div class="nv-res-item">
-      <span class="nv-res-nm">${i.em||''} ${i.nm} ×${i.q}</span>
+      <span class="nv-res-nm">${esc(i.em||'')} ${esc(i.nm)} ×${i.q}</span>
       <span class="nv-res-val">${brl(i.sub)}</span>
     </div>`).join('');
 
@@ -163,13 +163,13 @@ function renderCliPicker() {
   const checkSvg = `<svg class="cli-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
   el.innerHTML = clis.map(c => {
-    const ini = c.nm.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const ini = esc(c.nm.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase());
     const sel = c.id === selId ? ' sel' : '';
-    const meta = [c.tel, c.em].filter(Boolean)[0] || 'Sem contato';
+    const meta = esc([c.tel, c.em].filter(Boolean)[0] || 'Sem contato');
     return `<div class="cli-row${sel}" onclick="selectCliWiz(${c.id})">
       <div class="cli-ava">${ini}</div>
       <div class="cli-info">
-        <div class="cli-nm">${c.nm}</div>
+        <div class="cli-nm">${esc(c.nm)}</div>
         <div class="cli-meta">${meta}</div>
       </div>
       ${checkSvg}
@@ -204,11 +204,11 @@ function renderProdPicker() {
     const preco = p.pd ?? p.pr;
     const sel   = p.id === selectedId ? ' pp-card-sel' : '';
     const stCls = p.st === 0 ? 'xb-red' : p.st <= 3 ? 'xb-gold' : 'xb-green';
-    return `<div class="pp-card${sel}" onclick="selectProd(${p.id})" title="${p.nm}">
+    return `<div class="pp-card${sel}" onclick="selectProd(${p.id})" title="${esc(p.nm)}">
       <svg class="pp-check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      <div class="pp-thumb">${p.img ? `<img src="${p.img}" onerror="this.outerHTML='${p.em||'📦'}'">` : (p.em||'📦')}</div>
+      <div class="pp-thumb">${p.img ? `<img src="${esc(p.img)}" onerror="this.outerHTML='${esc(p.em||'📦')}'">` : (p.em||'📦')}</div>
       <div class="pp-info">
-        <div class="pp-nm">${p.nm}</div>
+        <div class="pp-nm">${esc(p.nm)}</div>
         <div class="pp-pr">${brl(preco)}${p.pd?'<span class="pp-promo"> 🏷</span>':''}</div>
       </div>
       <span class="xb ${stCls} pp-st">${p.st}</span>
@@ -229,10 +229,10 @@ function rNV() {
   const vc = $('vc'), vp = $('vp');
   if (vc) vc.innerHTML =
     `<option value="">—</option>` +
-    DB.clis.map(c => `<option value="${c.id}">${c.nm}</option>`).join('');
+    DB.clis.map(c => `<option value="${c.id}">${esc(c.nm)}</option>`).join('');
   if (vp) vp.innerHTML =
     `<option value="">—</option>` +
-    DB.prods.map(p => `<option value="${p.id}">${p.em} ${p.nm}</option>`).join('');
+    DB.prods.map(p => `<option value="${p.id}">${esc(p.em)} ${esc(p.nm)}</option>`).join('');
 
   _nvStep = 1;
   nvGoStep(1);
@@ -253,8 +253,8 @@ function rNV() {
     } else {
       vhj.innerHTML = hoje.map(p => {
         const c = DB.clis.find(x => x.id === p.cid);
-        const itensStr = p.itens ? p.itens.map(i => `${i.em || ''} ${i.nm} ×${i.q}`).join(', ') : `${p.prod} ×${p.q}`;
-        return `<div class="history-item"><strong>#${p.id}</strong> · ${c ? c.nm : '—'}<br>${itensStr} · ${brl(p.tot)}</div>`;
+        const itensStr = esc(p.itens ? p.itens.map(i => `${i.em || ''} ${i.nm} ×${i.q}`).join(', ') : `${p.prod} ×${p.q}`);
+        return `<div class="history-item"><strong>#${p.id}</strong> · ${c ? esc(c.nm) : '—'}<br>${itensStr} · ${brl(p.tot)}</div>`;
       }).join('');
     }
   }
@@ -304,9 +304,9 @@ function nvRenderCart() {
   }
   el.innerHTML = _nvCart.map(i => `
     <div class="nv-cart-item">
-      <div class="nv-cart-thumb">${i.em || '📦'}</div>
+      <div class="nv-cart-thumb">${esc(i.em || '📦')}</div>
       <div class="nv-cart-body">
-        <div class="nv-cart-nm">${i.nm}</div>
+        <div class="nv-cart-nm">${esc(i.nm)}</div>
         <div class="nv-cart-meta">${i.q}× · ${brl(i.pr)} cada</div>
       </div>
       <div class="nv-cart-right">
@@ -351,7 +351,7 @@ function mvRenderCart() {
   el.innerHTML = _mvCart.map(i => `
     <div class="nv-cart-item">
       <div class="nv-cart-body">
-        <div class="nv-cart-nm">${i.em} ${i.nm}</div>
+        <div class="nv-cart-nm">${esc(i.em)} ${esc(i.nm)}</div>
         <div class="nv-cart-meta">${i.q}× · ${brl(i.pr)} cada</div>
       </div>
       <div class="nv-cart-right">
@@ -589,14 +589,14 @@ function showCupom(ped, cli, prod) {
   const itensHtml = ped.itens && ped.itens.length
     ? ped.itens.map((i, idx) => `
         <div class="cpt-item">
-          <div class="cpt-item-nm">${i.em ? i.em + ' ' : ''}${i.nm}</div>
+          <div class="cpt-item-nm">${i.em ? esc(i.em) + ' ' : ''}${esc(i.nm)}</div>
           <div class="cpt-item-det">
             <span>${i.q} un × ${brl(i.pr)}</span>
             <span class="cpt-item-sub">${brl(i.sub)}</span>
           </div>
         </div>${idx < ped.itens.length - 1 ? '<div class="cpt-sep-thin"></div>' : ''}`).join('')
     : `<div class="cpt-item">
-        <div class="cpt-item-nm">${ped.prod}</div>
+        <div class="cpt-item-nm">${esc(ped.prod)}</div>
         <div class="cpt-item-det">
           <span>${ped.q} un${prod?.pr ? ' × ' + brl(prod.pr) : ''}</span>
           <span class="cpt-item-sub">${brl(ped.tot)}</span>
@@ -629,7 +629,7 @@ function showCupom(ped, cli, prod) {
         </div>
         <div class="cpt-carne-body">
           <div>
-            <div class="cpt-carne-cli">${cli.nm}</div>
+            <div class="cpt-carne-cli">${esc(cli.nm)}</div>
             <div class="cpt-carne-due">Vencimento ${fdt(addDays(baseDt, i * 30))}</div>
           </div>
           <div class="cpt-carne-val">${brl(parcVal)}</div>
@@ -700,7 +700,7 @@ function showCupom(ped, cli, prod) {
     <div class="cpt-sep-dashed"></div>
     <div class="cpt-cli-row">
       <span class="cpt-field-lbl">CLIENTE</span>
-      <span class="cpt-field-val">${cli.nm}</span>
+      <span class="cpt-field-val">${esc(cli.nm)}</span>
     </div>
     <div class="cpt-sep-dashed"></div>
     <div class="cpt-itens-hd">ITENS</div>
@@ -736,7 +736,8 @@ function showCupom(ped, cli, prod) {
   if ($('cupom-btn-carne')) $('cupom-btn-carne').style.display = ped.parc > 1 ? '' : 'none';
 }
 
-/* Abre uma janela de impressão com o carnê de pagamento — uma página por parcela */
+/* Abre uma janela de impressão com o carnê de pagamento —
+   capa com a marca + parcelas em folhas de 3 (economiza papel) */
 function printCarne() {
   const ped = _cupomPed, cli = _cupomCli;
   if (!ped || ped.parc <= 1) return;
@@ -745,63 +746,122 @@ function printCarne() {
   const parcVal  = ped.tot / ped.parc;
   const pixKey   = (DB.settings?.pix || '').trim();
   const baseDt   = ped.dtpag || ped.dt;
-  const logoSvg  = `<svg viewBox="0 0 22 22" fill="none" width="16" height="16">
+  const lastDue  = addDays(baseDt, (ped.parc - 1) * 30);
+  const logoSvg  = `<svg viewBox="0 0 22 22" fill="none" width="18" height="18">
+        <rect x="3"  y="13" width="4" height="6"  rx="1.5" fill="white" opacity=".55"/>
+        <rect x="9"  y="8"  width="4" height="11" rx="1.5" fill="white" opacity=".78"/>
+        <rect x="15" y="3"  width="4" height="16" rx="1.5" fill="white"/>
+      </svg>`;
+  const logoSvgSm = `<svg viewBox="0 0 22 22" fill="none" width="13" height="13">
         <rect x="3"  y="13" width="4" height="6"  rx="1.5" fill="white" opacity=".55"/>
         <rect x="9"  y="8"  width="4" height="11" rx="1.5" fill="white" opacity=".78"/>
         <rect x="15" y="3"  width="4" height="16" rx="1.5" fill="white"/>
       </svg>`;
 
-  const pages = Array.from({ length: ped.parc }, (_, i) => {
+  /* ── Capa ─────────────────────────────────────── */
+  const cover = `
+  <section class="cn-cover">
+    <div class="cn-cover-top">
+      <div class="cn-brand"><span class="cn-logo">${logoSvg}</span>Shorti<span class="cn-dot">.</span></div>
+      <div class="cn-cover-store">Milena Lima Beauty</div>
+      <div class="cn-cover-consult">Consultora Oficial Mary Kay</div>
+    </div>
+    <div class="cn-cover-body">
+      <div class="cn-cover-title">Carnê de<br>Pagamento</div>
+      <div class="cn-cover-card">
+        <div class="cn-cover-row"><span>Cliente</span><b>${esc(cli.nm)}</b></div>
+        <div class="cn-cover-row"><span>Pedido</span><b>Nº ${numPed}</b></div>
+        <div class="cn-cover-row"><span>Valor total</span><b>${brl(ped.tot)}</b></div>
+        <div class="cn-cover-row"><span>Parcelas</span><b>${ped.parc}× de ${brl(parcVal)}</b></div>
+        <div class="cn-cover-row"><span>1ª parcela</span><b>${fdt(baseDt)}</b></div>
+        <div class="cn-cover-row"><span>Última parcela</span><b>${fdt(lastDue)}</b></div>
+      </div>
+      ${pixKey ? `<div class="cn-cover-pix">💗 Pague cada parcela via Pix, usando a chave abaixo, ou em mãos com a consultora.<br><b>Chave Pix:</b> ${pixKey}</div>` : ''}
+      <div class="cn-cover-foot">Obrigada pela confiança · Documento sem valor fiscal</div>
+    </div>
+  </section>`;
+
+  /* ── Canhotos / parcelas — 3 por folha ───────────── */
+  const slips = Array.from({ length: ped.parc }, (_, i) => {
     const due = addDays(baseDt, i * 30);
     const payload = pixKey ? buildPixPayload(pixKey, parcVal, `PED${numPed}P${i + 1}`) : '';
-    const pixHtml = payload ? `
-      <div class="cn-pix">
-        <img class="cn-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(payload)}" alt="QR Pix">
-        <div class="cn-key">Chave Pix: ${pixKey}</div>
-      </div>` : '';
+    const qrHtml = payload ? `<img class="cn-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=6&data=${encodeURIComponent(payload)}" alt="QR Pix">` : '';
     return `
-    <section class="cn-page">
-      <header class="cn-head">
-        <div class="cn-brand"><span class="cn-logo">${logoSvg}</span>Shorti.</div>
-        <div class="cn-store">Milena Lima Beauty</div>
-      </header>
-      <div class="cn-title">Carnê de Pagamento</div>
-      <div class="cn-meta">
-        <div><span>Pedido</span><b>Nº ${numPed}</b></div>
-        <div><span>Cliente</span><b>${cli.nm}</b></div>
-        <div><span>Parcela</span><b>${i + 1} de ${ped.parc}</b></div>
-        <div><span>Vencimento</span><b>${fdt(due)}</b></div>
-      </div>
-      <div class="cn-val">${brl(parcVal)}</div>
-      ${pixHtml}
-      <div class="cn-foot">Documento sem valor fiscal · Shorti</div>
-    </section>`;
-  }).join('');
+      <div class="cn-slip">
+        <div class="cn-slip-main">
+          <div class="cn-slip-brand"><span class="cn-slip-logo">${logoSvgSm}</span>Shorti<span class="cn-dot">.</span><span class="cn-slip-store">Milena Lima Beauty</span></div>
+          <div class="cn-slip-lbl">Cliente</div>
+          <div class="cn-slip-cli">${esc(cli.nm)}</div>
+          <div class="cn-slip-meta">
+            <span>Pedido Nº ${numPed}</span>
+            <span>Parcela ${i + 1} de ${ped.parc}</span>
+            <span>Vencimento <b>${fdt(due)}</b></span>
+          </div>
+          <div class="cn-slip-sign">Recebido por _______________________ em ____ /____ /______</div>
+        </div>
+        <div class="cn-slip-val">
+          <div class="cn-slip-val-lbl">Valor</div>
+          <div class="cn-slip-val-num">${brl(parcVal)}</div>
+          ${qrHtml}
+          ${pixKey ? `<div class="cn-slip-pix-lbl">Pague com Pix</div><div class="cn-slip-key">${pixKey}</div>` : ''}
+        </div>
+      </div>`;
+  });
+
+  const CUT = `<div class="cn-cut">✂ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>`;
+  const pages = [];
+  for (let i = 0; i < slips.length; i += 3) {
+    const group = slips.slice(i, i + 3);
+    pages.push(`<section class="cn-page">${group.join(CUT)}</section>`);
+  }
 
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
 <title>Carnê — Pedido ${numPed}</title>
 <style>
-  @page { size: A4; margin: 16mm; }
+  @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
   body { font-family: 'Inter', system-ui, sans-serif; color: #0F172A; margin: 0; }
-  .cn-page { page-break-after: always; display: flex; flex-direction: column; min-height: calc(100vh - 32mm); padding: 28px; border: 1px solid #E2E8F0; border-radius: 14px; }
+  .cn-dot { color: #8FA6F2; }
+
+  /* Capa */
+  .cn-cover { page-break-after: always; width: 210mm; height: 297mm; display: flex; flex-direction: column; }
+  .cn-cover-top { background: #1B44B8; color: #fff; padding: 26mm 18mm 22mm; }
+  .cn-brand { display: flex; align-items: center; gap: 9px; font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+  .cn-logo { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cn-cover-store { font-size: 15px; font-weight: 700; margin-top: 14px; }
+  .cn-cover-consult { font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; opacity: .75; margin-top: 4px; }
+  .cn-cover-body { flex: 1; display: flex; flex-direction: column; padding: 20mm 18mm; }
+  .cn-cover-title { font-size: 40px; font-weight: 800; line-height: 1.1; color: #0F172A; margin-bottom: 28px; }
+  .cn-cover-card { border: 1px solid #E2E8F0; border-radius: 16px; padding: 22px 24px; }
+  .cn-cover-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px dashed #E2E8F0; font-size: 13.5px; color: #334155; }
+  .cn-cover-row:last-child { border-bottom: none; }
+  .cn-cover-row span { color: #94A3B8; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: .12em; }
+  .cn-cover-row b { font-weight: 800; font-size: 15px; color: #0F172A; }
+  .cn-cover-pix { margin-top: 22px; font-size: 12px; color: #475569; line-height: 1.7; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; }
+  .cn-cover-foot { margin-top: auto; text-align: center; font-size: 10px; color: #94A3B8; letter-spacing: .08em; text-transform: uppercase; padding-top: 24px; }
+
+  /* Folhas de parcelas — 3 por página */
+  .cn-page { page-break-after: always; width: 210mm; height: 297mm; padding: 14mm 16mm; display: flex; flex-direction: column; }
   .cn-page:last-child { page-break-after: auto; }
-  .cn-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid #E2E8F0; }
-  .cn-brand { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
-  .cn-logo { width: 28px; height: 28px; border-radius: 7px; background: #1B44B8; display: flex; align-items: center; justify-content: center; }
-  .cn-store { font-size: 13px; color: #64748B; font-weight: 600; }
-  .cn-title { font-size: 12px; font-weight: 800; letter-spacing: .15em; color: #94A3B8; text-align: center; text-transform: uppercase; margin: 28px 0 8px; }
-  .cn-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin: 16px 0; }
-  .cn-meta div { display: flex; justify-content: space-between; border-bottom: 1px dashed #E2E8F0; padding-bottom: 6px; font-size: 13px; }
-  .cn-meta span { color: #94A3B8; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
-  .cn-meta b { color: #0F172A; font-weight: 700; }
-  .cn-val { text-align: center; font-size: 42px; font-weight: 800; color: #1B44B8; margin: 28px 0; }
-  .cn-pix { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: auto; padding-top: 16px; border-top: 1px dashed #E2E8F0; }
-  .cn-qr { width: 140px; height: 140px; }
-  .cn-key { font-size: 11px; color: #64748B; word-break: break-all; }
-  .cn-foot { text-align: center; font-size: 9px; color: #CBD5E1; text-transform: uppercase; letter-spacing: .12em; margin-top: 12px; }
+  .cn-cut { text-align: center; font-size: 10px; color: #CBD5E1; letter-spacing: .14em; white-space: nowrap; overflow: hidden; flex: 0 0 auto; padding: 4px 0; }
+  .cn-slip { flex: 1 1 0; min-height: 0; display: flex; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; }
+  .cn-slip-main { flex: 1; min-width: 0; padding: 0 26px; display: flex; flex-direction: column; justify-content: center; gap: 7px; }
+  .cn-slip-brand { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: #1B44B8; }
+  .cn-slip-logo { width: 18px; height: 18px; border-radius: 5px; background: #1B44B8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cn-slip-store { font-size: 10.5px; font-weight: 600; color: #94A3B8; margin-left: 4px; }
+  .cn-slip-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #94A3B8; margin-top: 8px; }
+  .cn-slip-cli { font-size: 20px; font-weight: 800; color: #0F172A; }
+  .cn-slip-meta { display: flex; flex-wrap: wrap; gap: 5px 16px; font-size: 11.5px; color: #64748B; }
+  .cn-slip-meta b { color: #0F172A; }
+  .cn-slip-sign { font-size: 11px; color: #CBD5E1; margin-top: 12px; letter-spacing: .02em; }
+  .cn-slip-val { flex: 0 0 170px; background: #F8FAFC; border-left: 1px dashed #CBD5E1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 16px; }
+  .cn-slip-val-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #94A3B8; }
+  .cn-slip-val-num { font-size: 26px; font-weight: 800; color: #1B44B8; white-space: nowrap; }
+  .cn-qr { width: 84px; height: 84px; display: block; }
+  .cn-slip-pix-lbl { font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #94A3B8; margin-top: 2px; }
+  .cn-slip-key { font-size: 8.5px; color: #94A3B8; word-break: break-all; text-align: center; max-width: 145px; }
 </style>
-</head><body>${pages}</body></html>`;
+</head><body>${cover}${pages.join('')}</body></html>`;
 
   const w = window.open('', '_blank');
   if (!w) { showToast('Permita pop-ups para gerar o carnê'); return; }
@@ -848,8 +908,8 @@ function confirmV() {
   const c = DB.clis.find(x => x.id === cid);
   if (!c) { showToast('Selecione um cliente'); return; }
   const tot = _nvCart.reduce((a, b) => a + b.sub, 0);
-  const resumo = _nvCart.length === 1 ? _nvCart[0].nm : `${_nvCart.length} produtos`;
-  askConfirm(`Registrar venda de ${brl(tot)} para ${c.nm}?\n\n${resumo}`, saveV);
+  const resumo = _nvCart.length === 1 ? esc(_nvCart[0].nm) : `${_nvCart.length} produtos`;
+  askConfirm(`Registrar venda de ${brl(tot)} para ${esc(c.nm)}?\n\n${resumo}`, saveV);
 }
 
 function confirmMV() {
@@ -858,6 +918,6 @@ function confirmMV() {
   const c = DB.clis.find(x => x.id === cid);
   if (!c) { showToast('Selecione um cliente'); return; }
   const tot = _mvCart.reduce((a, b) => a + b.sub, 0);
-  const resumo = _mvCart.length === 1 ? _mvCart[0].nm : `${_mvCart.length} produtos`;
-  askConfirm(`Confirmar venda de ${brl(tot)} para ${c.nm}?\n\n${resumo}`, saveMV);
+  const resumo = _mvCart.length === 1 ? esc(_mvCart[0].nm) : `${_mvCart.length} produtos`;
+  askConfirm(`Confirmar venda de ${brl(tot)} para ${esc(c.nm)}?\n\n${resumo}`, saveMV);
 }

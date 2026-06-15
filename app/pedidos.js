@@ -25,9 +25,9 @@ function rReceber() {
     const venc = p.dtpag && p.dtpag < td();
     return `<tr>
       <td>#${p.id}</td>
-      <td>${c ? c.nm : '—'}</td>
-      <td>${c ? c.tel : '—'}</td>
-      <td>${p.prod} ×${p.q}</td>
+      <td>${c ? esc(c.nm) : '—'}</td>
+      <td>${c ? esc(c.tel) : '—'}</td>
+      <td>${esc(p.prod)} ×${p.q}</td>
       <td>${brl(p.tot)}</td>
       <td ${venc ? 'style="color:#DC2626;font-weight:600"' : ''}>${p.dtpag ? fdt(p.dtpag) : fdt(p.dt)}${venc ? ' ⚠' : ''}</td>
       <td class="table-actions"><button class="eb small" style="background:#18181B;color:#fff;border-color:#18181B" onclick="receberPed(${p.id})">✓ Receber</button></td>
@@ -36,15 +36,15 @@ function rReceber() {
   if (cardsEl) cardsEl.innerHTML = fiado.map((p, idx) => {
     const c   = DB.clis.find(x => x.id === p.cid);
     const nm  = c ? c.nm : '—';
-    const ini = nm.split(' ').filter(Boolean).map(w => w[0]).slice(0,2).join('').toUpperCase() || '?';
+    const ini = esc(nm.split(' ').filter(Boolean).map(w => w[0]).slice(0,2).join('').toUpperCase() || '?');
     const venc = p.dtpag && p.dtpag < td();
     const [bg, fg] = avatarColors[idx % avatarColors.length].split(',');
     return `<div class="rb-card">
       <div class="rb-card-top">
         <div class="order-avatar" style="background:var(${bg});color:var(${fg})">${ini}</div>
         <div class="rb-card-info">
-          <div class="rb-card-name">${nm}</div>
-          <div class="rb-card-prod">${p.prod} ×${p.q}</div>
+          <div class="rb-card-name">${esc(nm)}</div>
+          <div class="rb-card-prod">${esc(p.prod)} ×${p.q}</div>
         </div>
         <div class="rb-card-val">${brl(p.tot)}</div>
       </div>
@@ -60,7 +60,7 @@ function receberPed(id) {
   const p = DB.peds.find(x => x.id === id);
   if (!p) return;
   const c = DB.clis.find(x => x.id === p.cid);
-  askConfirm(`Confirmar recebimento de ${brl(p.tot)}${c ? ' de ' + c.nm : ''}?\n\nUm lançamento de receita será registrado no financeiro.`, () => {
+  askConfirm(`Confirmar recebimento de ${brl(p.tot)}${c ? ' de ' + esc(c.nm) : ''}?\n\nUm lançamento de receita será registrado no financeiro.`, () => {
     p.pag = 'Recebido';
     p.st  = 'Entregue';
     const t = { id: DB.nid.t++, tp: 'receita', ds: `Recebimento pedido #${p.id}`, vl: p.tot, dt: td() };
@@ -135,14 +135,14 @@ function hvUpd() {
   if (cardsEl) cardsEl.innerHTML = peds.map((p, idx) => {
     const c   = DB.clis.find(x => x.id === p.cid);
     const nm  = c ? c.nm : '—';
-    const ini = nm.split(' ').filter(Boolean).map(w => w[0]).slice(0,2).join('').toUpperCase() || '?';
+    const ini = esc(nm.split(' ').filter(Boolean).map(w => w[0]).slice(0,2).join('').toUpperCase() || '?');
     const [bg, fg] = avatarColors[idx % avatarColors.length].split(',');
     return `<div class="rb-card" style="cursor:pointer" onclick="editPed(${p.id})">
       <div class="rb-card-top">
         <div class="order-avatar" style="background:var(${bg});color:var(${fg})">${ini}</div>
         <div class="rb-card-info">
-          <div class="rb-card-name">${nm}</div>
-          <div class="rb-card-prod">${p.prod} · ${fdt(p.dt)}</div>
+          <div class="rb-card-name">${esc(nm)}</div>
+          <div class="rb-card-prod">${esc(p.prod)} · ${fdt(p.dt)}</div>
         </div>
         <div class="rb-card-val">${brl(p.tot)}</div>
       </div>
@@ -158,8 +158,8 @@ function hvUpd() {
     return `<tr>
       <td style="color:var(--tx-m);font-size:12.5px">#${p.id}</td>
       <td>${fdt(p.dt)}</td>
-      <td style="font-weight:500">${c ? c.nm : '—'}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.prod}</td>
+      <td style="font-weight:500">${c ? esc(c.nm) : '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.prod)}</td>
       <td style="font-weight:600">${brl(p.tot)}</td>
       <td style="color:var(--tx-m)">${p.pag}</td>
       <td><span class="xb ${stCl[p.st] || 'xb-gray'}">${p.st}</span></td>
@@ -189,7 +189,7 @@ function editPed(id) {
   if (!p) return;
   if ($('med-id')) $('med-id').value = p.id;
   const sel = $('med-c');
-  if (sel) sel.innerHTML = DB.clis.map(c => `<option value="${c.id}"${c.id === p.cid ? ' selected' : ''}>${c.nm}</option>`).join('');
+  if (sel) sel.innerHTML = DB.clis.map(c => `<option value="${c.id}"${c.id === p.cid ? ' selected' : ''}>${esc(c.nm)}</option>`).join('');
   const pagBase = p.pag ? p.pag.replace(/\s+\d+×$/, '') : 'PIX';
   if ($('med-pg')) $('med-pg').value = pagBase;
   if ($('med-parc')) $('med-parc').value = p.parc || 1;

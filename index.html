@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-template="classico">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Milena Lima Beauty</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Poppins:wght@300;400;500;600&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&family=Lato:wght@300;400;700&family=Quicksand:wght@300;400;500;600&family=Nunito+Sans:wght@300;400;500;600&family=Marcellus&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./store.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
@@ -15,7 +15,7 @@
   <div id="site-intro" class="site-intro">
     <div class="site-intro-inner">
       <p class="site-intro-eyebrow">Coleção 2026</p>
-      <div class="site-intro-brand">Milena Lima <em>Beauty</em></div>
+      <div class="site-intro-brand" id="site-intro-brand">Milena Lima <em>Beauty</em></div>
       <div class="site-intro-rule"></div>
     </div>
   </div>
@@ -25,7 +25,7 @@
     <div class="urgency-banner">Frete <em>GRÁTIS</em> em compras acima de R$ 150 · Consultoria personalizada inclusa em cada pedido</div>
     <header class="site-header">
       <div class="container header-inner">
-        <a class="brand" href="#">Milena Lima <span>Beauty</span></a>
+        <a class="brand" href="#" id="site-brand-link">Milena Lima <span>Beauty</span></a>
         <button class="mob-nav-toggle" onclick="openMobNav()" aria-label="Menu">☰</button>
         <nav class="main-nav">
           <a href="#produtos" onclick="goto('produtos'); return false;">Produtos</a>
@@ -237,7 +237,7 @@
             <ul><li><a href="#">WhatsApp</a></li><li><a href="#">Instagram</a></li><li><a href="#">E-mail</a></li><li><a href="#">Agendamento</a></li></ul>
           </div>
         </div>
-        <div class="footer-copyright">© 2026 Milena Lima Beauty · Consultora Oficial Mary Kay<button class="footer-admin" onclick="window.location.href='login.html'" title="Área restrita">⚙</button></div>
+        <div class="footer-copyright"><span id="footer-copyright-text">© 2026 Milena Lima Beauty · Consultora Oficial Mary Kay</span><a class="footer-privacy-link" href="#" onclick="openPrivacy(event)">Política de Privacidade</a><button class="footer-admin" onclick="window.location.href='login.html'" title="Área restrita">⚙</button></div>
       </footer>
     </main>
   </div>
@@ -267,6 +267,10 @@
       <div class="cart-row"><span>Subtotal</span><span id="csub">R$ 0</span></div>
       <div class="cart-row"><span>Frete</span><span class="text-success">Grátis</span></div>
       <div class="cart-row cart-total"><span>Total</span><span id="ctot">R$ 0</span></div>
+      <div class="cart-customer">
+        <input type="text" class="input-field cc-input" id="cc-nome" placeholder="Seu nome">
+        <input type="tel" class="input-field cc-input" id="cc-tel" placeholder="WhatsApp com DDD">
+      </div>
       <button class="btn btn-primary btn-block" onclick="checkout()">Finalizar via WhatsApp</button>
     </div>
   </aside>
@@ -300,6 +304,58 @@
     <p class="mkt-title">Oi, está aí?</p>
     <p class="mkt-text">Temos produtos incríveis esperando por você — dá uma olhada!</p>
     <button class="mkt-cta" onclick="mktGo()">Ver produtos →</button>
+  </div>
+
+  <div class="cookie-banner" id="cookie-banner">
+    <p class="cookie-text">
+      Usamos cookies para melhorar sua experiência, lembrar suas preferências e analisar a navegação no site.
+      Ao continuar, você concorda com nossa <a href="#" onclick="openPrivacy(event)">Política de Privacidade</a>.
+    </p>
+    <div class="cookie-actions">
+      <button class="btn-ghost-editorial cookie-more" onclick="openPrivacy(event)">Saber mais</button>
+      <button class="btn-editorial cookie-accept" onclick="acceptCookies()">Aceitar</button>
+    </div>
+  </div>
+
+  <div class="privacy-modal" id="privacy-modal" onclick="if(event.target===this) closePrivacy()">
+    <div class="privacy-box">
+      <div class="privacy-header">
+        <h3>Política de Privacidade</h3>
+        <button class="privacy-close" onclick="closePrivacy()" aria-label="Fechar">✕</button>
+      </div>
+      <div class="privacy-body">
+        <p class="privacy-updated">Última atualização: junho de 2026</p>
+
+        <h4>1. Quem somos</h4>
+        <p>Esta loja é operada por uma consultora de beleza independente. Ao utilizar este site, você concorda com a coleta e o uso de informações de acordo com esta política, em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).</p>
+
+        <h4>2. Quais dados coletamos</h4>
+        <p>Podemos coletar: nome, número de WhatsApp e endereço de entrega informados na finalização do pedido; e-mail fornecido voluntariamente na newsletter; e dados de navegação (páginas visitadas, produtos visualizados, itens no carrinho) armazenados localmente no seu dispositivo.</p>
+
+        <h4>3. O que são cookies e como usamos</h4>
+        <p>Cookies são pequenos arquivos armazenados no seu navegador. Utilizamos:</p>
+        <ul>
+          <li><strong>Cookies essenciais</strong> — necessários para o funcionamento do carrinho de compras e das preferências da loja.</li>
+          <li><strong>Cookies de preferência</strong> — para lembrar escolhas como categorias visitadas e itens salvos.</li>
+          <li><strong>Cookies analíticos</strong> — para entender como os visitantes usam o site e melhorar a experiência de compra.</li>
+        </ul>
+
+        <h4>4. Como usamos seus dados</h4>
+        <p>Usamos seus dados para processar e entregar pedidos, entrar em contato via WhatsApp sobre o status da compra, enviar comunicações de marketing (caso você tenha se inscrito na newsletter) e melhorar nossos produtos e serviços.</p>
+
+        <h4>5. Compartilhamento com terceiros</h4>
+        <p>Não vendemos nem compartilhamos seus dados pessoais com terceiros para fins de marketing. Dados de pagamento (Pix) são processados diretamente entre você e a instituição financeira, sem armazenamento de informações sensíveis em nossos sistemas.</p>
+
+        <h4>6. Seus direitos</h4>
+        <p>De acordo com a LGPD, você tem direito a confirmar a existência de tratamento dos seus dados, acessar, corrigir, solicitar a exclusão e revogar o consentimento a qualquer momento. Para exercer esses direitos, entre em contato pelo WhatsApp informado no site.</p>
+
+        <h4>7. Segurança</h4>
+        <p>Adotamos medidas razoáveis para proteger suas informações contra acesso não autorizado, perda ou alteração.</p>
+
+        <h4>8. Alterações nesta política</h4>
+        <p>Esta política pode ser atualizada periodicamente. Recomendamos revisá-la de tempos em tempos para se manter informado sobre como protegemos suas informações.</p>
+      </div>
+    </div>
   </div>
 
   <script src="./core.js" defer></script>

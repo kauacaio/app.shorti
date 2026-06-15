@@ -108,8 +108,8 @@ function rNotif() {
     <div class="notif-item ${n.read ? '' : 'unread'}" onclick="openNotif(${n.id})">
       <div class="notif-icon notif-icon-${n.type}">${n.icon}</div>
       <div class="notif-body">
-        <div class="notif-title">${n.title}</div>
-        <div class="notif-msg">${n.msg}</div>
+        <div class="notif-title">${esc(n.title)}</div>
+        <div class="notif-msg">${esc(n.msg)}</div>
         <div class="notif-time">${timeAgo(n.dt)}</div>
       </div>
       <button class="notif-dismiss" onclick="dismissNotif(${n.id}, event)" title="Remover">✕</button>

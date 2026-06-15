@@ -5,6 +5,42 @@
 
 const ERP_PW = 'milena2025';
 
+/* ── Cadastro rápido (nome + WhatsApp) salvo por loja ──────────── */
+const CUSTOMER_KEY = 'mlb_customer_' + (new URLSearchParams(location.search).get('loja') || 'default');
+
+function loadCustomerInfo() {
+  try {
+    const raw = localStorage.getItem(CUSTOMER_KEY);
+    return raw ? JSON.parse(raw) : { nome: '', tel: '' };
+  } catch(e) { return { nome: '', tel: '' }; }
+}
+function saveCustomerInfo(info) {
+  try { localStorage.setItem(CUSTOMER_KEY, JSON.stringify(info)); } catch(e) {}
+}
+
+/* ── Tema: pares de fonte por estilo ─────────────── */
+const FONT_PAIRS = {
+  elegante:    ["'Cormorant Garamond', Georgia, serif", "'DM Sans', system-ui, sans-serif"],
+  moderno:     ["'Poppins', system-ui, sans-serif", "'Inter', system-ui, sans-serif"],
+  minimal:     ["'Inter', system-ui, sans-serif", "'Inter', system-ui, sans-serif"],
+  classica:    ["'Playfair Display', Georgia, serif", "'Lato', system-ui, sans-serif"],
+  suave:       ["'Quicksand', system-ui, sans-serif", "'Nunito Sans', system-ui, sans-serif"],
+  sofisticada: ["'Marcellus', Georgia, serif", "'Manrope', system-ui, sans-serif"]
+};
+
+/* Clareia (percent > 0) ou escurece (percent < 0) uma cor hex */
+function shade(hex, percent) {
+  const m = (hex || '').replace('#', '');
+  if (!/^[0-9a-fA-F]{6}$/.test(m)) return hex;
+  let r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16);
+  const apply = c => {
+    const v = percent >= 0 ? c + (255 - c) * percent : c * (1 + percent);
+    return Math.max(0, Math.min(255, Math.round(v)));
+  };
+  [r, g, b] = [apply(r), apply(g), apply(b)];
+  return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+}
+
 /* ── Navegação ───────────────────────────────────── */
 function goto(id) {
   const e = document.getElementById(id);
@@ -329,8 +365,23 @@ function crm(id) { DB.cart = DB.cart.filter(x => x.id !== id); updC(); }
 
 function checkout() {
   if (!DB.cart.length) return;
+
+  const nome = ($('cc-nome')?.value || '').trim();
+  const tel = ($('cc-tel')?.value || '').trim();
+  if (!nome) { showToast('Preencha seu nome para continuar'); $('cc-nome')?.focus(); return; }
+  if (!tel) { showToast('Preencha seu WhatsApp para continuar'); $('cc-tel')?.focus(); return; }
+  saveCustomerInfo({ nome, tel });
+
   const msg = encodeURIComponent('Olá Milena! Gostaria de comprar:\n' + DB.cart.map(i => `• ${i.nm} ×${i.q} — ${brl((i.pd || i.pr) * i.q)}`).join('\n') + '\n\nTotal: ' + brl(DB.cart.reduce((a, b) => a + (b.pd || b.pr) * b.q, 0)));
   window.open(`https://wa.me/${(DB.settings?.whatsapp || '5511999999999')}?text=${msg}`, '_blank');
+
+  if (window._sbClient) {
+    // Só pid/q vão para o servidor — preço, nome e total são recalculados
+    // lá a partir do catálogo real (nunca confiamos no que o navegador envia).
+    const itens = DB.cart.map(i => ({ pid: i.id, q: i.q }));
+    const slug = window._tenant?.slug || new URLSearchParams(location.search).get('loja') || 'milena-lima-beauty';
+    SBStorefront.createOrder({ slug, nome, tel, itens }).catch(e => console.warn('[pedido loja]', e?.message));
+  }
 }
 
 /* ── Produtos em destaque (segunda sessão) ───────── */
@@ -427,6 +478,27 @@ function initCarouselProgress() {
 function applySettings() {
   const s = DB.settings;
   if (!s) return;
+
+  /* Tema: modelo de loja, cores e fontes */
+  const theme = s.theme || {};
+  document.documentElement.setAttribute('data-template', theme.template || 'classico');
+  const root = document.documentElement.style;
+  if (theme.primary) {
+    root.setProperty('--brand', theme.primary);
+    root.setProperty('--sage-accent', theme.primary);
+  }
+  if (theme.accent) {
+    root.setProperty('--rose', theme.accent);
+    root.setProperty('--blush-mid', theme.accent);
+    root.setProperty('--rose-dark', shade(theme.accent, -0.25));
+    root.setProperty('--blush-deep', shade(theme.accent, -0.25));
+    root.setProperty('--rose-soft', shade(theme.accent, 0.85));
+    root.setProperty('--blush', shade(theme.accent, 0.85));
+  }
+  const fonts = FONT_PAIRS[theme.font] || FONT_PAIRS.elegante;
+  root.setProperty('--font-display', fonts[0]);
+  root.setProperty('--font-body', fonts[1]);
+
   const banner = document.querySelector('.urgency-banner');
   if (banner && s.banner) banner.innerHTML = s.banner;
   const kicker = document.querySelector('.hero-kicker');
@@ -480,12 +552,49 @@ function initNavHighlight() {
 }
 
 /* ── Progressive enhancement — carrega dados do Supabase ── */
+function showLojaIndisponivel(title, msg) {
+  const store = $('store');
+  if (!store) return;
+  store.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px;font-family:'DM Sans',sans-serif;">
+      <h1 style="font-size:28px;margin-bottom:8px;">${title}</h1>
+      <p style="color:#64748B;">${msg}</p>
+    </div>`;
+}
+function showLojaNaoEncontrada() {
+  showLojaIndisponivel('Loja não encontrada', 'Verifique o endereço da loja e tente novamente.');
+}
+
 async function loadFromSupabase() {
   if (!window._sbClient) return;
   const safe = async fn => { try { return await fn(); } catch(e) { return null; } };
-  const [prods, settings] = await Promise.all([ safe(() => SBProds.list()), safe(() => SBSettings.get()) ]);
+
+  const slug = new URLSearchParams(location.search).get('loja') || 'milena-lima-beauty';
+  const tenant = await safe(() => Tenants.getBySlug(slug));
+  if (!tenant) { showLojaNaoEncontrada(); return; }
+  window._tenant = tenant;
+
+  const [prods, settings] = await Promise.all([
+    safe(() => SBProds.list(tenant.id)),
+    safe(() => SBStorefront.getSettings(slug))
+  ]);
   if (prods)    { DB.prods = prods; }
   if (settings) Object.assign(DB.settings, settings);
+
+  const isPreview = new URLSearchParams(location.search).has('preview');
+  if (DB.settings.published === false && !isPreview) {
+    showLojaIndisponivel('Loja indisponível', 'Esta loja está temporariamente fora do ar.');
+    return;
+  }
+
+  document.title = tenant.nome;
+  if ($('site-intro-brand')) $('site-intro-brand').textContent = tenant.nome;
+  if ($('site-brand-link'))  $('site-brand-link').textContent  = tenant.nome;
+  if ($('footer-copyright-text')) {
+    const kicker = DB.settings.heroKicker ? ' · ' + DB.settings.heroKicker : '';
+    $('footer-copyright-text').textContent = '© ' + new Date().getFullYear() + ' ' + tenant.nome + kicker;
+  }
+
   if (prods) {
     rHeroCards();
     rProds(_currentCat || 'todos');
@@ -508,10 +617,23 @@ function rStore() {
   initNavHighlight();
   initCarouselProgress();
   applySettings();
+
+  const customer = loadCustomerInfo();
+  if ($('cc-nome')) $('cc-nome').value = customer.nome || '';
+  if ($('cc-tel')) $('cc-tel').value = customer.tel || '';
 }
 
 rStore();
 loadFromSupabase(); // re-renderiza com dados do banco se disponível
+
+/* ── Prévia ao vivo (iframe do ERP envia atualizações de tema/conteúdo) ── */
+if (new URLSearchParams(location.search).has('preview')) {
+  window.addEventListener('message', e => {
+    if (e.data?.type !== 'shorti-preview-update') return;
+    Object.assign(DB.settings, e.data.settings);
+    applySettings();
+  });
+}
 document.addEventListener('DOMContentLoaded', initScrollReveal);
 
 /* ── Card de engajamento ─────────────────────────── */
@@ -549,6 +671,32 @@ function mktGo() {
   dismissMkt();
   goto('produtos');
 }
+
+/* ── Aviso de cookies + Política de Privacidade ──── */
+const COOKIE_CONSENT_KEY = 'mlb_cookie_consent';
+function acceptCookies() {
+  try { localStorage.setItem(COOKIE_CONSENT_KEY, '1'); } catch(e) {}
+  const b = $('cookie-banner');
+  if (b) b.classList.remove('on');
+}
+function openPrivacy(e) {
+  if (e) e.preventDefault();
+  const m = $('privacy-modal');
+  if (m) m.classList.add('on');
+}
+function closePrivacy() {
+  const m = $('privacy-modal');
+  if (m) m.classList.remove('on');
+}
+(function initCookieBanner() {
+  let consented = false;
+  try { consented = localStorage.getItem(COOKIE_CONSENT_KEY) === '1'; } catch(e) {}
+  if (consented) return;
+  setTimeout(() => {
+    const b = $('cookie-banner');
+    if (b) b.classList.add('on');
+  }, 2600);
+})();
 
 function openMobNav() {
   document.getElementById('mob-nav').classList.add('on');
