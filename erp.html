@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./erp.css">
   <style></style>
@@ -23,6 +23,36 @@
   <script src="./supabase.js" defer></script>
 </head>
 <body>
+
+  <!-- ── Boas-vindas — exibida uma vez por sessão ── -->
+  <div class="srt-welcome" id="srt-welcome">
+    <div class="sw-bars"><span></span><span></span></div>
+    <div class="sw-word" aria-label="Shorti.">
+      <span class="sw-l">S</span><span
+      class="sw-l">h</span><span
+      class="sw-l">o</span><span
+      class="sw-l">r</span><span
+      class="sw-l">t</span><span
+      class="sw-l">i</span><span
+      class="sw-l sw-dot">.</span>
+    </div>
+    <p class="sw-tag">Bem-vindo de volta. Vamos cuidar do seu negócio hoje.</p>
+  </div>
+  <script>
+    (function () {
+      var el = document.getElementById('srt-welcome');
+      if (sessionStorage.getItem('srt_welcome_v1')) {
+        el.style.display = 'none';
+        return;
+      }
+      sessionStorage.setItem('srt_welcome_v1', '1');
+      setTimeout(function () {
+        el.classList.add('out');
+        setTimeout(function () { el.remove(); }, 550);
+      }, 2000);
+    })();
+  </script>
+
   <div class="toast" id="toast"></div>
 
   <!-- ── Bloqueio por biometria (desbloqueio local do dispositivo) ── -->

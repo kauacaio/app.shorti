@@ -63,6 +63,50 @@ button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 img, svg { display: block; max-width: 100%; }
 
+/* ── Boas-vindas (splash) ─────────────────────────── */
+.srt-welcome {
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px;
+  background: var(--surf);
+  transition: opacity .5s ease;
+}
+.srt-welcome.out { opacity: 0; pointer-events: none; }
+
+.sw-bars { display: flex; align-items: flex-end; gap: 6px; height: 46px; }
+.sw-bars span {
+  display: block; border-radius: 4px; transform-origin: bottom;
+  opacity: 0; animation: swBar .7s cubic-bezier(.34,1.56,.64,1) both;
+}
+.sw-bars span:nth-child(1) { width: 14px; height: 28px; background: #94A3B8; animation-delay: 0s; }
+.sw-bars span:nth-child(2) { width: 18px; height: 46px; background: linear-gradient(180deg, #94A3B8 0%, #475569 100%); animation-delay: .08s; }
+@keyframes swBar {
+  from { opacity: 0; transform: scaleY(0) skewX(-10deg); }
+  to   { opacity: 1; transform: scaleY(1) skewX(-10deg); }
+}
+
+.sw-word {
+  font-size: clamp(40px, 9vw, 64px);
+  font-weight: 900; letter-spacing: -.045em;
+  color: var(--tx); line-height: 1; white-space: nowrap; user-select: none;
+}
+.sw-l { display: inline-block; opacity: 0; animation: swPop .6s cubic-bezier(.34,1.56,.64,1) both; }
+.sw-l:nth-child(1){animation-delay:.10s} .sw-l:nth-child(2){animation-delay:.16s}
+.sw-l:nth-child(3){animation-delay:.22s} .sw-l:nth-child(4){animation-delay:.28s}
+.sw-l:nth-child(5){animation-delay:.34s} .sw-l:nth-child(6){animation-delay:.40s}
+@keyframes swPop { to { opacity: 1; } }
+.sw-dot {
+  background: linear-gradient(135deg, var(--gl) 0%, #7C3AED 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  animation: swPop .6s cubic-bezier(.34,1.56,.64,1) .5s both;
+}
+
+.sw-tag {
+  font-size: 14px; color: var(--tx-m); text-align: center; max-width: 320px;
+  opacity: 0; animation: swUp .5s ease .7s forwards;
+}
+@keyframes swUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+
 /* ══════════════════════════════════════════════════════════
    OVERRIDES CRÍTICOS — neutraliza styles.css no erp.html
    styles.css é o CSS do store (index.html). Em erp.html

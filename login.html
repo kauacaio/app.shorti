@@ -447,17 +447,18 @@
     @media (max-width: 860px) {
       html, body { overflow: auto; }
       .page { grid-template-columns: 1fr; height: auto; }
-      .brand { padding: 40px 28px 32px; min-height: auto; justify-content: center; }
+      .brand { padding: 48px 28px 40px; min-height: 34vh; justify-content: center; }
       .brand::after { width: 320px; height: 320px; }
       .brand-ring { width: 220px; height: 220px; }
       .brand-watermark, .brand-orbit { display: none; }
       .wm-row { font-size: clamp(56px,17vw,84px); transform: translateX(-.315em); margin-bottom: 18px; }
       .eyebrow { margin-bottom: 16px; }
-      .form-side { padding: 40px 24px 48px; border-left: none; border-top: 1px solid #F1F5F9; }
+      .form-side { padding: 44px 24px 56px; border-left: none; border-top: 1px solid #F1F5F9; }
       .card { max-width: 400px; }
+      .demo-note, .footer { display: none; }
     }
     @media (max-width: 480px) {
-      .brand { padding: 32px 20px 28px; }
+      .brand { padding: 40px 20px 32px; min-height: 30vh; }
       .brand::after { width: 260px; height: 260px; }
       .brand-ring { width: 180px; height: 180px; }
       .wm-row { font-size: 52px; }
