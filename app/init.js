@@ -15,10 +15,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!session) { window.location.replace('login.html'); return; }
       const emailEl = $('user-email');
       if (emailEl && session.user?.email) emailEl.textContent = session.user.email;
+      window._userId = session.user?.id || null;
 
       const tenant = await Tenants.getByOwner();
       if (!tenant) { window.location.replace('onboarding.html'); return; }
       window._tenant = tenant;
+
+      /* Bloqueio por biometria (desbloqueio local — ver app/biometria.js) */
+      if (window._userId && typeof isBioEnrolled === 'function' && isBioEnrolled(window._userId)) {
+        await showBioLock();
+      }
     } catch(e) {
       console.warn('[auth check]', e.message);
     }

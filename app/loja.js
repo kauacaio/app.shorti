@@ -50,6 +50,9 @@ function rLoja() {
   /* Publicação */
   updatePubBadge(s.published !== false);
 
+  /* Segurança do dispositivo (biometria) */
+  rBioSecurity();
+
   /* Prévia ao vivo — só configura o iframe uma vez */
   const frame = $('loja-preview');
   if (frame && !frame.dataset.loaded) {
@@ -98,6 +101,53 @@ function toggleLojaPublicada() {
   DB.settings.published = DB.settings.published === false;
   updatePubBadge(DB.settings.published !== false);
   sendPreviewUpdate();
+}
+
+/* ── Segurança do dispositivo (biometria) ─────────── */
+async function rBioSecurity() {
+  const card  = $('bio-security-card');
+  const badge = $('bio-badge');
+  const btn   = $('bio-toggle');
+  if (!card || !badge || !btn) return;
+
+  const userId = window._userId;
+  if (!userId || typeof isBioAvailable !== 'function' || !(await isBioAvailable())) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = '';
+  if (isBioEnrolled(userId)) {
+    badge.className = 'pub-badge pub-badge-on';
+    badge.textContent = '● Ativada';
+    btn.textContent = 'Remover desbloqueio por biometria';
+  } else {
+    badge.className = 'pub-badge pub-badge-off';
+    badge.textContent = '● Desativada';
+    btn.textContent = 'Ativar desbloqueio por biometria';
+  }
+}
+
+async function toggleBioLock() {
+  const userId = window._userId;
+  if (!userId) return;
+  const btn = $('bio-toggle');
+
+  if (isBioEnrolled(userId)) {
+    bioRemove(userId);
+    showToast('Desbloqueio por biometria removido deste dispositivo');
+  } else {
+    btn.disabled = true;
+    try {
+      await bioEnroll(userId, window._tenant?.nome);
+      showToast('Biometria ativada neste dispositivo');
+    } catch(e) {
+      showToast('Não foi possível ativar: ' + (e.message || 'tente novamente'));
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  rBioSecurity();
 }
 
 /* ── Prévia ao vivo — envia o estado atual pro iframe ── */

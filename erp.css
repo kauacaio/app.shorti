@@ -708,6 +708,32 @@ img, svg { display: block; max-width: 100%; }
 .btn-block { width: 100%; justify-content: center; }
 .btn-mini  { font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 500; }
 
+/* ── Bloqueio por biometria (#bio-lock) ─────────────── */
+.bio-lock {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); padding: 24px;
+}
+.bio-lock-box {
+  width: 100%; max-width: 360px; background: var(--surf); border: 1px solid var(--bd);
+  border-radius: 14px; padding: 32px 24px; text-align: center;
+}
+.bio-lock-icon { font-size: 40px; margin-bottom: 12px; }
+.bio-lock-box h3 { font-size: 16px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.bio-lock-desc { font-size: 12.5px; color: var(--tx-m); line-height: 1.5; margin-bottom: 18px; }
+.bio-lock .alert {
+  display: none; margin: 0 0 12px; padding: 10px 14px; background: #FEF2F2;
+  border: 1px solid #FECACA; border-radius: 8px; font-size: 12.5px; color: #B91C1C; text-align: left;
+}
+.bio-lock .bi { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.bio-lock .sp {
+  display: none; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff; border-radius: 50%; animation: bio-spin .7s linear infinite;
+}
+.bio-lock .btn.ld .lbl { display: none; }
+.bio-lock .btn.ld .sp  { display: block; }
+@keyframes bio-spin { to { transform: rotate(360deg); } }
+
 /* ── Inputs & Forms ────────────────────────────────── */
 .input-field {
   font-family: 'Inter', system-ui, sans-serif;
