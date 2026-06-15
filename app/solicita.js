@@ -115,6 +115,11 @@ function delSolic(id) {
   });
 }
 
+/* Botão "Criar solicitação"/"Salvar alterações" fica verde quando o produto está preenchido */
+function checkSolicReady() {
+  setBtnReady('msolic-save-btn', !!$('sl-nm')?.value?.trim());
+}
+
 async function saveSolic() {
   const nm = $('sl-nm')?.value.trim();
   if (!nm) { showToast('Informe o produto'); return; }

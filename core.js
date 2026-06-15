@@ -112,6 +112,17 @@ async function initDB() {
    Supabase) usa o contador local de sempre. */
 const _ID_TABLE = { p: 'products', c: 'clients', ped: 'orders', t: 'transactions', s: 'solicitacoes' };
 
+/* ── Botões de ação "prontos" ─────────────────────────
+   Padrão visual: um botão de avançar/salvar/confirmar
+   fica verde (.btn-success) assim que o pré-requisito da
+   ação (campo obrigatório preenchido, item selecionado,
+   carrinho não-vazio etc.) é atendido — mesmo princípio
+   do botão "Ir para pagamento" da Nova Venda. */
+function setBtnReady(id, ready) {
+  const b = $(id);
+  if (b) b.classList.toggle('btn-success', !!ready);
+}
+
 async function nextId(kind) {
   if (_sbReady && !window._localMode && _ID_TABLE[kind]) {
     try { return await SBIds.next(_ID_TABLE[kind]); }

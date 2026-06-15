@@ -73,6 +73,12 @@ function _pixPersistSettings() {
   sbSync(() => SBSettings.set(DB.settings, window._tenant?.id));
 }
 
+/* Botão "Confirmar e gerar teste" fica verde quando e-mail e senha estão preenchidos */
+function checkPixReady() {
+  const ready = !!$('mpix-email')?.value?.trim() && !!$('mpix-pass')?.value;
+  setBtnReady('mpix-confirm-btn', ready);
+}
+
 /* Abre o fluxo de confirmação ao alterar a chave Pix (riscos + senha) */
 function pixRequestChange(newValue, oldValue) {
   _mpixNewValue = newValue;
@@ -86,10 +92,12 @@ function pixRequestChange(newValue, oldValue) {
   $('mpix-email').value = '';
   const okBtn = $('mpix-actions-1')?.querySelector('.btn-primary');
   if (okBtn) { okBtn.disabled = false; okBtn.textContent = 'Confirmar e gerar teste'; }
+  checkPixReady();
   if (typeof SBAuth !== 'undefined' && SBAuth.getSession) {
     SBAuth.getSession().then(sess => {
       const email = sess?.user?.email;
       if (email) $('mpix-email').value = email;
+      checkPixReady();
     }).catch(() => {});
   }
   openMod('mpix');

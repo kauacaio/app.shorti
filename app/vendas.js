@@ -180,6 +180,12 @@ function renderCliPicker() {
 function selectCliWiz(id) {
   if ($('vc')) $('vc').value = id;
   renderCliPicker();
+  nvUpdateStep1Btn();
+}
+
+/* Botão "Continuar com produtos" fica verde quando o cliente já foi escolhido */
+function nvUpdateStep1Btn() {
+  setBtnReady('nv-btn-s1', !!$('vc')?.value);
 }
 
 /* ── Product picker para Nova Venda ── */
@@ -236,6 +242,7 @@ function rNV() {
 
   _nvStep = 1;
   nvGoStep(1);
+  nvUpdateStep1Btn();
   if ($('nv-cli-busca')) $('nv-cli-busca').value = '';
   if ($('v-busca'))      $('v-busca').value = '';
   renderCliPicker();
@@ -337,11 +344,18 @@ function mvAddItem() {
   else _mvCart.push({ pid, nm: p.nm, em: p.em || '', q, pr: mpreco, sub: mpreco * q });
   if ($('mvq')) $('mvq').value = 1;
   mvRenderCart();
+  mvUpdateConfirmBtn();
 }
 
 function mvRemItem(pid) {
   _mvCart = _mvCart.filter(x => x.pid !== pid);
   mvRenderCart();
+  mvUpdateConfirmBtn();
+}
+
+/* Botão "Confirmar venda" fica verde quando há ao menos um item no carrinho */
+function mvUpdateConfirmBtn() {
+  setBtnReady('mv-confirm-btn', _mvCart.length > 0);
 }
 
 function mvRenderCart() {

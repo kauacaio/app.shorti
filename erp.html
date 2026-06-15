@@ -7,8 +7,11 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Shorti">
   <title>Shorti-ERP</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./erp.css">
@@ -598,7 +601,7 @@
 
                 <div class="nv-panel-ft">
                   <button class="btn btn-outline" onclick="nvGoStep(2)" type="button">← Voltar</button>
-                  <button class="btn btn-primary" onclick="confirmV()" type="button" style="font-size:14px;padding:12px 28px">
+                  <button class="btn btn-primary btn-success" onclick="confirmV()" type="button" style="font-size:14px;padding:12px 28px">
                     ✓ Confirmar venda
                   </button>
                 </div>
@@ -1185,7 +1188,7 @@
       <label class="form-label full">Data de pagamento<input type="date" class="input-field" id="mvdtpag" style="margin-top:4px"></label>
     </div>
     <div class="summary-box modal-summary"><div class="summary-row"><span>Total</span><strong id="mvt">R$ 0,00</strong></div></div>
-    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mv')">Cancelar</button><button class="btn btn-primary" onclick="confirmMV()">Confirmar venda</button></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mv')">Cancelar</button><button class="btn btn-primary" onclick="confirmMV()" id="mv-confirm-btn">Confirmar venda</button></div>
   </div></div>
 
   <!-- ── Modal produto — wizard mobile / duas colunas desktop ─────────── -->
@@ -1249,7 +1252,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <label class="form-label" style="grid-column:1/-1">
                 Nome do produto *
-                <input type="text" class="input-field" id="pe-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px">
+                <input type="text" class="input-field" id="pe-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px" oninput="checkProdReady()">
               </label>
               <!-- Emoji: visível só no mobile dentro do wizard -->
               <label class="form-label mp-mob-field">
@@ -1366,7 +1369,7 @@
     <div class="modal-header"><h3 id="mc-title">Novo Cliente</h3><button class="modal-close" onclick="closeMod('mc')">✕</button></div>
     <input type="hidden" id="nc-id">
     <div class="form-grid">
-      <label class="form-label full">Nome completo *<input type="text" class="input-field" id="nc-nm" placeholder="Nome da cliente" style="margin-top:4px"></label>
+      <label class="form-label full">Nome completo *<input type="text" class="input-field" id="nc-nm" placeholder="Nome da cliente" style="margin-top:4px" oninput="checkCliReady()"></label>
       <label class="form-label">WhatsApp<input type="tel" class="input-field" id="nc-tel" placeholder="(11) 99999-9999" style="margin-top:4px"></label>
       <label class="form-label">E-mail<input type="email" class="input-field" id="nc-em" placeholder="email@exemplo.com" style="margin-top:4px"></label>
       <label class="form-label">Cidade<input type="text" class="input-field" id="nc-ci" placeholder="São Paulo" style="margin-top:4px"></label>
@@ -1442,11 +1445,11 @@
         </div>
         <input type="hidden" id="tr-tp" value="receita">
       </div>
-      <label class="form-label full">Descrição<input type="text" class="input-field" id="tr-ds" placeholder="Ex: Pedido #001, Reposição de estoque…" style="margin-top:4px"></label>
+      <label class="form-label full">Descrição<input type="text" class="input-field" id="tr-ds" placeholder="Ex: Pedido #001, Reposição de estoque…" style="margin-top:4px" oninput="checkTrReady()"></label>
       <label class="form-label">Valor (R$)<input type="number" class="input-field" id="tr-vl" step="0.01" placeholder="0,00" style="margin-top:4px"></label>
       <label class="form-label">Data<input type="date" class="input-field" id="tr-dt" style="margin-top:4px"></label>
     </div>
-    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mt')">Cancelar</button><button class="btn btn-primary" onclick="saveTr()">Salvar</button></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mt')">Cancelar</button><button class="btn btn-primary" onclick="saveTr()" id="mt-save-btn">Salvar</button></div>
   </div></div>
 
   <!-- ── Cupom Fiscal ─────────────────────────────── -->
@@ -1500,10 +1503,10 @@
         </div>
         <div class="form-grid" style="margin-top:14px">
           <label class="form-label full">E-mail
-            <input type="email" class="input-field" id="mpix-email" placeholder="seu@email.com" autocomplete="username">
+            <input type="email" class="input-field" id="mpix-email" placeholder="seu@email.com" autocomplete="username" oninput="checkPixReady()">
           </label>
           <label class="form-label full">Senha <small style="font-weight:400;opacity:.55">(confirme sua senha para continuar)</small>
-            <input type="password" class="input-field" id="mpix-pass" placeholder="••••••••" autocomplete="current-password">
+            <input type="password" class="input-field" id="mpix-pass" placeholder="••••••••" autocomplete="current-password" oninput="checkPixReady()">
           </label>
         </div>
         <div class="pix-err" id="mpix-err" style="display:none"></div>
@@ -1525,7 +1528,7 @@
 
       <div class="modal-actions" id="mpix-actions-1">
         <button class="btn btn-outline" onclick="pixCancelChange()">Cancelar</button>
-        <button class="btn btn-primary" onclick="pixConfirmStep1()">Confirmar e gerar teste</button>
+        <button class="btn btn-primary" onclick="pixConfirmStep1()" id="mpix-confirm-btn">Confirmar e gerar teste</button>
       </div>
       <div class="modal-actions" id="mpix-actions-2" style="display:none">
         <button class="btn btn-outline" onclick="pixTestResult(false)">⚠️ Não caiu / errado</button>
@@ -1561,7 +1564,7 @@
     </div>
     <input type="hidden" id="sl-id">
     <div class="form-grid">
-      <label class="form-label full">Produto *<input type="text" class="input-field" id="sl-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px"></label>
+      <label class="form-label full">Produto *<input type="text" class="input-field" id="sl-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px" oninput="checkSolicReady()"></label>
       <label class="form-label">Quantidade<input type="number" class="input-field" id="sl-q" value="1" min="1" style="margin-top:4px"></label>
       <label class="form-label">Preço estimado (R$)<input type="number" class="input-field" id="sl-pr" step="0.01" placeholder="Opcional" style="margin-top:4px"></label>
       <label class="form-label full">Observações<input type="text" class="input-field" id="sl-obs" placeholder="Ex: cor, tamanho, código Mary Kay…" style="margin-top:4px"></label>
@@ -1868,6 +1871,11 @@
       localStorage.setItem(KEY, '1');
     };
   })();
+
+  /* PWA: registra o service worker (cache do app shell p/ instalação) */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
   </script>
 </body>
 </html>

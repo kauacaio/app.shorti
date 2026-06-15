@@ -36,6 +36,11 @@ function rFin() {
   rFlxChart();
 }
 
+/* Botão "Salvar" do lançamento fica verde quando a descrição está preenchida */
+function checkTrReady() {
+  setBtnReady('mt-save-btn', !!$('tr-ds')?.value?.trim());
+}
+
 async function saveTr() {
   const ds = $('tr-ds').value;
   if (!ds) { showToast('Informe a descrição'); return; }

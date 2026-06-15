@@ -54,7 +54,11 @@ function openMod(id) {
     if ($('mvpg')) { $('mvpg').value = 'PIX'; mvPayChg('PIX'); }
     _mvCart = [];
     mvRenderCart();
+    mvUpdateConfirmBtn();
   }
+  if (id === 'mc') checkCliReady();
+  if (id === 'mt') checkTrReady();
+  if (id === 'msolic') checkSolicReady();
   if (id === 'mp') {
     const currentId = parseInt($('pe-id')?.value) || 0;
     const pb = $('pe-bump');
@@ -70,6 +74,7 @@ function openMod(id) {
     }
     /* Wizard: sempre começa na etapa 1 no mobile */
     mpGoStep(1);
+    checkProdReady();
   }
   $(id).classList.add('on');
   document.body.style.overflow = 'hidden';

@@ -77,6 +77,13 @@ function mpPreviewUpdate() {
   if (emEl && !url) emEl.textContent = em || '📦';
 }
 
+/* Botões "Próximo"/"Salvar produto" ficam verdes quando o nome está preenchido */
+function checkProdReady() {
+  const ready = !!$('pe-nm')?.value?.trim();
+  setBtnReady('mp-save-btn', ready);
+  setBtnReady('mp-next-btn', ready);
+}
+
 /* Salvar produto — pede confirmação se for edição */
 function confirmSaveProd() {
   const nm = $('pe-nm')?.value?.trim();

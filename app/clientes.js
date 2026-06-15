@@ -180,6 +180,11 @@ function editCli(id) {
   openMod('mc');
 }
 
+/* Botão "Cadastrar cliente"/"Salvar alterações" fica verde quando o nome está preenchido */
+function checkCliReady() {
+  setBtnReady('mc-save-btn', !!$('nc-nm')?.value?.trim());
+}
+
 async function saveCli() {
   const eid = $('nc-id')?.value;
   const nm  = $('nc-nm').value.trim();
