@@ -1,0 +1,10 @@
+# Certificados TLS / chaves privadas (gerados localmente por server.js)
+*.pem
+*.key
+
+# Variáveis de ambiente / segredos
+.env
+.env.*
+
+# Dependências e artefatos
+node_modules/
