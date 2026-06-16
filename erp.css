@@ -131,8 +131,9 @@ img, svg { display: block; max-width: 100%; }
 }
 
 /* 3. styles.css tem @media(max-width:1080px) que quebra sidebar,
-      grids e flexbox do ERP em desktops comuns. Revertemos tudo. */
-@media (max-width: 1080px) {
+      grids e flexbox do ERP em desktops comuns. Revertemos tudo.
+      Aplicamos apenas em tablets/desktops (≥769px) para não afetar mobile. */
+@media (min-width: 769px) and (max-width: 1080px) {
   /* Sidebar: mantém comportamento do erp.css */
   .erp-sidebar {
     position: fixed !important;
@@ -3185,14 +3186,30 @@ table tbody tr:hover { outline: none; }
   /* ── Sidebar: drawer oculto, abre com hamburger ── */
   .erp-sidebar {
     position: fixed;
-    left: -250px; top: 0; bottom: 0;
+    left: 0; top: 0; bottom: 0;
     z-index: 999;
-    width: 240px;
+    width: 240px !important;
     overflow-y: auto; overflow-x: hidden;
-    transition: left .28s cubic-bezier(.16,1,.3,1);
+    /* transform em vez de left = GPU composited, sem relayout */
+    transform: translateX(-100%);
+    transition: transform .22s cubic-bezier(.16,1,.3,1) !important;
+    will-change: transform;
     box-shadow: none;
   }
-  .erp-sidebar.open { left: 0; box-shadow: 8px 0 32px rgba(0,0,0,.15); }
+  .erp-sidebar.open {
+    transform: translateX(0) !important;
+    box-shadow: 8px 0 32px rgba(0,0,0,.15);
+  }
+  /* No mobile o sidebar sempre está expandido (240px) — remover delays de opacity dos filhos */
+  .erp-sidebar .erp-logo-text,
+  .erp-sidebar .erp-workspace,
+  .erp-sidebar .nl-text,
+  .erp-sidebar .user-name,
+  .erp-sidebar .user-role,
+  .erp-sidebar .logout-btn {
+    opacity: 1 !important;
+    transition: none !important;
+  }
 
   /* ── Main: full width, sem margem lateral ── */
   .erp-main {
