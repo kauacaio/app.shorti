@@ -5,9 +5,32 @@
 
 /* ── Permissão e Som ──────────────────────────────── */
 
-function requestNotifPermission() {
-  if (!('Notification' in window) || Notification.permission !== 'default') return;
-  Notification.requestPermission();
+const _NP_KEY = 'srt_notif_prompt_dismissed';
+
+function maybeShowNotifPrompt() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'default') return;
+  if (localStorage.getItem(_NP_KEY)) return;
+  /* Mostra 3s após load, para não assustar na entrada */
+  setTimeout(() => {
+    const el = $('notif-prompt');
+    if (el) el.classList.add('on');
+  }, 3000);
+}
+
+async function enableNotifFromPrompt() {
+  dismissNotifPrompt();
+  if (!('Notification' in window)) return;
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    showToast('Notificações ativadas ✓', 'ok');
+  }
+}
+
+function dismissNotifPrompt() {
+  const el = $('notif-prompt');
+  if (el) el.classList.remove('on');
+  localStorage.setItem(_NP_KEY, '1');
 }
 
 const _notifSounds = {

@@ -106,11 +106,19 @@ async function doLogout() {
   window.location.href = 'index.html';
 }
 
-function showToast(m) {
+function showToast(msg, type, sub) {
   const t = $('toast');
-  t.textContent = m;
+  if (!t) return;
+  const icons = { ok: '✓', err: '✕', warn: '⚠', info: 'ℹ' };
+  const tp = type || (
+    /erro|falh|não foi|inválid/i.test(msg) ? 'err' :
+    /⚠|estoque|atenção|aviso/i.test(msg)  ? 'warn' :
+    /criado|registrad|atualizado|removido|salvo|✓|sucesso/i.test(msg) ? 'ok' : 'info'
+  );
+  t.innerHTML = `<div class="toast-ic toast-ic-${tp}">${icons[tp] || icons.info}</div><div class="toast-body"><div class="toast-msg">${msg}</div>${sub ? `<div class="toast-sub">${sub}</div>` : ''}</div>`;
   t.classList.add('on');
-  setTimeout(() => t.classList.remove('on'), 2600);
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('on'), 3200);
 }
 
 /* ── Navegação ERP ───────────────────────────────── */
@@ -1798,6 +1806,16 @@ function showSaleSuccess(ped, cli, tot, parc) {
 
   el.classList.add('on');
   document.body.style.overflow = 'hidden';
+
+  /* Notificação OS de confirmação */
+  if (typeof fireOSNotification === 'function') {
+    fireOSNotification({
+      key:   `sale_ok_${ped.id}`,
+      title: 'Venda confirmada ✓',
+      msg:   `${cli?.nm || 'Cliente'} · ${brl(tot)}${parc > 1 ? ` · ${parc}× de ${brl(tot/parc)}` : ''}`,
+      link:  'historico',
+    });
+  }
 }
 
 function closeSaleSuccess() {
@@ -3338,7 +3356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await initDB();
   renderAll();
-  requestNotifPermission();
+  maybeShowNotifPrompt();
   initRealtimeOrders();
   initBanner();
   showExtPopup();
