@@ -3,6 +3,61 @@
    (desktop + mobile) e geração automática
    ===================================================== */
 
+/* ── Permissão e Som ──────────────────────────────── */
+
+function requestNotifPermission() {
+  if (!('Notification' in window) || Notification.permission !== 'default') return;
+  Notification.requestPermission();
+}
+
+const _notifSounds = {
+  order:   [[523, 0,    0.12, 0.3], [659, 0.15, 0.12, 0.3], [784, 0.30, 0.22, 0.3]],
+  solic:   [[659, 0,    0.12, 0.3], [659, 0.17, 0.15, 0.3]],
+  fiado:   [[440, 0,    0.18, 0.3], [330, 0.23, 0.30, 0.3]],
+  stock:   [[200, 0,    0.40, 0.2]],
+  extrato: [[440, 0,    0.10, 0.25], [523, 0.14, 0.22, 0.3]],
+};
+
+function playNotifSound(type) {
+  try {
+    const ctx   = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = _notifSounds[type] || _notifSounds.order;
+    notes.forEach(([freq, delay, dur, vol]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+      gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + dur + 0.05);
+    });
+  } catch(e) {}
+}
+
+function fireOSNotification(n) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const notif = new Notification(n.title, {
+      body:  n.msg,
+      icon:  './icon-192.png',
+      badge: './icon-192.png',
+      tag:   n.key,
+    });
+    notif.onclick = () => {
+      window.focus();
+      notif.close();
+      if (n.link) {
+        if (window.innerWidth <= 768) mobNav(n.link);
+        else epage(n.link, null);
+      }
+    };
+  } catch(e) {}
+}
+
 /* ── CRUD básico ──────────────────────────────────── */
 function addNotif({ key, type, icon, title, msg, link }) {
   if (localStorage.getItem('mlb_notif_dismissed_' + key)) return;
@@ -18,6 +73,8 @@ function addNotif({ key, type, icon, title, msg, link }) {
   const n = { id: DB.nid.notif++, key, type, icon, title, msg, link: link || '', read: false, dt: new Date().toISOString() };
   DB.notifs.push(n);
   sbSync(() => SBNotifs.upsert(n));
+  playNotifSound(type);
+  fireOSNotification(n);
 }
 
 function removeNotif(key) {

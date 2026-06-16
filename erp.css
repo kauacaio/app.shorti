@@ -136,7 +136,7 @@ img, svg { display: block; max-width: 100%; }
   /* Sidebar: mantém comportamento do erp.css */
   .erp-sidebar {
     position: fixed !important;
-    width: 64px !important;
+    width: 60px !important;
     height: auto !important;
   }
   .erp-sidebar:hover { width: 240px !important; }
@@ -144,8 +144,8 @@ img, svg { display: block; max-width: 100%; }
 
   /* Main: mantém margem lateral */
   .erp-main {
-    margin-left: 64px !important;
-    width: calc(100% - 64px) !important;
+    margin-left: 60px !important;
+    width: calc(100% - 60px) !important;
   }
 
   /* Grids: mantém multi-colunas no desktop */
@@ -183,23 +183,23 @@ img, svg { display: block; max-width: 100%; }
 
 /* ── Sidebar ── */
 .erp-sidebar {
-  background: #FFFFFF;
+  background: var(--surf);
   border-right: 1px solid var(--bd);
-  width: 64px;
+  width: 60px;
   display: flex; flex-direction: column;
   position: fixed; top: 0; bottom: 0; left: 0;
   z-index: 100; overflow: hidden;
-  transition: width .24s cubic-bezier(.16,1,.3,1), box-shadow .24s ease;
+  transition: width .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease;
 }
 .erp-sidebar:hover {
   width: 240px;
-  box-shadow: 4px 0 20px rgba(0,0,0,.07);
+  box-shadow: 4px 0 24px rgba(0,0,0,.07);
 }
 
 /* Main content */
 .erp-main {
-  margin-left: 64px;
-  width: calc(100% - 64px);
+  margin-left: 60px;
+  width: calc(100% - 60px);
   background: var(--bg);
   min-height: 100vh;
   display: flex; flex-direction: column;
@@ -211,24 +211,24 @@ img, svg { display: block; max-width: 100%; }
 
 /* ── Branding ── */
 .erp-branding {
-  padding: 16px 15px 14px;
+  padding: 18px 14px 14px;
   border-bottom: 1px solid var(--bd);
-  flex-shrink: 0; width: 240px;
+  flex-shrink: 0;
 }
 .erp-logo-row {
   display: flex; align-items: center; gap: 10px; white-space: nowrap;
 }
 .erp-logo-icon {
-  width: 32px; height: 32px; flex-shrink: 0;
+  width: 30px; height: 30px; flex-shrink: 0;
   display: flex; align-items: flex-end; justify-content: center; gap: 3px;
 }
 .li-bar { display: block; border-radius: 2px; transform: skewX(-10deg); }
-.li-bar-1 { width: 6px; height: 14px; background: #94A3B8; }
-.li-bar-2 { width: 7px; height: 22px; background: linear-gradient(180deg, #94A3B8 0%, #475569 100%); }
+.li-bar-1 { width: 6px; height: 13px; background: #94A3B8; }
+.li-bar-2 { width: 7px; height: 20px; background: linear-gradient(180deg, #94A3B8 0%, #475569 100%); }
 .erp-logo-text {
-  font-size: 16px; font-weight: 800;
+  font-size: 15.5px; font-weight: 800;
   color: var(--tx); letter-spacing: -.03em; white-space: nowrap;
-  opacity: 0; transition: opacity .18s ease .06s;
+  opacity: 0; transition: opacity .15s ease .05s;
 }
 .erp-logo-text span { color: var(--gl); }
 .erp-sidebar:hover .erp-logo-text { opacity: 1; }
@@ -236,65 +236,83 @@ img, svg { display: block; max-width: 100%; }
 .erp-workspace {
   display: flex; align-items: center; gap: 7px;
   margin-top: 10px;
-  background: var(--gl-lt); border: 1px solid var(--gl-bd);
-  border-radius: 7px; padding: 6px 10px; white-space: nowrap;
-  opacity: 0; transition: opacity .18s ease .08s;
+  background: var(--bg); border: 1px solid var(--bd);
+  border-radius: 8px; padding: 6px 10px; white-space: nowrap;
+  opacity: 0; transition: opacity .15s ease .07s;
 }
 .erp-sidebar:hover .erp-workspace { opacity: 1; }
 .erp-workspace-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--gl); box-shadow: 0 0 8px var(--gl-glow);
-  flex-shrink: 0; animation: ledPulse 2.4s ease-in-out infinite;
+  background: var(--ok); flex-shrink: 0;
+  animation: ledPulse 2.4s ease-in-out infinite;
 }
 .erp-workspace-name {
-  font-size: 11px; font-weight: 600;
-  color: var(--gl); letter-spacing: -.01em; white-space: nowrap;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--tx-m); letter-spacing: -.01em; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ── Nav ── */
 .erp-nav {
   flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 8px 0 4px; scrollbar-width: none; width: 240px;
+  padding: 10px 0 8px; scrollbar-width: none;
 }
 .erp-nav::-webkit-scrollbar { display: none; }
 
 .nav-group {
-  padding: 14px 14px 4px;
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0; text-transform: none; color: var(--tx-s);
+  padding: 18px 16px 5px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--tx-s);
 }
 
 .nav-link {
-  width: 228px; margin: 2px 6px;
-  border: none; border-radius: 10px; background: transparent;
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px 8px 12px;
+  width: 224px; margin: 1px 8px;
+  border: none; border-radius: 9px; background: transparent;
+  display: flex; align-items: center; gap: 11px;
+  padding: 8px 11px;
   color: var(--tx-m); text-align: left;
-  font-size: 13.5px; font-weight: 400; white-space: nowrap;
-  transition: background .12s, color .12s; position: relative;
+  font-size: 13px; font-weight: 400; white-space: nowrap;
+  transition: background .14s, color .14s; position: relative;
 }
-.nav-link:hover { background: rgba(0,0,0,.05); color: var(--tx); }
-.nav-link:hover .nav-icon { color: var(--tx); }
+.nav-link:hover {
+  background: var(--bg); color: var(--tx);
+}
+.nav-link:hover .nav-icon {
+  color: var(--ic, var(--tx-m));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--ic, #94A3B8) 45%, transparent));
+}
 .nav-link.on {
-  background: var(--gl-lt); color: var(--gl);
-  font-weight: 600;
+  background: #fff; color: var(--ic, var(--gl)); font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
 }
-.nav-link.on::before {
-  content: ''; position: absolute;
-  left: 0; top: 15%; bottom: 15%;
-  width: 3px; border-radius: 0 3px 3px 0;
-  background: var(--gl);
+.nav-link.on .nav-icon {
+  color: var(--ic, var(--gl));
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--ic, var(--gl)) 55%, transparent));
 }
-.nav-link.on .nav-icon { color: var(--gl); }
 
 .nav-icon {
-  width: 18px; height: 18px; flex-shrink: 0;
-  color: var(--tx-s); transition: color .13s; display: block;
+  width: 17px; height: 17px; flex-shrink: 0;
+  color: var(--tx-s); transition: color .15s, filter .15s; display: block;
 }
 
-/* Texto dos links — fade in no hover */
+/* ── Nav accent colors (LED per section) ── */
+.nav-link[onclick*="dashboard"]  { --ic: #6366F1; }
+.nav-link[onclick*="receber"]    { --ic: #10B981; }
+.nav-link[onclick*="historico"]  { --ic: #64748B; }
+.nav-link[onclick*="nvenda"]     { --ic: #22C55E; }
+.nav-link[onclick*="solicita"]   { --ic: #F59E0B; }
+.nav-link[onclick*="estoque"]    { --ic: #F97316; }
+.nav-link[onclick*="clientes"]   { --ic: #8B5CF6; }
+.nav-link[onclick*="financeiro"] { --ic: #3B82F6; }
+.nav-link[onclick*="catalogo"]   { --ic: #EC4899; }
+.nav-link[onclick*="extrato"]    { --ic: #14B8A6; }
+.nav-link[onclick*="relatorios"] { --ic: #06B6D4; }
+.nav-link[onclick*="consulta"]   { --ic: #6366F1; }
+.nav-link[onclick*="loja"]       { --ic: #94A3B8; }
+.nav-link[href*="admin"]         { --ic: #EF4444; }
+
 .nl-text {
-  opacity: 0; transition: opacity .16s ease .07s;
+  opacity: 0; transition: opacity .15s ease .05s;
   white-space: nowrap; pointer-events: none;
 }
 .erp-sidebar:hover .nl-text { opacity: 1; }
@@ -302,18 +320,18 @@ img, svg { display: block; max-width: 100%; }
 /* ── User footer ── */
 .erp-user {
   border-top: 1px solid var(--bd);
-  padding: 12px 12px;
+  padding: 10px 12px;
   display: flex; align-items: center; gap: 9px;
-  flex-shrink: 0; width: 240px; white-space: nowrap;
+  flex-shrink: 0; white-space: nowrap;
 }
 .user-avatar {
-  width: 32px; height: 32px; border-radius: 9px;
-  background: var(--gl-lt); color: var(--gl);
-  font-size: 13px; font-weight: 700;
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--gl) 0%, #7C3AED 100%); color: #fff;
+  font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.user-name { font-size: 13px; font-weight: 600; color: var(--tx); opacity: 0; transition: opacity .16s ease .07s; }
-.user-role { font-size: 10.5px; color: var(--tx-s); opacity: 0; transition: opacity .16s ease .07s; }
+.user-name { font-size: 12.5px; font-weight: 600; color: var(--tx); opacity: 0; transition: opacity .15s ease .05s; }
+.user-role { font-size: 10.5px; color: var(--tx-s); opacity: 0; transition: opacity .15s ease .05s; }
 .erp-sidebar:hover .user-name,
 .erp-sidebar:hover .user-role { opacity: 1; }
 .logout-btn {
@@ -321,7 +339,7 @@ img, svg { display: block; max-width: 100%; }
   color: var(--tx-s); padding: 5px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; margin-left: auto;
-  opacity: 0; transition: opacity .16s ease .07s, background .13s, color .13s;
+  opacity: 0; transition: opacity .15s ease .05s, background .13s, color .13s;
 }
 .erp-sidebar:hover .logout-btn { opacity: 1; }
 .logout-btn:hover { background: var(--bg); color: var(--err); }
@@ -3124,15 +3142,7 @@ table tbody tr:hover { outline: none; }
     transition: left .28s cubic-bezier(.16,1,.3,1);
     box-shadow: none;
   }
-  .erp-sidebar:hover        { width: 240px; box-shadow: none; }
-  .erp-sidebar.open         { left: 0; box-shadow: 8px 0 32px rgba(0,0,0,.15); }
-  .erp-sidebar.open .nl-text,
-  .erp-sidebar.open .erp-logo-text,
-  .erp-sidebar.open .erp-workspace,
-  .erp-sidebar.open .nav-group,
-  .erp-sidebar.open .user-name,
-  .erp-sidebar.open .user-role,
-  .erp-sidebar.open .logout-btn { opacity: 1 !important; }
+  .erp-sidebar.open { left: 0; box-shadow: 8px 0 32px rgba(0,0,0,.15); }
 
   /* ── Main: full width, sem margem lateral ── */
   .erp-main {

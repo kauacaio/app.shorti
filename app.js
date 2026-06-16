@@ -81,6 +81,24 @@ async function initDB() {
   if (settings) Object.assign(DB.settings, settings);
 }
 
+function initRealtimeOrders() {
+  if (!window._sbClient || window._localMode) return;
+  window._sbClient
+    .channel('realtime-orders')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+      const r   = payload.new;
+      const ped = { id: r.id, cid: r.cid, prod: r.prod, q: r.q, tot: Number(r.tot), pag: r.pag, parc: r.parc || 1, dtpag: r.dtpag || r.dt, itens: r.itens || null, st: r.st, dt: r.dt };
+      if (DB.peds.find(p => p.id === ped.id)) return;
+      DB.peds.push(ped);
+      if (ped.id >= DB.nid.ped) DB.nid.ped = ped.id + 1;
+      if (typeof genAutoNotifs === 'function') genAutoNotifs();
+      rMet();
+      rReceber();
+      rDashRec();
+    })
+    .subscribe();
+}
+
 async function doLogout() {
   if (typeof SBAuth !== 'undefined') {
     try { await SBAuth.signOut(); } catch(e) {}
@@ -419,6 +437,7 @@ function renderAll() {
   rNV();
   rLoja();
   setTimeout(rDashCharts, 50);
+  if (typeof genAutoNotifs === 'function') genAutoNotifs();
 }
 
 /* Greeting com nome real do usuário logado */
@@ -3319,6 +3338,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await initDB();
   renderAll();
+  requestNotifPermission();
+  initRealtimeOrders();
   initBanner();
   showExtPopup();
 

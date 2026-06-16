@@ -7,7 +7,8 @@ function closeERP() {
     nvConfirmLeave(() => closeERP());
     return;
   }
-  window.location.href = 'index.html';
+  const slug = window._tenant?.slug;
+  window.location.href = slug ? `loja.html?loja=${encodeURIComponent(slug)}` : 'loja.html';
 }
 
 function epage(id, el) {
