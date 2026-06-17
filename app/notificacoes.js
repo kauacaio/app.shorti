@@ -61,23 +61,35 @@ function playNotifSound(type) {
   } catch(e) {}
 }
 
-function fireOSNotification(n) {
+async function fireOSNotification(n) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   try {
-    const notif = new Notification(n.title, {
-      body:  n.msg,
-      icon:  './icon-192.png',
-      badge: './icon-192.png',
-      tag:   n.key,
-    });
-    notif.onclick = () => {
-      window.focus();
-      notif.close();
-      if (n.link) {
-        if (window.innerWidth <= 768) mobNav(n.link);
-        else epage(n.link, null);
-      }
-    };
+    /* Mobile: new Notification() é bloqueado; usa Service Worker */
+    if ('serviceWorker' in navigator && window.innerWidth <= 768) {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(n.title, {
+        body:  n.msg,
+        icon:  './icon-192.png',
+        badge: './icon-192.png',
+        tag:   n.key,
+        data:  { link: n.link },
+      });
+    } else {
+      const notif = new Notification(n.title, {
+        body:  n.msg,
+        icon:  './icon-192.png',
+        badge: './icon-192.png',
+        tag:   n.key,
+      });
+      notif.onclick = () => {
+        window.focus();
+        notif.close();
+        if (n.link) {
+          if (window.innerWidth <= 768) mobNav(n.link);
+          else epage(n.link, null);
+        }
+      };
+    }
   } catch(e) {}
 }
 
@@ -151,7 +163,13 @@ function toggleNotifPanel() {
   if (dr && dr.classList.contains('open')) closeNotifPanel(); else openNotifPanel();
 }
 
-function openNotifPanel() {
+async function openNotifPanel() {
+  /* No mobile, aproveita o gesto do usuário para pedir permissão */
+  if (window.innerWidth <= 768 && 'Notification' in window && Notification.permission === 'default') {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') showToast('Notificações ativadas ✓', 'ok');
+    localStorage.removeItem(_NP_KEY); /* limpa dismiss anterior */
+  }
   rNotif();
   $('notif-backdrop')?.classList.add('on');
   $('notif-drawer')?.classList.add('open');

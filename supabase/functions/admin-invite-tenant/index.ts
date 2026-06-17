@@ -3,58 +3,59 @@
 // Supabase. Só funciona para usuários cadastrados em `grupolima_admins`.
 //
 // Deploy: supabase functions deploy admin-invite-tenant
-// (SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já são injetados automaticamente)
+// SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são injetados automaticamente.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const CORS_HEADERS = {
+const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    headers: { ...CORS, 'Content-Type': 'application/json' },
   });
-}
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ ok: false, error: 'Método não permitido' }, 405);
 
-  const authHeader = req.headers.get('Authorization') || '';
-  const jwt = authHeader.replace('Bearer ', '');
+  const jwt = (req.headers.get('Authorization') || '').replace('Bearer ', '');
   if (!jwt) return json({ ok: false, error: 'Sessão inválida' }, 401);
 
-  const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-  const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-  const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const SUPABASE_URL      = Deno.env.get('SUPABASE_URL')!;
+  const SERVICE_ROLE_KEY  = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-  // Verifica se quem chamou é admin GrupoLima (RLS + RPC com o JWT do usuário)
-  const callerClient = createClient(SUPABASE_URL, ANON_KEY, {
-    global: { headers: { Authorization: `Bearer ${jwt}` } },
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
-  const { data: isAdmin, error: adminErr } = await callerClient.rpc('is_grupolima_admin');
-  if (adminErr || !isAdmin) return json({ ok: false, error: 'Acesso restrito' }, 403);
+
+  /* Verifica o JWT e obtém o user_id */
+  const { data: { user }, error: userErr } = await admin.auth.getUser(jwt);
+  if (userErr || !user) return json({ ok: false, error: 'Sessão inválida' }, 401);
+
+  /* Verifica se é admin GrupoLima */
+  const { data: row } = await admin
+    .from('grupolima_admins')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (!row) return json({ ok: false, error: 'Acesso restrito' }, 403);
 
   let body: { email?: string; nome?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return json({ ok: false, error: 'JSON inválido' }, 400);
-  }
+  try { body = await req.json(); }
+  catch { return json({ ok: false, error: 'JSON inválido' }, 400); }
 
   const email = (body.email || '').trim();
-  const nome = (body.nome || '').trim();
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  const nome  = (body.nome  || '').trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return json({ ok: false, error: 'E-mail inválido' }, 400);
-  }
 
-  const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
   const origin = req.headers.get('origin') || new URL(req.url).origin;
-  const { error } = await adminClient.auth.admin.inviteUserByEmail(email, {
+  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
     data: { nome },
     redirectTo: `${origin}/onboarding.html`,
   });

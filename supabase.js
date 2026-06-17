@@ -182,8 +182,10 @@ const SBProds = {
 
 /* ── Clientes ───────────────────────────────────────── */
 const SBClis = {
-  async list() {
-    const { data, error } = await _sbClient.from('clients').select('*').order('id');
+  async list(tenantId) {
+    let q = _sbClient.from('clients').select('*').order('id');
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q;
     if (error) throw error;
     return data.map(_rowToClient);
   },
@@ -199,8 +201,10 @@ const SBClis = {
 
 /* ── Pedidos ────────────────────────────────────────── */
 const SBPeds = {
-  async list() {
-    const { data, error } = await _sbClient.from('orders').select('*').order('id');
+  async list(tenantId) {
+    let q = _sbClient.from('orders').select('*').order('id');
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q;
     if (error) throw error;
     return data.map(_rowToOrder);
   },
@@ -234,8 +238,10 @@ const SBStorefront = {
 
 /* ── Transações ─────────────────────────────────────── */
 const SBTrans = {
-  async list() {
-    const { data, error } = await _sbClient.from('transactions').select('*').order('id');
+  async list(tenantId) {
+    let q = _sbClient.from('transactions').select('*').order('id');
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q;
     if (error) throw error;
     return data.map(_rowToTrans);
   },
@@ -247,8 +253,10 @@ const SBTrans = {
 
 /* ── Solicitações ───────────────────────────────────── */
 const SBSolics = {
-  async list() {
-    const { data, error } = await _sbClient.from('solicitacoes').select('*').order('id');
+  async list(tenantId) {
+    let q = _sbClient.from('solicitacoes').select('*').order('id');
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q;
     if (error) throw error;
     return data.map(_rowToSolic);
   },
@@ -268,8 +276,10 @@ const SBSolics = {
 
 /* ── Notificações ───────────────────────────────────── */
 const SBNotifs = {
-  async list() {
-    const { data, error } = await _sbClient.from('notifications').select('*').order('id');
+  async list(tenantId) {
+    let q = _sbClient.from('notifications').select('*').order('id');
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q;
     if (error) throw error;
     return data.map(_rowToNotif);
   },

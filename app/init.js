@@ -30,15 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  /* Painel GrupoLima — só aparece para admins */
-  try {
-    if (await Tenants.isAdmin()) {
-      if ($('nav-group-admin')) $('nav-group-admin').style.display = '';
-      if ($('nav-link-admin'))  $('nav-link-admin').style.display  = '';
-    }
-  } catch(e) {
-    console.warn('[isAdmin]', e.message);
-  }
 
   if (window._tenant?.nome) {
     const nome = window._tenant.nome;

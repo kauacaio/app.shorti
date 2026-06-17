@@ -443,8 +443,8 @@
     @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
     @keyframes spin   { to{transform:rotate(360deg)} }
 
-    /* responsive */
-    @media (max-width: 860px) {
+    /* ── Desktop tablet (860px) ── */
+    @media (max-width: 860px) and (min-width: 769px) {
       html, body { overflow: auto; }
       .page { grid-template-columns: 1fr; height: auto; }
       .brand { padding: 48px 28px 40px; min-height: 34vh; justify-content: center; }
@@ -456,12 +456,65 @@
       .form-side { padding: 44px 24px 56px; border-left: none; border-top: 1px solid #F1F5F9; }
       .card { max-width: 400px; }
       .demo-note, .footer { display: none; }
+      .mob-logo, .mob-features { display: none !important; }
     }
-    @media (max-width: 480px) {
-      .brand { padding: 40px 20px 32px; min-height: 30vh; }
-      .brand::after { width: 260px; height: 260px; }
-      .brand-ring { width: 180px; height: 180px; }
-      .wm-row { font-size: 52px; }
+
+    /* ════ MOBILE — Tela de boas-vindas estilo app ════════ */
+    @media (max-width: 768px) {
+      html, body { height: 100%; overflow-y: auto; }
+
+      .page {
+        display: flex; flex-direction: column;
+        min-height: 100vh; min-height: 100dvh;
+        background: linear-gradient(170deg, #1a2a6c 0%, #1d4ed8 55%, #2563eb 100%);
+        grid-template-columns: none;
+      }
+
+      /* ── Hero ── */
+      .brand {
+        flex: 1;
+        background: transparent !important;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 0 28px 28px;
+        padding-top: max(64px, calc(env(safe-area-inset-top) + 44px));
+        text-align: center;
+        min-height: 50vh;
+      }
+      .brand::after, .brand-ring, .brand-grid,
+      .brand-orbit, .brand-watermark { display: none !important; }
+
+      /* oculta tudo exceto o wordmark */
+      .mob-logo, .mob-title-wrap, .mob-features { display: none !important; }
+      .eyebrow, .brand-line, .b-tagline { display: none !important; }
+
+      /* wordmark no escuro */
+      .b-inner { display: flex !important; flex-direction: column; align-items: center; }
+      .wm-row { font-size: clamp(54px, 18vw, 76px); margin-bottom: 0; }
+      .wm { color: #fff !important; }
+      .wm-bars span:nth-child(1) { background: rgba(255,255,255,.35) !important; }
+      .wm-bars span:nth-child(2) { background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,.55) 100%) !important; }
+
+      /* ── Card de login ── */
+      .form-side {
+        background: #fff !important;
+        border-radius: 28px 28px 0 0;
+        border-left: none !important; border-top: none !important;
+        padding: 28px 22px;
+        padding-bottom: max(28px, env(safe-area-inset-bottom));
+        box-shadow: 0 -6px 32px rgba(0,0,0,.16);
+        align-items: flex-start; justify-content: flex-start;
+      }
+      .card { max-width: 100% !important; width: 100%; opacity: 1; animation: none; }
+      .c-title { font-size: 20px; }
+      .divider { margin: 16px 0; }
+      .demo-note, .footer { display: none !important; }
+
+      /* tela pequena */
+      @media (max-height: 680px) {
+        .brand { min-height: 36vh; padding-bottom: 16px; }
+        .wm-row { font-size: 48px; }
+      }
     }
   </style>
 </head>
@@ -499,6 +552,16 @@
       </div>
     </div>
 
+    <!-- Mobile only: ícone do app -->
+    <div class="mob-logo" style="display:none">
+      <img src="logo-mark.svg" alt="Shorti" width="54" height="54">
+    </div>
+    <!-- Mobile only: título -->
+    <div class="mob-title-wrap" style="display:none">
+      <h1 class="mob-title">Shorti<span class="mob-dot">.</span></h1>
+      <p class="mob-sub">Vendas, estoque e clientes em um só lugar.</p>
+    </div>
+
     <div class="b-inner">
       <div class="eyebrow">
         <div class="e-bars"><div class="e-bar"></div><div class="e-bar"></div></div>
@@ -520,6 +583,13 @@
 
       <div class="brand-line"></div>
       <p class="b-tagline" id="btag">Vendas, estoque e clientes em um só lugar.</p>
+    </div>
+
+    <!-- Mobile only: chips de features -->
+    <div class="mob-features" style="display:none">
+      <div class="mob-feat">📊 Vendas em tempo real</div>
+      <div class="mob-feat">📦 Estoque inteligente</div>
+      <div class="mob-feat">👥 Clientes & fiados</div>
     </div>
   </div>
 

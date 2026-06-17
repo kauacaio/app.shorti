@@ -35,12 +35,17 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
+  const link = e.notification.data?.link;
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const c of list) {
-        if (c.url.includes('erp.html') && 'focus' in c) return c.focus();
+        if (c.url.includes('erp.html') && 'focus' in c) {
+          c.focus();
+          if (link) c.postMessage({ type: 'nav', link });
+          return;
+        }
       }
-      if (clients.openWindow) return clients.openWindow('./erp.html');
+      if (clients.openWindow) return clients.openWindow('./erp.html' + (link ? `?section=${link}` : ''));
     })
   );
 });
