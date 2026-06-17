@@ -2,7 +2,7 @@
   "name": "Shorti",
   "short_name": "Shorti",
   "description": "Shorti — ERP de vendas e estoque",
-  "start_url": "./erp.html",
+  "start_url": "./login.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",

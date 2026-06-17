@@ -262,19 +262,21 @@ img, svg { display: block; max-width: 100%; }
 
 .sidebar-logout {
   flex-shrink: 0;
-  padding: 8px 10px 12px;
+  padding: 6px 0 10px;
   border-top: 1px solid var(--bd);
+  display: none;
 }
 .sidebar-logout-btn {
-  display: flex; align-items: center; gap: 10px;
-  width: 100%; padding: 9px 12px;
-  background: none; border: none; border-radius: 10px;
-  color: #ef4444; font-size: 13px; font-weight: 500;
-  cursor: pointer; white-space: nowrap; overflow: hidden;
-  transition: background .15s;
+  width: 224px; margin: 1px 8px;
+  border: none; border-radius: 12px; background: transparent;
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 10px;
+  color: #ef4444; text-align: left;
+  font-size: 13px; font-weight: 500; white-space: nowrap;
+  cursor: pointer; transition: background .14s;
 }
 .sidebar-logout-btn:hover { background: #fef2f2; }
-.sidebar-logout-btn svg { flex-shrink: 0; }
+.sidebar-logout-btn svg { width: 20px; height: 20px; flex-shrink: 0; color: #ef4444; }
 
 .nav-group {
   padding: 16px 16px 4px;
@@ -435,6 +437,193 @@ img, svg { display: block; max-width: 100%; }
 .tb-mi.danger { color: var(--err); }
 .tb-mi.danger svg { color: var(--err); }
 .tb-ms { height: 1px; background: var(--bd); margin: 4px 0; }
+
+/* ── Modal Configurações ── */
+.cfg-backdrop {
+  position: fixed; inset: 0; z-index: 498;
+  background: rgba(15,23,42,.28);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .22s ease, visibility 0s .22s;
+}
+.cfg-backdrop.on {
+  opacity: 1; visibility: visible; pointer-events: auto;
+  transition: opacity .22s ease;
+}
+.cfg-modal {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -48%) scale(.97);
+  width: 680px; max-width: calc(100vw - 32px);
+  max-height: 80vh;
+  background: #fff; border-radius: 20px; z-index: 499;
+  box-shadow: 0 28px 72px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.06);
+  display: flex; flex-direction: row;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .22s ease, transform .28s cubic-bezier(.16,1,.3,1), visibility 0s .22s;
+  overflow: hidden;
+}
+.cfg-modal.open {
+  opacity: 1; visibility: visible; pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity .22s ease, transform .28s cubic-bezier(.16,1,.3,1);
+}
+
+/* Sidebar esquerda */
+.cfg-sidebar {
+  width: 180px; flex-shrink: 0;
+  background: #f8fafc;
+  border-right: 1px solid var(--bd);
+  border-radius: 20px 0 0 20px;
+  padding: 24px 12px 20px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.cfg-sidebar-title {
+  font-size: 11.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--tx-s); padding: 0 8px; margin-bottom: 10px;
+}
+.cfg-tab {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; border: none; background: none; cursor: pointer;
+  border-radius: 10px; padding: 10px 10px;
+  font-size: 13.5px; font-weight: 500; color: var(--tx-m);
+  text-align: left; transition: background .13s, color .13s;
+}
+.cfg-tab:hover { background: rgba(0,0,0,.04); color: var(--tx); }
+.cfg-tab.on { background: #eff6ff; color: #1d4ed8; }
+.cfg-tab.on svg { color: #1d4ed8; }
+.cfg-tab svg { color: var(--tx-s); flex-shrink: 0; transition: color .13s; }
+
+/* Área de conteúdo */
+.cfg-content {
+  flex: 1; min-width: 0;
+  padding: 28px 32px 28px;
+  overflow-y: auto;
+  position: relative;
+}
+.cfg-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 30px; height: 30px; border-radius: 8px;
+  border: none; background: var(--bg); color: var(--tx-s);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .14s; z-index: 1;
+}
+.cfg-close:hover { background: var(--bd); }
+
+/* Painéis */
+.cfg-panel { display: none; }
+.cfg-panel.on { display: block; }
+.cfg-panel h3 {
+  font-size: 17px; font-weight: 700; color: var(--tx);
+  letter-spacing: -.025em; margin-bottom: 22px; margin-right: 32px;
+}
+
+/* Avatar de conta */
+.cfg-avatar-row {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 22px; padding: 16px;
+  background: #f8fafc; border-radius: 14px;
+}
+.cfg-av {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+  color: #fff; font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.cfg-av-name  { font-size: 15px; font-weight: 600; color: var(--tx); }
+.cfg-av-email { font-size: 12px; color: var(--tx-s); margin-top: 2px; }
+
+/* Header de painel com título + botão */
+.cfg-panel-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; margin-right: 32px;
+}
+.cfg-panel-hd h3 { margin-bottom: 0; margin-right: 0; }
+
+/* Lista de equipe dentro do cfg */
+.equipe-list { display: flex; flex-direction: column; gap: 10px; }
+.equipe-loading, .equipe-empty { font-size: 13px; color: var(--tx-s); padding: 24px 0; }
+.equipe-card {
+  display: flex; align-items: center; gap: 14px;
+  background: #fff; border: 1px solid var(--bd);
+  border-radius: 14px; padding: 14px 16px;
+}
+.equipe-av {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+  color: #fff; font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.equipe-info { flex: 1; min-width: 0; }
+.equipe-nome { font-size: 14px; font-weight: 600; color: var(--tx); }
+.equipe-role { font-size: 11.5px; font-weight: 500; margin-top: 2px; }
+.equipe-role.admin       { color: #1d4ed8; }
+.equipe-role.funcionario { color: var(--tx-s); }
+.equipe-actions { display: flex; gap: 6px; }
+.equipe-role-btn, .equipe-del-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .14s;
+}
+.equipe-role-btn { background: var(--bg); color: var(--tx-s); }
+.equipe-role-btn:hover { background: #dbeafe; color: #1d4ed8; }
+.equipe-del-btn  { background: var(--bg); color: var(--tx-s); }
+.equipe-del-btn:hover  { background: #fee2e2; color: #ef4444; }
+
+/* Modal inline de convite */
+.cfg-invite-box {
+  margin-top: 20px; padding: 20px;
+  background: #f8fafc; border: 1px solid var(--bd);
+  border-radius: 16px;
+}
+.cfg-invite-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 600; color: var(--tx);
+  margin-bottom: 16px;
+}
+.cfg-close-inline {
+  border: none; background: var(--bg); color: var(--tx-s);
+  width: 26px; height: 26px; border-radius: 7px; cursor: pointer;
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+  transition: background .13s;
+}
+.cfg-close-inline:hover { background: var(--bd); }
+
+/* Mobile: cfg-modal full-screen com abas horizontais no topo */
+@media (max-width: 768px) {
+  .cfg-modal {
+    top: 0; left: 0;
+    transform: none;
+    width: 100%; max-width: 100%;
+    height: 100%; max-height: 100%;
+    border-radius: 0;
+    flex-direction: column;
+    opacity: 1; /* evitar flash antes de .open */
+    transition: transform .3s cubic-bezier(.16,1,.3,1), opacity .22s;
+    transform: translateY(100%) scale(1);
+  }
+  .cfg-modal.open { transform: translateY(0) scale(1); opacity: 1; }
+  .cfg-sidebar {
+    width: 100%; border-right: none; border-radius: 0;
+    border-bottom: 1px solid var(--bd);
+    flex-direction: row; padding: 12px 16px 0;
+    gap: 2px; overflow-x: auto; background: #fff;
+  }
+  .cfg-sidebar-title { display: none; }
+  .cfg-tab {
+    flex-shrink: 0; border-radius: 8px 8px 0 0;
+    padding: 9px 14px; font-size: 13px;
+    border-bottom: 2px solid transparent;
+  }
+  .cfg-tab.on {
+    background: #eff6ff; border-bottom-color: #1d4ed8;
+    border-radius: 8px 8px 0 0;
+  }
+  .cfg-content { padding: 20px 16px 24px; }
+  .cfg-panel h3 { font-size: 16px; margin-right: 0; }
+  .cfg-panel-hd { flex-wrap: wrap; gap: 10px; margin-right: 0; }
+  .cfg-close { top: 12px; right: 12px; }
+}
 
 /* ── Content — centrado com max-width ──────────────── */
 .erp-content {
@@ -3643,6 +3832,7 @@ table tbody tr:hover { outline: none; }
   /* ── helpers mobile ── */
   .mob-hide  { display: none !important; }
   .mob-only  { display: block !important; }
+  .sidebar-logout { display: flex; }
 
   /* ── Badge "CONTA DE TESTES": ícone compacto, sem cobrir conteúdo ── */
   #local-mode-badge {

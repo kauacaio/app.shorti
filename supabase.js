@@ -81,6 +81,25 @@ const SBAuth = {
   async mfaUnenroll(factorId) {
     const { error } = await _sbClient.auth.mfa.unenroll({ factorId });
     if (error) throw error;
+  },
+  async resetPassword(email, redirectTo) {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const { error } = await _sbClient.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) throw error;
+  },
+  async updatePassword(newPassword) {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const { error } = await _sbClient.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  },
+  async updateProfile(data) {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const { error } = await _sbClient.auth.updateUser({ data });
+    if (error) throw error;
+  },
+  onAuthChange(cb) {
+    if (!_sbClient) return;
+    _sbClient.auth.onAuthStateChange((event) => cb(event));
   }
 };
 
@@ -94,6 +113,24 @@ const Tenants = {
       .select('id,slug,nome').eq('owner_user_id', uid).maybeSingle();
     if (error) throw error;
     return data;
+  },
+  /* Resolve tenant pelo usuário logado: owner OU membro */
+  async getForUser() {
+    const { data: sess } = await _sbClient.auth.getSession();
+    const uid = sess?.session?.user?.id;
+    if (!uid) return null;
+    /* 1. owner direto */
+    const { data: owned } = await _sbClient.from('tenants')
+      .select('id,slug,nome').eq('owner_user_id', uid).maybeSingle();
+    if (owned) return { ...owned, role: 'admin' };
+    /* 2. membro — tabela pode não existir ainda (migration_team.sql pendente) */
+    try {
+      const { data: mem } = await _sbClient.from('tenant_members')
+        .select('role, nome, tenants(id,slug,nome)')
+        .eq('user_id', uid).maybeSingle();
+      if (mem?.tenants) return { ...mem.tenants, role: mem.role, memberNome: mem.nome };
+    } catch(e) {}
+    return null;
   },
   async getBySlug(slug) {
     const { data, error } = await _sbClient.from('tenants')
@@ -306,6 +343,52 @@ const SBSettings = {
     const row = { data: settings, updated_at: new Date().toISOString() };
     if (tenantId) row.tenant_id = tenantId;
     const { error } = await _sbClient.from('store_settings').upsert(row);
+    if (error) throw error;
+  }
+};
+
+/* ── Equipe (tenant_members) ────────────────────────── */
+const SBTeam = {
+  async list(tenantId) {
+    if (!_sbClient || !tenantId) return [];
+    const { data, error } = await _sbClient
+      .from('tenant_members')
+      .select('id, user_id, role, nome, created_at')
+      .eq('tenant_id', tenantId)
+      .order('created_at');
+    if (error) throw error;
+    return data || [];
+  },
+  async invite({ email, nome, role, tenantId }) {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const { data: sess } = await _sbClient.auth.getSession();
+    const jwt = sess?.session?.access_token;
+    if (!jwt) throw new Error('Sessão inválida');
+    const res = await fetch(`${_sbClient.supabaseUrl}/functions/v1/tenant-invite-member`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, nome, role }),
+    });
+    const body = await res.json();
+    if (!body.ok) throw new Error(body.error || 'Erro ao convidar');
+    return body;
+  },
+  async remove(memberId, tenantId) {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const { error } = await _sbClient
+      .from('tenant_members')
+      .delete()
+      .eq('id', memberId)
+      .eq('tenant_id', tenantId);
+    if (error) throw error;
+  },
+  async updateRole(memberId, tenantId, role) {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const { error } = await _sbClient
+      .from('tenant_members')
+      .update({ role })
+      .eq('id', memberId)
+      .eq('tenant_id', tenantId);
     if (error) throw error;
   }
 };
@@ -600,7 +683,16 @@ if (_localMode) {
   SBAuth.signOut    = async () => {
     if (confirm('Sair do modo local?')) window.location.replace('login.html');
   };
-  SBAuth.onChange = () => ({ data: { subscription: { unsubscribe: () => {} } } });
+  SBAuth.onChange       = () => ({ data: { subscription: { unsubscribe: () => {} } } });
+  SBAuth.resetPassword  = async () => {};
+  SBAuth.updatePassword  = async () => {};
+  SBAuth.updateProfile   = async () => {};
+  SBAuth.onAuthChange    = () => {};
+  Tenants.getForUser     = async () => ({ id: 'local-tenant', slug: 'local', nome: 'Conta de Testes', role: 'admin' });
+  SBTeam.list   = async () => [];
+  SBTeam.invite = async () => ({ ok: true });
+  SBTeam.remove = async () => {};
+  SBTeam.updateRole = async () => {};
 
   /* Badge visual "CONTA DE TESTES" */
   document.addEventListener('DOMContentLoaded', () => {

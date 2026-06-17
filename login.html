@@ -356,6 +356,15 @@
     .forgot a { font-size: 12px; color: var(--tx-m); text-decoration: none; transition: color .14s; }
     .forgot a:hover { color: var(--blue); }
 
+    /* back button */
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: none; border: none; padding: 0; margin-bottom: 8px;
+      font-size: 12.5px; color: var(--tx-m); cursor: pointer;
+      transition: color .14s;
+    }
+    .back-btn:hover { color: var(--blue); }
+
     /* submit */
     .btn {
       width: 100%; height: 46px;
@@ -630,7 +639,7 @@
           <p class="fmsg">Informe sua senha.</p>
         </div>
 
-        <div class="forgot"><a href="#">Esqueceu a senha?</a></div>
+        <div class="forgot"><a href="#" onclick="showView('forgot');return false;">Esqueceu a senha?</a></div>
 
         <button type="submit" class="btn" id="btnGo">
           <div class="bi">
@@ -642,7 +651,47 @@
         <div class="alert" id="fa"></div>
       </form>
 
-      <div class="divider">ou</div>
+      <!-- ── View: Esqueceu a senha ── -->
+      <div id="view-forgot" style="display:none">
+        <button class="back-btn" onclick="showView('login')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Voltar
+        </button>
+        <h2 class="c-title" style="margin-top:4px">Redefinir senha</h2>
+        <p class="c-sub">Informe seu e-mail e enviaremos um link para criar uma nova senha.</p>
+        <div class="field" id="f-frg-em">
+          <input type="email" id="frg-em" placeholder=" " autocomplete="email" inputmode="email">
+          <label for="frg-em">E-mail</label>
+          <p class="fmsg">E-mail inválido.</p>
+        </div>
+        <button class="btn" id="btnFrg" onclick="sendReset()">
+          <div class="bi"><div class="sp"></div><span class="lbl">Enviar link</span></div>
+        </button>
+        <div class="alert" id="frg-alert" style="display:none"></div>
+      </div>
+
+      <!-- ── View: Nova senha ── -->
+      <div id="view-reset" style="display:none">
+        <h2 class="c-title">Nova senha</h2>
+        <p class="c-sub">Escolha uma senha forte para sua conta.</p>
+        <div class="field" id="f-np">
+          <input type="password" id="np" placeholder=" " autocomplete="new-password">
+          <label for="np">Nova senha</label>
+          <div class="str-bar"><div class="str-fill" id="sf2"></div></div>
+          <p class="fmsg">Mínimo 8 caracteres.</p>
+        </div>
+        <div class="field" id="f-np2">
+          <input type="password" id="np2" placeholder=" " autocomplete="new-password">
+          <label for="np2">Confirmar senha</label>
+          <p class="fmsg">As senhas não coincidem.</p>
+        </div>
+        <button class="btn" id="btnReset" onclick="saveNewPassword()">
+          <div class="bi"><div class="sp"></div><span class="lbl">Salvar senha</span></div>
+        </button>
+        <div class="alert" id="reset-alert" style="display:none"></div>
+      </div>
+
+      <div class="divider" id="divider-demo">ou</div>
 
       <a href="erp.html?local" class="btn-demo">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -808,6 +857,105 @@ document.getElementById('lf').addEventListener('submit', async e => {
       ? 'Credenciais incorretas. Tente novamente.'
       : (m || 'Erro ao entrar. Tente novamente.');
     fa.style.display = 'block';
+  }
+});
+
+/* ── Password reset flow ── */
+function showView(v) {
+  document.getElementById('lf').style.display           = v === 'login'  ? '' : 'none';
+  document.getElementById('view-forgot').style.display  = v === 'forgot' ? '' : 'none';
+  document.getElementById('view-reset').style.display   = v === 'reset'  ? '' : 'none';
+  document.getElementById('divider-demo').style.display = v === 'login'  ? '' : 'none';
+  document.querySelector('.c-title').style.display      = v === 'login'  ? '' : 'none';
+  document.querySelector('.c-sub').style.display        = v === 'login'  ? '' : 'none';
+}
+
+async function sendReset() {
+  const emailEl = document.getElementById('frg-em');
+  const alertEl = document.getElementById('frg-alert');
+  const btn     = document.getElementById('btnFrg');
+  const fField  = document.getElementById('f-frg-em');
+  const email   = emailEl.value.trim();
+
+  fField.classList.remove('e');
+  alertEl.style.display = 'none';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    fField.classList.add('e');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.classList.add('ld');
+
+  try {
+    const origin = window.location.origin + window.location.pathname;
+    await SBAuth.resetPassword(email, origin);
+    btn.classList.remove('ld');
+    btn.style.background = '#059669';
+    alertEl.textContent  = 'Link enviado! Verifique seu e-mail.';
+    alertEl.className    = 'alert ok';
+    alertEl.style.display = 'block';
+  } catch(err) {
+    btn.classList.remove('ld');
+    btn.disabled = false;
+    alertEl.textContent   = err?.message || 'Erro ao enviar. Tente novamente.';
+    alertEl.className     = 'alert';
+    alertEl.style.display = 'block';
+  }
+}
+
+/* password strength bar (reutiliza lógica do campo principal) */
+document.getElementById('np')?.addEventListener('input', function() {
+  const v = this.value; const sf2 = document.getElementById('sf2');
+  if (!sf2) return;
+  const s = [/[A-Z]/, /[a-z]/, /[0-9]/, /[^A-Za-z0-9]/].filter(r => r.test(v)).length + (v.length >= 8 ? 1 : 0);
+  sf2.style.width = ['0%','25%','50%','75%','100%'][Math.min(s,4)];
+  sf2.style.background = ['#ef4444','#f97316','#eab308','#22c55e','#22c55e'][Math.min(s,4)];
+});
+
+async function saveNewPassword() {
+  const npEl    = document.getElementById('np');
+  const np2El   = document.getElementById('np2');
+  const alertEl = document.getElementById('reset-alert');
+  const btn     = document.getElementById('btnReset');
+  const f1      = document.getElementById('f-np');
+  const f2      = document.getElementById('f-np2');
+
+  f1.classList.remove('e'); f2.classList.remove('e');
+  alertEl.style.display = 'none';
+
+  let ok = true;
+  if (!npEl.value || npEl.value.length < 8) { f1.classList.add('e'); ok = false; }
+  if (npEl.value !== np2El.value)            { f2.classList.add('e'); ok = false; }
+  if (!ok) return;
+
+  btn.disabled = true;
+  btn.classList.add('ld');
+
+  try {
+    await SBAuth.updatePassword(npEl.value);
+    btn.classList.remove('ld');
+    btn.style.background  = '#059669';
+    alertEl.textContent   = 'Senha atualizada! Redirecionando…';
+    alertEl.className     = 'alert ok';
+    alertEl.style.display = 'block';
+    setTimeout(() => window.location.href = 'erp.html', 1800);
+  } catch(err) {
+    btn.classList.remove('ld');
+    btn.disabled = false;
+    alertEl.textContent   = err?.message || 'Erro ao salvar. Tente novamente.';
+    alertEl.className     = 'alert';
+    alertEl.style.display = 'block';
+  }
+}
+
+/* Detecta retorno do link de recuperação */
+window.addEventListener('load', () => {
+  if (typeof SBAuth !== 'undefined') {
+    SBAuth.onAuthChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') showView('reset');
+    });
   }
 });
 

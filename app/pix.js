@@ -111,7 +111,7 @@ function pixRetest() {
 
 /* Cancela a troca da chave Pix, restaura o valor anterior no campo */
 function pixCancelChange() {
-  if ($('ls-pix')) $('ls-pix').value = _mpixOldValue;
+  if ($('cfg-pix')) $('cfg-pix').value = _mpixOldValue;
   closeMod('mpix');
 }
 
@@ -154,7 +154,15 @@ async function pixConfirmStep1() {
 function pixTestResult(ok) {
   DB.settings.pixVerified = ok;
   _pixPersistSettings();
-  if (typeof rLoja === 'function') rLoja();
+  /* Atualiza badge no modal Configurações > Financeiro */
+  const badge  = $('cfg-pix-badge');
+  const retest = $('cfg-pix-retest');
+  if (badge && retest) {
+    badge.className   = ok ? 'pix-badge pix-badge-ok' : 'pix-badge pix-badge-warn';
+    badge.textContent = ok ? '✓ Pix verificado' : '⚠ Não verificado';
+    badge.style.display  = '';
+    retest.style.display = '';
+  }
   closeMod('mpix');
   showToast(ok
     ? 'Chave Pix verificada com sucesso! ✓'

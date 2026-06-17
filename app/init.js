@@ -17,9 +17,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (emailEl && session.user?.email) emailEl.textContent = session.user.email;
       window._userId = session.user?.id || null;
 
-      const tenant = await Tenants.getByOwner();
+      const tenant = await Tenants.getForUser();
       if (!tenant) { window.location.replace('onboarding.html'); return; }
-      window._tenant = tenant;
+      window._tenant      = tenant;
+      window._tenantRole  = tenant.role || 'funcionario';
 
       /* Bloqueio por biometria (desbloqueio local — ver app/biometria.js) */
       if (window._userId && typeof isBioEnrolled === 'function' && isBioEnrolled(window._userId)) {

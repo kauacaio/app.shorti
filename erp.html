@@ -305,6 +305,10 @@
               <svg class="tb-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="tb-menu" id="tb-menu">
+              <button class="tb-mi" onclick="openCfgModal('conta'); closeTbMenu()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                Configurações
+              </button>
               <button class="tb-mi" onclick="closeERP(); closeTbMenu()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Voltar à loja
@@ -990,22 +994,13 @@
           </div>
 
           <div class="loja-tab-panel" id="loja-tab-conteudo">
+
             <div class="card-grid-wide" style="margin-bottom:20px">
               <article class="data-card">
                 <div class="card-title" style="margin-bottom:16px">Banner & Contato</div>
                 <div class="form-grid">
                   <label class="form-label full">Texto do banner promocional <small style="font-weight:400;opacity:.55">(use *PALAVRA* para destaque)</small>
                     <input type="text" class="input-field" id="ls-banner" placeholder="Frete *GRÁTIS* em compras acima de R$ 150">
-                  </label>
-                  <label class="form-label">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
-                    <input type="text" class="input-field" id="ls-wa" placeholder="5511999999999">
-                  </label>
-                  <label class="form-label">Chave PIX <small style="font-weight:400;opacity:.55">(CPF, e-mail, telefone ou chave aleatória)</small>
-                    <input type="text" class="input-field" id="ls-pix" placeholder="00000000000">
-                    <div class="pix-status-row">
-                      <span class="pix-badge" id="ls-pix-badge" style="display:none"></span>
-                      <button type="button" class="pix-retest-btn" id="ls-pix-retest" style="display:none" onclick="pixRetest()">🔄 Testar novamente</button>
-                    </div>
                   </label>
                 </div>
               </article>
@@ -1224,6 +1219,7 @@
 
           </div>
         </section>
+
 
       </section>
     </main>
@@ -1980,9 +1976,11 @@
     }
   });
   /* Popula o user pill a partir do nome da sidebar */
-  (function initTbUser() {
-    const nm = document.querySelector('.user-name')?.textContent?.trim() || '';
+  /* initTbUser — chamado após DB.settings estar pronto (via window.onSettingsReady) */
+  window.initTbUser = function() {
+    const nm = (typeof DB !== 'undefined' && DB.settings?.displayName) || '';
     if (!nm) return;
+    window._userName = nm;
     const parts    = nm.split(' ');
     const initials = (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
     const first    = parts[0];
@@ -1990,7 +1988,7 @@
     const unEl = document.getElementById('tb-un');
     if (avEl) avEl.textContent = initials;
     if (unEl) unEl.textContent = first;
-  })();
+  };
 
   /* ── Release Modal — carrega release.html ── */
   (function () {
@@ -2013,6 +2011,362 @@
         else epage(e.data.link, null);
       }
     });
+  }
+  </script>
+
+  <!-- ── Modal: Configurações (Conta / Equipe / Financeiro) ── -->
+  <div class="cfg-backdrop" id="cfg-backdrop" onclick="closeCfgModal()"></div>
+  <div class="cfg-modal" id="cfg-modal" role="dialog" aria-label="Configurações">
+
+    <!-- Sidebar esquerda -->
+    <div class="cfg-sidebar">
+      <div class="cfg-sidebar-title">Configurações</div>
+      <button class="cfg-tab on" id="cfg-tab-conta" onclick="cfgTab('conta', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Conta
+      </button>
+      <button class="cfg-tab" id="cfg-tab-equipe" onclick="cfgTab('equipe', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Equipe
+      </button>
+      <button class="cfg-tab" id="cfg-tab-financeiro" onclick="cfgTab('financeiro', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+        Financeiro
+      </button>
+    </div>
+
+    <!-- Área de conteúdo -->
+    <div class="cfg-content">
+      <button class="cfg-close" onclick="closeCfgModal()" aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <!-- Painel Conta -->
+      <div class="cfg-panel on" id="cfg-panel-conta">
+        <h3>Minha Conta</h3>
+        <div class="cfg-avatar-row">
+          <div class="cfg-av" id="cfg-av">M</div>
+          <div>
+            <div class="cfg-av-name" id="cfg-av-name">—</div>
+            <div class="cfg-av-email" id="cfg-av-email">—</div>
+          </div>
+        </div>
+        <label class="form-label full" style="margin-bottom:18px">Seu nome
+          <input type="text" class="input-field" id="cfg-nome" placeholder="Ex: Milena Lima" autocomplete="name" style="margin-top:6px">
+        </label>
+        <button class="btn btn-primary" style="height:40px;font-size:14px;min-width:140px" onclick="saveCfgConta()">
+          <div class="bi"><div class="sp"></div><span class="lbl">Salvar</span></div>
+        </button>
+      </div>
+
+      <!-- Painel Equipe -->
+      <div class="cfg-panel" id="cfg-panel-equipe">
+        <div class="cfg-panel-hd">
+          <h3>Equipe</h3>
+          <button class="btn btn-primary" id="cfg-equipe-invite-btn" onclick="openEquipeInvite()" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Convidar membro
+          </button>
+        </div>
+        <div class="equipe-list" id="cfg-equipe-list"></div>
+
+        <!-- Modal inline de convite -->
+        <div class="cfg-invite-box" id="cfg-invite-box" style="display:none">
+          <div class="cfg-invite-hd">
+            <span>Convidar membro</span>
+            <button onclick="closeCfgInvite()" class="cfg-close-inline" aria-label="Fechar">✕</button>
+          </div>
+          <label class="form-label full" style="margin-bottom:12px">Nome
+            <input type="text" class="input-field" id="inv-nome" placeholder="Ex: Kauã Lima" autocomplete="name" style="margin-top:6px">
+          </label>
+          <label class="form-label full" style="margin-bottom:12px">E-mail
+            <input type="email" class="input-field" id="inv-email" placeholder="email@exemplo.com" inputmode="email" style="margin-top:6px">
+          </label>
+          <label class="form-label full" style="margin-bottom:16px">Cargo
+            <select class="input-field" id="inv-role" style="margin-top:6px">
+              <option value="funcionario">Funcionário</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+          <div class="alert" id="inv-alert" style="display:none"></div>
+          <button class="btn btn-primary btn-block" id="inv-send-btn" onclick="sendEquipeInvite()">
+            <div class="bi"><div class="sp"></div><span class="lbl">Enviar convite</span></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Painel Financeiro -->
+      <div class="cfg-panel" id="cfg-panel-financeiro">
+        <h3>Financeiro</h3>
+        <label class="form-label full" style="margin-bottom:16px">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
+          <input type="text" class="input-field" id="cfg-wa" placeholder="5511999999999" style="margin-top:6px">
+        </label>
+        <label class="form-label full" style="margin-bottom:8px">Chave PIX <small style="font-weight:400;opacity:.55">(CPF, e-mail, telefone ou chave aleatória)</small>
+          <input type="text" class="input-field" id="cfg-pix" placeholder="00000000000" style="margin-top:6px">
+        </label>
+        <div class="pix-status-row" style="margin-bottom:20px">
+          <span class="pix-badge" id="cfg-pix-badge" style="display:none"></span>
+          <button type="button" class="pix-retest-btn" id="cfg-pix-retest" style="display:none" onclick="cfgPixRetest()">🔄 Testar novamente</button>
+        </div>
+        <button class="btn btn-primary" style="height:40px;font-size:14px;min-width:140px" onclick="saveCfgFinanceiro()">
+          <div class="bi"><div class="sp"></div><span class="lbl">Salvar</span></div>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+  /* ── Modal Configurações ── */
+  async function openCfgModal(tab) {
+    tab = tab || 'conta';
+
+    /* Preencher aba Conta */
+    const nome = DB?.settings?.displayName || '';
+    const nmInp = document.getElementById('cfg-nome');
+    const avEl  = document.getElementById('cfg-av');
+    const avNm  = document.getElementById('cfg-av-name');
+    const avEm  = document.getElementById('cfg-av-email');
+    if (nmInp) nmInp.value = nome;
+    if (avNm)  avNm.textContent = nome || '—';
+    if (avEl && nome) {
+      const p = nome.split(' ');
+      avEl.textContent = (p[0][0] + (p[1]?.[0] || '')).toUpperCase();
+    }
+    try {
+      const session = await SBAuth.getSession();
+      if (avEm) avEm.textContent = session?.user?.email || '';
+    } catch(e) {}
+
+    /* Preencher aba Financeiro */
+    const s = DB?.settings || {};
+    const waInp  = document.getElementById('cfg-wa');
+    const pixInp = document.getElementById('cfg-pix');
+    const badge  = document.getElementById('cfg-pix-badge');
+    const retest = document.getElementById('cfg-pix-retest');
+    if (waInp)  waInp.value  = s.whatsapp || '';
+    if (pixInp) pixInp.value = s.pix || '';
+    if (badge && retest) {
+      if (!s.pix) {
+        badge.style.display  = 'none';
+        retest.style.display = 'none';
+      } else if (s.pixVerified) {
+        badge.className      = 'pix-badge pix-badge-ok';
+        badge.textContent    = '✓ Pix verificado';
+        badge.style.display  = '';
+        retest.style.display = '';
+      } else {
+        badge.className      = 'pix-badge pix-badge-warn';
+        badge.textContent    = '⚠ Não verificado';
+        badge.style.display  = '';
+        retest.style.display = '';
+      }
+    }
+
+    /* Selecionar aba */
+    cfgTab(tab, document.getElementById('cfg-tab-' + tab));
+
+    /* Se aba equipe, carregar lista */
+    if (tab === 'equipe') _cfgLoadEquipe();
+
+    /* Abrir modal */
+    document.getElementById('cfg-modal')?.classList.add('open');
+    document.getElementById('cfg-backdrop')?.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    if (tab === 'conta') setTimeout(() => nmInp?.focus(), 80);
+  }
+
+  function closeCfgModal() {
+    document.getElementById('cfg-modal')?.classList.remove('open');
+    document.getElementById('cfg-backdrop')?.classList.remove('on');
+    document.body.style.overflow = '';
+    closeCfgInvite();
+  }
+
+  function cfgTab(id, btn) {
+    document.querySelectorAll('.cfg-panel').forEach(p => p.classList.remove('on'));
+    document.querySelectorAll('.cfg-tab').forEach(b => b.classList.remove('on'));
+    const panel = document.getElementById('cfg-panel-' + id);
+    if (panel) panel.classList.add('on');
+    if (btn)   btn.classList.add('on');
+    /* Carregar equipe ao entrar na aba */
+    if (id === 'equipe') _cfgLoadEquipe();
+  }
+
+  function _cfgLoadEquipe() {
+    /* Ajusta visibilidade do botão de convite */
+    const isAdmin = window._tenantRole === 'admin';
+    const invBtn  = document.getElementById('cfg-equipe-invite-btn');
+    if (invBtn) invBtn.style.display = isAdmin ? '' : 'none';
+
+    /* Reutiliza a lógica de equipe.js mas aponta para cfg-equipe-list */
+    const wrap = document.getElementById('cfg-equipe-list');
+    if (!wrap) return;
+    wrap.innerHTML = '<p class="equipe-loading">Carregando…</p>';
+
+    if (typeof SBTeam === 'undefined') {
+      wrap.innerHTML = '<p class="equipe-empty">SBTeam não disponível.</p>';
+      return;
+    }
+
+    SBTeam.list(window._tenant?.id).then(members => {
+      if (!members || !members.length) {
+        wrap.innerHTML = '<p class="equipe-empty">Nenhum membro ainda. Execute migration_team.sql para ativar.</p>';
+        return;
+      }
+      wrap.innerHTML = members.map(m => `
+        <div class="equipe-card" data-id="${m.id}">
+          <div class="equipe-av">${(m.nome || '?')[0].toUpperCase()}</div>
+          <div class="equipe-info">
+            <div class="equipe-nome">${esc(m.nome || 'Sem nome')}</div>
+            <div class="equipe-role ${m.role}">${m.role === 'admin' ? 'Admin' : 'Funcionário'}</div>
+          </div>
+          ${isAdmin ? `
+          <div class="equipe-actions">
+            <button class="equipe-role-btn" title="Alterar cargo"
+              onclick="toggleMemberRole('${m.id}','${m.role}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="equipe-del-btn" title="Remover"
+              onclick="removeMember('${m.id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>` : ''}
+        </div>
+      `).join('');
+    }).catch(e => {
+      const msg = e.message?.includes('does not exist')
+        ? 'Execute migration_team.sql no Supabase para ativar a equipe.'
+        : esc(e.message);
+      wrap.innerHTML = `<p class="equipe-empty" style="color:var(--tx-s)">${msg}</p>`;
+    });
+  }
+
+  /* Sobrescreve toggleMemberRole e removeMember para recarregar a lista do cfg */
+  const _origToggleMemberRole = typeof toggleMemberRole === 'function' ? toggleMemberRole : null;
+  const _origRemoveMember     = typeof removeMember === 'function' ? removeMember : null;
+
+  async function toggleMemberRole(id, currentRole) {
+    const newRole = currentRole === 'admin' ? 'funcionario' : 'admin';
+    try {
+      await SBTeam.updateRole(id, window._tenant?.id, newRole);
+      showToast(`Cargo alterado para ${newRole === 'admin' ? 'Admin' : 'Funcionário'}`, 'ok');
+      _cfgLoadEquipe();
+    } catch(e) { showToast(e.message, 'err'); }
+  }
+
+  async function removeMember(id) {
+    if (!confirm('Remover este membro do painel?')) return;
+    try {
+      await SBTeam.remove(id, window._tenant?.id);
+      showToast('Membro removido', 'ok');
+      _cfgLoadEquipe();
+    } catch(e) { showToast(e.message, 'err'); }
+  }
+
+  /* Modal inline de convite */
+  function openEquipeInvite() {
+    const invBox = document.getElementById('cfg-invite-box');
+    const invNm  = document.getElementById('inv-nome');
+    const invEm  = document.getElementById('inv-email');
+    const invRl  = document.getElementById('inv-role');
+    const invAl  = document.getElementById('inv-alert');
+    if (invNm)  invNm.value  = '';
+    if (invEm)  invEm.value  = '';
+    if (invRl)  invRl.value  = 'funcionario';
+    if (invAl)  invAl.style.display = 'none';
+    if (invBox) { invBox.style.display = ''; setTimeout(() => invNm?.focus(), 60); }
+  }
+
+  function closeCfgInvite() {
+    const invBox = document.getElementById('cfg-invite-box');
+    if (invBox) invBox.style.display = 'none';
+  }
+
+  async function sendEquipeInvite() {
+    const email = document.getElementById('inv-email')?.value?.trim();
+    const nome  = document.getElementById('inv-nome')?.value?.trim();
+    const role  = document.getElementById('inv-role')?.value || 'funcionario';
+    const alertEl = document.getElementById('inv-alert');
+    if (!email) { if (alertEl) { alertEl.textContent = 'Informe o e-mail.'; alertEl.style.display = 'block'; } return; }
+    const btn = document.getElementById('inv-send-btn');
+    if (btn) { btn.disabled = true; btn.classList.add('ld'); }
+    if (alertEl) alertEl.style.display = 'none';
+    try {
+      await SBTeam.invite({ email, nome, role, tenantId: window._tenant?.id });
+      if (btn) { btn.disabled = false; btn.classList.remove('ld'); }
+      showToast('Convite enviado ✓', 'ok');
+      closeCfgInvite();
+      _cfgLoadEquipe();
+    } catch(e) {
+      if (btn) { btn.disabled = false; btn.classList.remove('ld'); }
+      if (alertEl) { alertEl.textContent = e.message; alertEl.style.display = 'block'; }
+    }
+  }
+
+  /* Salvar aba Conta */
+  async function saveCfgConta() {
+    const nome = document.getElementById('cfg-nome')?.value?.trim();
+    if (!nome) return;
+    const btn = document.querySelector('#cfg-panel-conta .btn');
+    if (btn) { btn.classList.add('ld'); btn.disabled = true; }
+    try {
+      DB.settings.displayName = nome;
+      await SBSettings.set(DB.settings, window._tenant?.id);
+      window._userName = nome;
+      const parts = nome.split(' ');
+      const first = parts[0];
+      const ini   = (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+      const unEl  = document.getElementById('tb-un');
+      const avEl2 = document.getElementById('tb-av');
+      const emhN  = document.getElementById('emh-name');
+      const cfgAv = document.getElementById('cfg-av');
+      const cfgNm = document.getElementById('cfg-av-name');
+      if (unEl)  unEl.textContent  = first;
+      if (avEl2) avEl2.textContent = ini;
+      if (cfgAv) cfgAv.textContent = ini;
+      if (cfgNm) cfgNm.textContent = nome;
+      if (emhN) { const h = new Date().getHours(); const g = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; emhN.innerHTML = `${g}, <b>${first}</b>`; }
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Nome atualizado ✓', 'ok');
+    } catch(e) {
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Erro ao salvar', 'err');
+    }
+  }
+
+  /* Salvar aba Financeiro */
+  async function saveCfgFinanceiro() {
+    const btn    = document.querySelector('#cfg-panel-financeiro .btn');
+    const newWa  = (document.getElementById('cfg-wa')?.value  || '').replace(/\D/g, '');
+    const newPix = (document.getElementById('cfg-pix')?.value || '').trim();
+    const oldPix = DB.settings.pix || '';
+    if (btn) { btn.classList.add('ld'); btn.disabled = true; }
+    try {
+      DB.settings.whatsapp = newWa;
+      if (newPix !== oldPix) {
+        /* Alterar Pix exige confirmação de senha — pixRequestChange usará cfg-pix como campo de retorno */
+        DB.settings.whatsapp = newWa;
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(DB.settings)); } catch(ee) {}
+        sbSync(() => SBSettings.set(DB.settings, window._tenant?.id));
+        if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+        pixRequestChange(newPix, oldPix);
+        return;
+      }
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(DB.settings)); } catch(ee) {}
+      sbSync(() => SBSettings.set(DB.settings, window._tenant?.id));
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Configurações salvas ✓', 'ok');
+    } catch(e) {
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Erro ao salvar', 'err');
+    }
+  }
+
+  /* Retest Pix a partir da aba Financeiro */
+  function cfgPixRetest() {
+    if (!DB.settings.pix) return;
+    pixRequestChange(DB.settings.pix, DB.settings.pix);
   }
   </script>
 </body>

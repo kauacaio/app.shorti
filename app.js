@@ -80,6 +80,7 @@ async function initDB() {
   if (trans)    { DB.trans  = trans;  if (trans.length)  DB.nid.t   = Math.max(...trans.map(x => x.id))  + 1; }
   if (solics)   { DB.solics = solics; if (solics.length) DB.nid.s   = Math.max(...solics.map(x => x.id)) + 1; }
   if (settings) Object.assign(DB.settings, settings);
+  if (typeof window.initTbUser === 'function') window.initTbUser();
 }
 
 function initRealtimeOrders() {
@@ -3294,12 +3295,11 @@ function rRel() {
   }, 80);
 }
 
-/* ── Configurações da loja ───────────────────────── */
+/* ── Configurações da loja (versão legada em app.js — funções reais em app/loja.js) ── */
 function rLoja() {
   const s = DB.settings;
   const v = (id, val) => { if ($(id)) $(id).value = val; };
   v('ls-banner',  s.banner.replace(/<[^>]+>/g, ''));
-  v('ls-wa',      s.whatsapp);
   v('ls-kicker',  s.heroKicker);
   v('ls-hl1',     s.heroLines[0] || '');
   v('ls-hl2',     s.heroLines[1] || '');
@@ -3320,7 +3320,6 @@ function saveLojaSettings() {
   const s = DB.settings;
   const raw = g('ls-banner');
   s.banner    = raw.includes('<em>') ? raw : raw.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  s.whatsapp  = g('ls-wa').replace(/\D/g, '');
   s.heroKicker= g('ls-kicker');
   s.heroLines = [g('ls-hl1'), g('ls-hl2'), g('ls-hl3'), g('ls-hl4')];
   s.heroSub   = g('ls-sub');

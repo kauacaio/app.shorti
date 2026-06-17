@@ -60,22 +60,13 @@ async function rGreeting() {
   const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
   const emoji = h < 12 ? '☀️' : h < 18 ? '👋' : '🌙';
 
-  let nome = 'você';
-  try {
-    if (typeof SBAuth !== 'undefined') {
-      const session = await SBAuth.getSession();
-      if (session?.user) {
-        const meta = session.user.user_metadata || {};
-        nome = meta.full_name || meta.name ||
-               (session.user.email ? session.user.email.split('@')[0] : 'você');
-        nome = nome.charAt(0).toUpperCase() + nome.slice(1);
-      }
-    }
-  } catch(e) {}
-
+  /* Nome por tenant (store_settings.displayName) — independente da conta */
+  let nome = DB.settings?.displayName || 'você';
   if (nome === 'você' && DB.settings?.heroKicker) {
     nome = DB.settings.heroKicker.replace('Consultora Oficial Mary Kay','').replace('Consultora','').trim().split(' ')[0] || 'você';
   }
+  nome = nome.split(' ')[0];
+  nome = nome.charAt(0).toUpperCase() + nome.slice(1);
 
   const dias  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
