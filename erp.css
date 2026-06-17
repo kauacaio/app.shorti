@@ -107,6 +107,47 @@ img, svg { display: block; max-width: 100%; }
 }
 @keyframes swUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
 
+.sw-pc {
+  width: min(260px, 78vw);
+  margin-top: 4px;
+  opacity: 0;
+  animation: swUp .5s ease .88s forwards;
+}
+.sw-pc svg {
+  width: 100%; height: auto;
+  overflow: visible;
+  animation: swPcFloat 4.5s ease-in-out 1.2s infinite;
+}
+@keyframes swPcFloat {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-8px); }
+}
+.sw-pc-bar {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(0);
+  animation: swBarGrow .5s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+.sw-pc-bars rect:nth-child(1){ animation-delay: .95s }
+.sw-pc-bars rect:nth-child(2){ animation-delay:1.05s }
+.sw-pc-bars rect:nth-child(3){ animation-delay:1.15s }
+.sw-pc-bars rect:nth-child(4){ animation-delay:1.25s }
+.sw-pc-bars rect:nth-child(5){ animation-delay:1.35s }
+@keyframes swBarGrow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+.sw-pc-cursor { animation: swCurBlink 1.1s ease-in-out 1.4s infinite; }
+@keyframes swCurBlink {
+  0%,46%  { opacity: .8; }
+  50%,96% { opacity: 0; }
+}
+.sw-pc-glow { animation: swGlowPulse 3.5s ease-in-out 1s infinite; }
+@keyframes swGlowPulse {
+  0%,100% { opacity: .3; }
+  50%     { opacity: .7; }
+}
+
 /* ══════════════════════════════════════════════════════════
    OVERRIDES CRÍTICOS — neutraliza styles.css no erp.html
    styles.css é o CSS do store (index.html). Em erp.html
