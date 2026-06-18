@@ -39,7 +39,7 @@ function rLoja() {
     frame.dataset.loaded = '1';
     const qs = window._localMode ? 'local&preview=1' : `loja=${encodeURIComponent(window._tenant?.slug || '')}&preview=1`;
     frame.addEventListener('load', sendPreviewUpdate);
-    frame.src = 'index.html?' + qs;
+    frame.src = 'loja.html?' + qs;
   }
 }
 
@@ -64,19 +64,47 @@ function selectLojaTemplate(t, btn) {
 
 /* ── Publicação ────────────────────────────────────── */
 function updatePubBadge(published) {
-  const badge = $('ls-pub-badge');
-  const toggle = $('ls-pub-toggle');
+  const badge    = $('ls-pub-badge');
+  const toggle   = $('ls-pub-toggle');
+  const linkCard = $('ls-pub-link-card');
+  const linkUrl  = $('ls-pub-link-url');
+  const linkOpen = $('ls-pub-link-open');
   if (!badge || !toggle) return;
+
   if (published) {
-    badge.className = 'pub-badge pub-badge-on';
+    badge.className   = 'pub-badge pub-badge-on';
     badge.textContent = '● Publicada';
     toggle.textContent = 'Despublicar loja';
+
+    if (linkCard && window._tenant?.slug) {
+      const slug = window._tenant.slug;
+      const base = window.location.href.replace(/\/erp\.html.*$/, '');
+      const url  = `${base}/${slug}`;
+      if (linkUrl)  linkUrl.textContent = url;
+      if (linkOpen) linkOpen.href = url;
+      linkCard.style.display = 'block';
+    }
   } else {
-    badge.className = 'pub-badge pub-badge-off';
+    badge.className   = 'pub-badge pub-badge-off';
     badge.textContent = '● Despublicada';
     toggle.textContent = 'Publicar loja';
+    if (linkCard) linkCard.style.display = 'none';
   }
 }
+
+window.copyLojaLink = function() {
+  const url = $('ls-pub-link-url')?.textContent;
+  if (!url) return;
+  navigator.clipboard?.writeText(url).then(() => {
+    const btn = $('ls-pub-link-copy');
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.textContent = 'Copiado!';
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#fff';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
+  }).catch(() => showToast(url));
+};
 function toggleLojaPublicada() {
   DB.settings.published = DB.settings.published === false;
   updatePubBadge(DB.settings.published !== false);

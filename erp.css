@@ -4570,6 +4570,28 @@ table tbody tr:hover { outline: none; }
 .pub-badge-off { color: #92400E; background: #FEF3C7; }
 .pub-hint { font-size: 12.5px; color: var(--tx-m); line-height: 1.6; }
 
+.pub-link-card {
+  margin-top: 16px; padding: 14px 16px;
+  background: var(--bg); border: 1px solid var(--bd);
+  border-radius: 10px;
+}
+.pub-link-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--tx-s); margin-bottom: 10px; }
+.pub-link-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pub-link-url {
+  flex: 1; font-size: 13px; color: var(--tx); font-weight: 500;
+  word-break: break-all; min-width: 0;
+}
+.pub-link-copy {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 8px;
+  background: var(--surf); border: 1px solid var(--bd);
+  font-size: 12px; font-weight: 600; color: var(--tx-m);
+  cursor: pointer; white-space: nowrap;
+  transition: background .13s, color .13s;
+}
+.pub-link-copy:hover { background: var(--bg); color: var(--tx); }
+.pub-link-open { display: flex; align-items: center; gap: 5px; font-size: 12px; white-space: nowrap; text-decoration: none; }
+
 @media (max-width: 768px) {
   .tpl-grid { grid-template-columns: 1fr; }
   .loja-preview-wrap { height: 420px; }

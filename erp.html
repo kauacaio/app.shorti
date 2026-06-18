@@ -1198,6 +1198,22 @@
                 <button type="button" class="btn btn-outline" id="ls-pub-toggle" onclick="toggleLojaPublicada()"></button>
               </div>
               <p class="pub-hint">Quando despublicada, sua loja exibe uma página de "Loja indisponível" para os visitantes. O painel do ERP continua acessível normalmente.</p>
+
+              <!-- Link de acesso — aparece só quando publicada -->
+              <div class="pub-link-card" id="ls-pub-link-card" style="display:none">
+                <div class="pub-link-label">Link da sua loja</div>
+                <div class="pub-link-row">
+                  <span class="pub-link-url" id="ls-pub-link-url"></span>
+                  <button class="pub-link-copy" id="ls-pub-link-copy" onclick="copyLojaLink()" title="Copiar link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copiar
+                  </button>
+                  <a class="pub-link-open btn btn-outline" id="ls-pub-link-open" href="#" target="_blank" rel="noopener">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Abrir
+                  </a>
+                </div>
+              </div>
             </article>
 
             <article class="data-card" id="bio-security-card" style="margin-top:20px;display:none">

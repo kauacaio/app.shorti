@@ -628,19 +628,23 @@ function rStore() {
   if ($('cc-tel')) $('cc-tel').value = customer.tel || '';
 }
 
+const _isPreview = new URLSearchParams(location.search).has('preview');
+
 /* Se Supabase disponível: segura o intro como loading screen,
    aguarda os dados do tenant e só então renderiza.
-   Modo local (?local) ou offline: renderiza imediatamente com defaults. */
+   Preview (iframe ERP) ou modo local: sem intro, renderiza imediatamente. */
 if (window._sbClient && !window._localMode) {
   const intro = document.getElementById('site-intro');
-  if (intro) {
-    /* Cancela o auto-dismiss do CSS e mantém o intro visível */
-    intro.style.animation = 'none';
-    intro.style.opacity   = '1';
+  if (intro && _isPreview) {
+    /* No preview o intro não deve aparecer — remove direto */
+    intro.remove();
+  } else if (intro) {
+    intro.style.animation     = 'none';
+    intro.style.opacity       = '1';
     intro.style.pointerEvents = 'none';
   }
   loadFromSupabase().finally(() => {
-    if (intro) {
+    if (intro && !_isPreview) {
       intro.style.transition = 'opacity .55s ease';
       intro.style.opacity    = '0';
       setTimeout(() => intro.remove(), 600);
@@ -651,7 +655,7 @@ if (window._sbClient && !window._localMode) {
 }
 
 /* ── Prévia ao vivo (iframe do ERP envia atualizações de tema/conteúdo) ── */
-if (new URLSearchParams(location.search).has('preview')) {
+if (_isPreview) {
   window.addEventListener('message', e => {
     if (e.data?.type !== 'shorti-preview-update') return;
     Object.assign(DB.settings, e.data.settings);
