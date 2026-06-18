@@ -422,7 +422,8 @@ async function _startPhonePairing() {
   _phoneSid       = [...Array(14)].map(() => Math.random().toString(36)[2]).join('');
   _phoneConnected = false;
 
-  const tunnel  = await _fetchTunnelUrl();
+  const isLocal = ['localhost', '127.0.0.1', '0.0.0.0'].includes(location.hostname);
+  const tunnel  = isLocal ? await _fetchTunnelUrl() : null;
   let baseUrl   = tunnel?.url;
   let viaTunnel = !!baseUrl;
 
@@ -434,14 +435,15 @@ async function _startPhonePairing() {
        para o celular alcançar o PC). A adivinhação por WebRTC pode pegar
        um IP de VPN/Docker/adaptador virtual e causar "conexão recusada". */
     let host = location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') {
+    if (isLocal) {
       host = await _getLocalIP() || host;
     }
-    baseUrl = `${location.protocol}//${host}:${location.port}`;
+    const port = location.port ? `:${location.port}` : '';
+    baseUrl = `${location.protocol}//${host}${port}`;
   }
   _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}`;
   await _renderQR(_phoneQrUrl);
-  _setQrNetHint(viaTunnel);
+  _setQrNetHint(viaTunnel || !isLocal);
   _phoneSetStatus('waiting', 'Aguardando celular...');
 
   _phoneChannel = window._sbClient.channel(`erp-scan-${_phoneSid}`, {
