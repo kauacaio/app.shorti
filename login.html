@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Permanent+Marker&display=swap" rel="stylesheet">
   <style>
     :root {
       --blue:   #1B44B8;
@@ -435,6 +435,47 @@
       font-size: 11.5px; color: var(--tx-s);
     }
 
+    /* ── Chegamos — estilo grafite ─────────────────── */
+    .arrived {
+      font-family: 'Permanent Marker', cursive;
+      font-size: 38px;
+      color: transparent;
+      background: linear-gradient(135deg, #1B44B8 0%, #7C3AED 60%, #1B44B8 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      transform: rotate(-3deg);
+      margin-bottom: 20px;
+      filter:
+        drop-shadow(0 0 18px rgba(124,58,237,.25))
+        drop-shadow(2px 3px 0 rgba(27,68,184,.12));
+      opacity: 0;
+      animation: grafiteIn .7s cubic-bezier(.34,1.56,.64,1) .05s forwards;
+      cursor: default; user-select: none; letter-spacing: .01em;
+    }
+    @keyframes grafiteIn {
+      from { opacity: 0; transform: rotate(-5deg) scale(.85); }
+      to   { opacity: 1; transform: rotate(-3deg) scale(1); }
+    }
+
+    /* ── Feature chips (substitui tagline plana) ────── */
+    .brand-chips {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+      margin-top: 22px;
+      opacity: 0; animation: fadeUp .5s ease .68s forwards;
+    }
+    .bchip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #fff; border: 1px solid var(--bd);
+      border-radius: 100px; padding: 5px 12px;
+      font-size: 11.5px; font-weight: 500; color: var(--tx-m);
+      white-space: nowrap;
+    }
+    .bchip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .bchip:nth-child(1) .bchip-dot { background: #3B82F6; }
+    .bchip:nth-child(2) .bchip-dot { background: #10B981; }
+    .bchip:nth-child(3) .bchip-dot { background: #8B5CF6; }
+
     /* footer */
     .footer { margin-top: 22px; text-align: center; }
     .gl {
@@ -495,7 +536,7 @@
 
       /* oculta tudo exceto o wordmark */
       .mob-logo, .mob-title-wrap, .mob-features { display: none !important; }
-      .eyebrow, .brand-line, .b-tagline { display: none !important; }
+      .eyebrow, .brand-line, .b-tagline, .arrived, .brand-chips { display: none !important; }
 
       /* wordmark no escuro */
       .b-inner { display: flex !important; flex-direction: column; align-items: center; }
@@ -572,6 +613,10 @@
     </div>
 
     <div class="b-inner">
+
+      <!-- Grafite -->
+      <div class="arrived">Viva o mundo!</div>
+
       <div class="eyebrow">
         <div class="e-bars"><div class="e-bar"></div><div class="e-bar"></div></div>
         ERP · GrupoLima
@@ -591,7 +636,16 @@
       </div>
 
       <div class="brand-line"></div>
-      <p class="b-tagline" id="btag">Vendas, estoque e clientes em um só lugar.</p>
+
+      <!-- Feature chips -->
+      <div class="brand-chips">
+        <span class="bchip"><span class="bchip-dot"></span>Vendas em tempo real</span>
+        <span class="bchip"><span class="bchip-dot"></span>Estoque inteligente</span>
+        <span class="bchip"><span class="bchip-dot"></span>Loja pública própria</span>
+      </div>
+
+      <!-- Mantido oculto para o JS de animação de letras não quebrar -->
+      <p class="b-tagline" id="btag" aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none">Vendas, estoque e clientes em um só lugar.</p>
     </div>
 
     <!-- Mobile only: chips de features -->
