@@ -5,13 +5,16 @@
    da própria origem (Supabase, CDNs) para não interferir
    na sincronização de dados.
    ===================================================== */
-const CACHE = 'shorti-v1';
+const CACHE = 'shorti-v2';
 const SHELL = [
   './erp.html',
   './login.html',
   './core.js',
   './erp.css',
   './styles.css',
+  './app/pix.js',
+  './app/vendas.js',
+  './app/pedidos.js',
   './manifest.json',
   './favicon.svg',
   './icon-192.png',

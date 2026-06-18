@@ -26,90 +26,22 @@
 
   <!-- ── Boas-vindas — exibida uma vez por sessão ── -->
   <div class="srt-welcome" id="srt-welcome">
-    <div class="sw-bars"><span></span><span></span></div>
-    <div class="sw-word" aria-label="Shorti.">
-      <span class="sw-l">S</span><span
-      class="sw-l">h</span><span
-      class="sw-l">o</span><span
-      class="sw-l">r</span><span
-      class="sw-l">t</span><span
-      class="sw-l">i</span><span
-      class="sw-l sw-dot">.</span>
-    </div>
-    <p class="sw-tag">Bem-vindo de volta. Vamos cuidar do seu negócio hoje.</p>
-
-    <div class="sw-pc">
-      <svg viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="swGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stop-color="#1B44B8" stop-opacity=".22"/>
-            <stop offset="100%" stop-color="#1B44B8" stop-opacity="0"/>
-          </radialGradient>
-        </defs>
-        <ellipse cx="148" cy="193" rx="108" ry="6" fill="rgba(27,68,184,.06)"/>
-        <rect x="20"  y="162" width="252" height="7" rx="3.5" fill="#E2E8F0"/>
-        <rect x="40"  y="169" width="9"   height="24" rx="3.5" fill="#CBD5E1"/>
-        <rect x="238" y="169" width="9"   height="24" rx="3.5" fill="#CBD5E1"/>
-        <rect x="46"  y="143" width="158" height="21" rx="6"   fill="#CBD5E1"/>
-        <rect x="51"  y="147" width="148" height="13" rx="3"   fill="#B2BFCF" opacity=".35"/>
-        <rect x="108" y="149" width="36"  height="8"  rx="4"   fill="#B2BFCF" opacity=".3"/>
-        <ellipse class="sw-pc-glow" cx="125" cy="104" rx="82" ry="50" fill="url(#swGlow)"/>
-        <rect x="48" y="58"  width="154" height="88" rx="9" fill="#1E293B"/>
-        <rect x="52" y="62"  width="146" height="80" rx="6" fill="#0F172A"/>
-        <rect x="58"  y="67" width="46" height="4.5" rx="2.25" fill="#1B44B8" opacity=".5"/>
-        <rect x="174" y="67" width="18" height="4.5" rx="2.25" fill="#334155" opacity=".35"/>
-        <rect x="52"  y="75" width="146" height="1"             fill="#1E293B"/>
-        <g class="sw-pc-bars">
-          <rect class="sw-pc-bar" x="58"  y="114" width="12" height="24" rx="2.5" fill="#1B44B8" opacity=".52"/>
-          <rect class="sw-pc-bar" x="74"  y="101" width="12" height="37" rx="2.5" fill="#1B44B8" opacity=".72"/>
-          <rect class="sw-pc-bar" x="90"  y="108" width="12" height="30" rx="2.5" fill="#7C3AED" opacity=".65"/>
-          <rect class="sw-pc-bar" x="106" y="93"  width="12" height="45" rx="2.5" fill="#1B44B8" opacity=".84"/>
-          <rect class="sw-pc-bar" x="122" y="103" width="12" height="35" rx="2.5" fill="#10B981" opacity=".68"/>
-        </g>
-        <rect x="142" y="81"  width="50" height="3.5" rx="1.75" fill="#475569" opacity=".2"/>
-        <rect x="142" y="88"  width="36" height="3.5" rx="1.75" fill="#475569" opacity=".15"/>
-        <rect x="142" y="95"  width="44" height="3.5" rx="1.75" fill="#10B981" opacity=".3"/>
-        <rect x="142" y="102" width="30" height="3.5" rx="1.75" fill="#475569" opacity=".18"/>
-        <rect x="142" y="109" width="42" height="3.5" rx="1.75" fill="#1B44B8" opacity=".22"/>
-        <rect x="142" y="116" width="34" height="3.5" rx="1.75" fill="#475569" opacity=".15"/>
-        <rect class="sw-pc-cursor" x="142" y="126" width="9" height="4" rx="1.5" fill="#1B44B8" opacity=".78"/>
-        <rect x="48" y="142" width="154" height="3" rx="1.5" fill="#94A3B8" opacity=".25"/>
-        <rect x="252" y="90"  width="15" height="66" rx="7.5" fill="#E2E8F0"/>
-        <rect x="234" y="153" width="32" height="7"  rx="3.5" fill="#E2E8F0"/>
-        <rect x="219" y="106" width="32" height="50" rx="13" fill="#1B44B8"/>
-        <rect x="228" y="97"  width="14" height="14" rx="6"   fill="#F5CBA7"/>
-        <ellipse cx="235" cy="81" rx="16" ry="16.5" fill="#F5CBA7"/>
-        <path d="M219 79 Q220 62 235 60 Q250 62 251 79 Q249 69 241 66 Q235 63.5 229 66 Q221 69 219 79Z" fill="#3D2B1F"/>
-        <path d="M249 75 Q252 67 250 61 Q248 56 244 58 Q248 60 249 69Z" fill="#3D2B1F"/>
-        <ellipse cx="243" cy="62" rx="7.5" ry="6.5" fill="#3D2B1F"/>
-        <ellipse cx="243" cy="62" rx="4.5" ry="3.5" fill="#4a3428"/>
-        <ellipse cx="219.5" cy="82" rx="3.5" ry="4.5" fill="#F5CBA7"/>
-        <ellipse cx="229" cy="82" rx="2.2" ry="2.5" fill="#1E1008"/>
-        <ellipse cx="241" cy="82" rx="2.2" ry="2.5" fill="#1E1008"/>
-        <circle  cx="230" cy="81" r=".9"             fill="#fff"/>
-        <circle  cx="242" cy="81" r=".9"             fill="#fff"/>
-        <path d="M226 77.5 Q229 76 232 77.5" stroke="#3D2B1F" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M238 77.5 Q241 76 244 77.5" stroke="#3D2B1F" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M228 89 Q235 94 242 89" stroke="#C08060" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-        <path d="M223 118 Q200 130 178 143" stroke="#1B44B8" stroke-width="11" stroke-linecap="round" fill="none"/>
-        <ellipse cx="175" cy="144" rx="9.5" ry="6" fill="#F5CBA7"/>
-        <path d="M239 118 Q237 131 210 143" stroke="#1B44B8" stroke-width="11" stroke-linecap="round" fill="none"/>
-        <ellipse cx="207" cy="144" rx="9.5" ry="6" fill="#F5CBA7"/>
-      </svg>
-    </div>
+    <img src="./logo-mark.svg" alt="Shorti" class="sw-mark">
+    <p class="sw-tag">Olá! Bem-vindo de volta 👋</p>
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js" type="module"></script>
+    <dotlottie-wc src="https://lottie.host/1f36c611-5c9b-47f9-a0a1-c3a8f313a1d4/YkxDt8VqCm.lottie" class="sw-lottie" autoplay loop></dotlottie-wc>
   </div>
   <script>
     (function () {
       var el = document.getElementById('srt-welcome');
-      if (sessionStorage.getItem('srt_welcome_v1')) {
-        el.style.display = 'none';
-        return;
-      }
+      /* Só exibe no mobile */
+      if (window.innerWidth > 768) { el.style.display = 'none'; return; }
+      if (sessionStorage.getItem('srt_welcome_v1')) { el.style.display = 'none'; return; }
       sessionStorage.setItem('srt_welcome_v1', '1');
       setTimeout(function () {
         el.classList.add('out');
         setTimeout(function () { el.remove(); }, 550);
-      }, 2000);
+      }, 2800);
     })();
   </script>
 
@@ -140,8 +72,13 @@
     </div>
   </div>
 
-  <!-- ── Release Modal — carrega release.html ─────────── -->
-  <script>if(localStorage.getItem('srt_rl_v1'))document.write('<style>#rl-ov{display:none!important}</style>');</script>
+  <!-- ── Release Modal — desktop only ─────────────────── -->
+  <script>
+    // Oculta release em mobile (≤ 860px) ou se já foi visto
+    if (localStorage.getItem('srt_rl_v1') || window.innerWidth <= 860) {
+      document.write('<style>#rl-ov{display:none!important}</style>');
+    }
+  </script>
   <div class="rl-ov on" id="rl-ov">
     <button class="rl-x" onclick="rlClose()" aria-label="Fechar">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -617,6 +554,11 @@
               <!-- Select oculto (compatibilidade) -->
               <select id="vc" style="display:none"></select>
 
+              <div class="nv-sem-cli-hint" id="nv-sem-cli-hint" style="display:none">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Sem cliente — venda ficará marcada como pendente
+              </div>
+
               <div class="nv-panel-ft">
                 <div></div>
                 <button class="btn btn-primary" onclick="nvGoStep(2)" id="nv-btn-s1">
@@ -762,6 +704,40 @@
                   <input type="date" class="input-field" id="vdtpag" style="margin-top:6px;max-width:200px">
                 </div>
 
+                <!-- PIX QR mini -->
+                <div class="nv-pix-qr-wrap" id="nv-pix-qr-wrap">
+                  <div class="nv-pix-mini-row" onclick="nvExpandPixQR()" title="Clique para ampliar">
+                    <div class="nv-pix-qr-thumb">
+                      <canvas id="nv-pix-qr-c" style="display:none"></canvas>
+                      <img id="nv-pix-qr-img" alt="QR PIX" style="display:none">
+                    </div>
+                    <div class="nv-pix-qr-meta">
+                      <div class="nv-pix-qr-lbl">Pagar via PIX</div>
+                      <div class="nv-pix-qr-key" id="nv-pix-key-lbl"></div>
+                      <div class="nv-pix-qr-val" id="nv-pix-val-lbl"></div>
+                    </div>
+                    <button class="nv-pix-expand" type="button" title="Ampliar QR">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    </button>
+                  </div>
+                  <div class="nv-pix-no-key" id="nv-pix-no-key" style="display:none">
+                    Chave Pix não configurada — <a href="#" onclick="epage('financeiro',null);return false">configure nas Configurações</a>
+                  </div>
+                </div>
+
+                <!-- Overlay PIX expandido -->
+                <div class="nv-pix-overlay" id="nv-pix-overlay" onclick="nvCollapsePixQR()" style="display:none">
+                  <div class="nv-pix-overlay-box" onclick="event.stopPropagation()">
+                    <div class="nv-pix-overlay-title">Pagar via PIX</div>
+                    <canvas id="nv-pix-qr-big-c" style="display:none"></canvas>
+                    <img id="nv-pix-qr-big-img" alt="QR PIX" style="display:none">
+                    <div class="nv-pix-overlay-val" id="nv-pix-overlay-val"></div>
+                    <div class="nv-pix-overlay-key" id="nv-pix-overlay-key"></div>
+                    <button class="cpt-pix-copy" type="button" id="nv-pix-copy-btn" onclick="nvCopyPixCode(this)">📋 Copiar código PIX</button>
+                    <button class="btn btn-outline" onclick="nvCollapsePixQR()" style="width:100%;margin-top:8px">Fechar</button>
+                  </div>
+                </div>
+
                 <div class="nv-panel-ft">
                   <button class="btn btn-outline" onclick="nvGoStep(2)" type="button">← Voltar</button>
                   <button class="btn btn-primary btn-success" onclick="confirmV()" type="button" style="font-size:14px;padding:12px 28px">
@@ -853,19 +829,6 @@
           </div>
         </div>
 
-        <!-- ── Drawer detalhes do produto ────────────── -->
-        <div class="filter-backdrop" id="prod-backdrop" onclick="closeProdDetail()"></div>
-        <div class="filter-drawer" id="prod-drawer">
-          <div class="filter-drawer-hd">
-            <h3 id="prod-drawer-title">Produto</h3>
-            <button class="filter-drawer-close" onclick="closeProdDetail()">✕</button>
-          </div>
-          <div class="filter-drawer-body" id="prod-drawer-body"></div>
-          <div class="filter-drawer-ft">
-            <button class="btn btn-outline" style="flex:1" id="prod-del-btn">Excluir</button>
-            <button class="btn btn-primary" style="flex:1" id="prod-edit-btn">Editar produto</button>
-          </div>
-        </div>
 
         <section class="erp-page" id="ep-clientes">
           <div class="page-header">
@@ -1295,6 +1258,23 @@
     <div class="filter-drawer-body notif-list" id="notif-list"></div>
     <div class="filter-drawer-ft">
       <button class="btn btn-outline" style="flex:1" onclick="markAllNotifsRead()">Marcar todas como lidas</button>
+    </div>
+  </div>
+
+  <!-- ── Drawer detalhes do produto ────────────── -->
+  <div class="filter-backdrop" id="prod-backdrop" onclick="closeProdDetail()"></div>
+  <div class="filter-drawer" id="prod-drawer">
+    <div class="filter-drawer-hd">
+      <h3 id="prod-drawer-title">Produto</h3>
+      <button class="filter-drawer-close" onclick="closeProdDetail()">✕</button>
+    </div>
+    <div class="filter-drawer-body" id="prod-drawer-body"></div>
+    <div class="filter-drawer-ft">
+      <button class="btn btn-outline" style="color:#EF4444;border-color:#FECACA;white-space:nowrap" id="prod-del-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Excluir
+      </button>
+      <button class="btn btn-primary" style="flex:1" id="prod-edit-btn">Editar produto</button>
     </div>
   </div>
 

@@ -841,7 +841,7 @@ function hvUpd() {
     return `<tr>
       <td style="color:var(--tx-m);font-size:12.5px">#${p.id}</td>
       <td>${fdt(p.dt)}</td>
-      <td style="font-weight:500">${c ? c.nm : '—'}</td>
+      <td style="font-weight:500">${c ? c.nm : (p.pendente_cli ? '<span class="xb xb-gold" style="font-size:11px">Sem cliente</span>' : '—')}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.prod}</td>
       <td style="font-weight:600">${brl(p.tot)}</td>
       <td style="color:var(--tx-m)">${p.pag}</td>
@@ -1432,9 +1432,8 @@ function nvGoStep(step) {
     if (_nvStep === 1) {
       if (_nvQuick) {
         if (!_nvCart.length) { showToast('Adicione ao menos um produto'); return; }
-      } else {
-        if (!$('vc')?.value) { showToast('Selecione um cliente para continuar'); return; }
       }
+      /* cliente é opcional — venda sem cliente fica marcada como pendente */
     }
     if (_nvStep === 2) {
       if (_nvQuick) {
@@ -1466,8 +1465,8 @@ function nvGoStep(step) {
     if (ln) ln.classList.toggle('done', n < step);
   });
 
-  /* Ao entrar na etapa 3: monta o resumo */
-  if (step === 3) nvBuildSummary();
+  /* Ao entrar na etapa 3: monta o resumo e QR PIX */
+  if (step === 3) { nvBuildSummary(); nvUpdatePixQR(); }
 
   /* Scroll to top */
   const ec = document.querySelector('.erp-content');
@@ -1488,11 +1487,12 @@ function nvBuildSummary() {
 
   /* Cliente */
   const ini = cli ? cli.nm.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : '?';
+  const semCli = !cli;
   let html = `<div class="nv-res-cli">
-    <div class="cli-ava" style="width:34px;height:34px;font-size:12px">${ini}</div>
+    <div class="cli-ava" style="width:34px;height:34px;font-size:12px${semCli?';background:#F59E0B':''}">${ini}</div>
     <div>
-      <div style="font-size:13.5px;font-weight:600;color:var(--tx)">${cli?.nm||'—'}</div>
-      <div style="font-size:11.5px;color:var(--tx-m)">${cli?.tel||''}</div>
+      <div style="font-size:13.5px;font-weight:600;color:var(--tx)">${cli?.nm || 'Sem cliente'}</div>
+      <div style="font-size:11.5px;color:${semCli ? '#F59E0B' : 'var(--tx-m)'}">${cli?.tel || (semCli ? 'Pendente de identificação' : '')}</div>
     </div>
   </div>`;
 
@@ -1548,6 +1548,19 @@ function renderCliPicker() {
 function selectCliWiz(id) {
   if ($('vc')) $('vc').value = id;
   renderCliPicker();
+  _nvUpdateCliHint();
+}
+
+function _nvUpdateCliHint() {
+  const hint = $('nv-sem-cli-hint');
+  const btn  = $('nv-btn-s1');
+  const hasCli = !!$('vc')?.value;
+  if (hint) hint.style.display = hasCli ? 'none' : 'flex';
+  if (btn && !_nvQuick) {
+    btn.innerHTML = hasCli
+      ? `Continuar com produtos <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`
+      : `Continuar sem cliente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+  }
 }
 
 /* ── Product picker para Nova Venda ── */
@@ -1609,6 +1622,10 @@ function rNV() {
   if ($('v-busca'))      $('v-busca').value = '';
   renderCliPicker();
   renderProdPicker();
+  _nvUpdateCliHint();
+  _nvPixPayload = '';
+  const qrWrap = $('nv-pix-qr-wrap');
+  if (qrWrap) qrWrap.classList.remove('on');
 
   /* Limpa preview */
   const prev = $('vprev'); if (prev) prev.style.display = 'none';
@@ -1743,23 +1760,31 @@ function vUpd() {
 
 function saveV() {
   if (!_nvCart.length) { showToast('Adicione ao menos um produto'); return; }
-  const cid  = parseInt($('vc')?.value);
-  const pag  = $('vpg')?.value;
-  const parc = parseInt($('vparc')?.value) || 1;
+  const cid   = parseInt($('vc')?.value) || null;
+  const pag   = $('vpg')?.value;
+  const parc  = parseInt($('vparc')?.value) || 1;
   const dtpag = $('vdtpag')?.value || td();
-  const c = DB.clis.find(x => x.id === cid);
-  if (!c) { showToast('Selecione um cliente'); return; }
+  const c = cid ? DB.clis.find(x => x.id === cid) : null;
   const tot  = _nvCart.reduce((a, b) => a + b.sub, 0);
   const id   = DB.nid.ped++;
-  const pagLabel = parc > 1 ? `${pag} ${parc}×` : pag;
+  const pagLabel  = parc > 1 ? `${pag} ${parc}×` : pag;
   const isPending = dtpag > td();
+  const isFiado   = pag === 'Fiado';
   const itens = _nvCart.map(i => ({ pid: i.pid, nm: i.nm, em: i.em, q: i.q, pr: i.pr, sub: i.sub }));
   const prodLabel = itens.length === 1 ? itens[0].nm : `${itens.length} produtos`;
-  const isFiado = pag === 'Fiado';
-  const ped = { id, cid, itens, prod: prodLabel, q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag, st: isFiado ? 'Pendente' : (isPending ? 'Pendente' : 'Confirmado'), dt: td() };
+  const ped = {
+    id, cid: cid || null, itens, prod: prodLabel,
+    q: itens.reduce((a,b)=>a+b.q,0), tot, pag: pagLabel, parc, dtpag,
+    st: isFiado ? 'Pendente' : (isPending ? 'Pendente' : 'Confirmado'),
+    dt: td(),
+    ...(c ? {} : { pendente_cli: true }),
+  };
   DB.peds.push(ped);
-  c.gasto += tot;
-  c.ult = td();
+  if (c) {
+    c.gasto += tot;
+    c.ult = td();
+    sbSync(() => SBClis.update(cid, { gasto: c.gasto, ult: c.ult }));
+  }
   if (!isFiado) {
     const tr = { id: DB.nid.t++, tp: 'receita', ds: `Pedido #${id}`, vl: tot, dt: dtpag };
     DB.trans.push(tr);
@@ -1770,13 +1795,11 @@ function saveV() {
     if (p) { p.st = Math.max(0, p.st - item.q); sbSync(() => SBProds.updateStock(item.pid, p.st)); }
   });
   sbSync(() => SBPeds.upsert(ped));
-  sbSync(() => SBClis.update(cid, { gasto: c.gasto, ult: c.ult }));
   _nvCart = [];
   nvRenderCart();
   setQuickSaleMode(false);
   renderAll();
   rReceber();
-  /* Animação de sucesso em vez do toast direto */
   showSaleSuccess(ped, c, tot, parc);
 }
 
@@ -1828,7 +1851,7 @@ function closeSaleSuccess() {
 
 function ssCupom() {
   closeSaleSuccess();
-  if (_lastSalePed && _lastSaleCli) showCupom(_lastSalePed, _lastSaleCli, null);
+  if (_lastSalePed) showCupom(_lastSalePed, _lastSaleCli || { nm: 'Sem cliente', tel: '' }, null);
 }
 
 function ssNovaVenda() {
@@ -1869,6 +1892,69 @@ function selPay(btn, val) {
     }
   }
   nvRenderCart();
+  nvUpdatePixQR();
+}
+
+/* ── PIX QR no checkout ──────────────────────────── */
+let _nvPixPayload = '';
+
+function nvUpdatePixQR() {
+  const wrap   = $('nv-pix-qr-wrap');
+  if (!wrap) return;
+  const isPix  = $('vpg')?.value === 'PIX';
+  if (!isPix) { wrap.classList.remove('on'); return; }
+
+  const pixKey = DB.settings?.pix;
+  const noKey  = $('nv-pix-no-key');
+  const miniRow = wrap.querySelector('.nv-pix-mini-row');
+
+  if (!pixKey) {
+    wrap.classList.add('on');
+    if (noKey)    noKey.style.display    = 'flex';
+    if (miniRow)  miniRow.style.display  = 'none';
+    return;
+  }
+
+  if (noKey)   noKey.style.display   = 'none';
+  if (miniRow) miniRow.style.display  = 'flex';
+
+  const tot     = _nvCart.reduce((a,b) => a+b.sub, 0);
+  const payload = buildPixPayload(pixKey, tot, 'NV' + Date.now());
+  _nvPixPayload = payload;
+
+  const keyEl = $('nv-pix-key-lbl');
+  if (keyEl) keyEl.textContent = pixKey.length > 32 ? pixKey.slice(0,30)+'…' : pixKey;
+  const valEl = $('nv-pix-val-lbl');
+  if (valEl) valEl.textContent = brl(tot);
+
+  wrap.classList.add('on');
+  renderPixQR($('nv-pix-qr-c'), $('nv-pix-qr-img'), payload);
+}
+
+function nvExpandPixQR() {
+  const overlay = $('nv-pix-overlay');
+  if (!overlay || !_nvPixPayload) return;
+  const tot    = _nvCart.reduce((a,b) => a+b.sub, 0);
+  const pixKey = DB.settings?.pix || '';
+  if ($('nv-pix-overlay-val'))  $('nv-pix-overlay-val').textContent  = brl(tot);
+  if ($('nv-pix-overlay-key'))  $('nv-pix-overlay-key').textContent  = pixKey;
+  overlay.style.display = 'flex';
+  renderPixQR($('nv-pix-qr-big-c'), $('nv-pix-qr-big-img'), _nvPixPayload, 200);
+}
+
+function nvCollapsePixQR() {
+  const overlay = $('nv-pix-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+async function nvCopyPixCode(btn) {
+  if (!_nvPixPayload) return;
+  try {
+    await navigator.clipboard.writeText(_nvPixPayload);
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  } catch(e) { showToast('Erro ao copiar'); }
 }
 function selParc(btn, val) {
   if ($('vparc')) $('vparc').value = val;
@@ -3030,12 +3116,15 @@ function gerarCupomPedido(id) {
 
 function confirmV() {
   if (!_nvCart.length) { showToast('Adicione ao menos um produto'); return; }
-  const cid = parseInt($('vc')?.value);
-  const c = DB.clis.find(x => x.id === cid);
-  if (!c) { showToast('Selecione um cliente'); return; }
+  const cid = parseInt($('vc')?.value) || null;
+  const c = cid ? DB.clis.find(x => x.id === cid) : null;
   const tot = _nvCart.reduce((a, b) => a + b.sub, 0);
   const resumo = _nvCart.length === 1 ? _nvCart[0].nm : `${_nvCart.length} produtos`;
-  askConfirm(`Registrar venda de ${brl(tot)} para ${c.nm}?\n\n${resumo}`, saveV);
+  if (c) {
+    askConfirm(`Registrar venda de ${brl(tot)} para ${c.nm}?\n\n${resumo}`, saveV);
+  } else {
+    askConfirm(`Registrar venda de ${brl(tot)} sem cliente?\n\nA venda ficará marcada como pendente de identificação.\n\n${resumo}`, saveV);
+  }
 }
 
 function confirmMV() {

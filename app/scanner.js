@@ -439,7 +439,7 @@ async function _startPhonePairing() {
     }
     baseUrl = `${location.protocol}//${host}:${location.port}`;
   }
-  _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}${tunnel?.key ? `&key=${tunnel.key}` : ''}`;
+  _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}`;
   await _renderQR(_phoneQrUrl);
   _setQrNetHint(viaTunnel);
   _phoneSetStatus('waiting', 'Aguardando celular...');

@@ -43,18 +43,18 @@ function buildPixPayload(key, amount, txid) {
 }
 
 /* Renderiza o QR (canvas se a lib estiver disponível, senão imagem via API) */
-async function renderPixQR(canvasEl, imgEl, payload) {
+async function renderPixQR(canvasEl, imgEl, payload, size = 150) {
   if (!payload) return;
   if (window.QRCode && canvasEl) {
     try {
-      await QRCode.toCanvas(canvasEl, payload, { width: 150, margin: 1, color: { dark: '#111', light: '#fff' } });
+      await QRCode.toCanvas(canvasEl, payload, { width: size, margin: 1, color: { dark: '#111', light: '#fff' } });
       canvasEl.style.display = 'block';
       if (imgEl) imgEl.style.display = 'none';
       return;
     } catch (e) {}
   }
   if (imgEl) {
-    imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=8&data=${encodeURIComponent(payload)}`;
+    imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=8&data=${encodeURIComponent(payload)}`;
     imgEl.style.display = 'block';
     if (canvasEl) canvasEl.style.display = 'none';
   }

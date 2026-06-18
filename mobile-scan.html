@@ -215,7 +215,21 @@
     }
 
     if (!sessionId) { showError('🔗', 'Sem sessão', 'Abra esta página pelo QR code gerado no computador.'); }
-    else { init(); }
+    else { requestCameraPermission(); init(); }
+
+    /* Solicita permissão de câmera imediatamente quando a página abre —
+       o popup de autorização aparece na hora, sem esperar o Supabase conectar. */
+    async function requestCameraPermission() {
+      if (!navigator.mediaDevices?.getUserMedia) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        stream.getTracks().forEach(t => t.stop()); /* só precisávamos do popup */
+      } catch (e) {
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          showError('📷', 'Câmera bloqueada', 'Permita o acesso à câmera nas configurações do navegador e recarregue a página.');
+        }
+      }
+    }
 
     function playBeepMobile() {
       try {

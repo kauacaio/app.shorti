@@ -134,7 +134,7 @@ function hvUpd() {
   const avatarColors = ['--blue-bg,--blue','--violet-bg,--violet','--green-bg,--green','--orange-bg,--orange'];
   if (cardsEl) cardsEl.innerHTML = peds.map((p, idx) => {
     const c   = DB.clis.find(x => x.id === p.cid);
-    const nm  = c ? c.nm : '—';
+    const nm  = c ? c.nm : (p.pendente_cli ? 'Sem cliente' : '—');
     const ini = esc(nm.split(' ').filter(Boolean).map(w => w[0]).slice(0,2).join('').toUpperCase() || '?');
     const [bg, fg] = avatarColors[idx % avatarColors.length].split(',');
     return `<div class="rb-card" style="cursor:pointer" onclick="editPed(${p.id})">
@@ -158,7 +158,7 @@ function hvUpd() {
     return `<tr>
       <td style="color:var(--tx-m);font-size:12.5px">#${p.id}</td>
       <td>${fdt(p.dt)}</td>
-      <td style="font-weight:500">${c ? esc(c.nm) : '—'}</td>
+      <td style="font-weight:500">${c ? esc(c.nm) : (p.pendente_cli ? '<span class="xb xb-gold" style="font-size:11px">Sem cliente</span>' : '—')}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.prod)}</td>
       <td style="font-weight:600">${brl(p.tot)}</td>
       <td style="color:var(--tx-m)">${p.pag}</td>
