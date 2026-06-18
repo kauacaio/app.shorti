@@ -68,6 +68,7 @@ async function _cqSetupQR(){
     return;
   }
   if(_phoneSid&&_phoneChannel&&_phoneQrUrl){
+    _cqShowPinDigits(_phoneSid);
     await _cqRenderQR(_phoneQrUrl);
     _phoneChannel
       .on('broadcast',{event:'phone-connected'},()=>{_phoneConnected=true;_phoneSetStatus('connected','📱 Celular conectado');_cqFlipConnected();})
@@ -79,12 +80,30 @@ async function _cqSetupQR(){
     if(w)w.innerHTML=`<div class="cq-no-phone"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg><p>Use a busca para localizar produtos.<br><small>Scanner por celular requer Supabase.</small></p></div>`;
     return;
   }
-  _phoneSid=[...Array(14)].map(()=>Math.random().toString(36)[2]).join('');
-  _phoneConnected=false;
-  let base,key;try{const r=await fetch(`${location.protocol}//${location.hostname}:3000/api/tunnel`);const j=await r.json();base=j.url||null;key=j.key;}catch(e){base=null;}
-  if(!base){const h=await _getLocalIP()||location.hostname;base=`https://${h}:${location.port}`;key=null;}
-  _phoneQrUrl=`${base}/mobile-scan.html?s=${_phoneSid}${key?`&key=${key}`:''}`;
+
+  /* PIN de 6 dígitos */
+  _phoneSid = String(Math.floor(100000 + Math.random() * 900000));
+  _phoneConnected = false;
+
+  /* URL base */
+  const hasLocalServer = location.port === '3000';
+  let base = null;
+  if(hasLocalServer){try{const r=await fetch(`${location.protocol}//${location.hostname}:3000/api/tunnel`);const j=await r.json();base=j.url||null;}catch(e){}}
+  if(!base){
+    const host = (location.hostname==='localhost'||location.hostname==='127.0.0.1')?(await _getLocalIP()||location.hostname):location.hostname;
+    const port = location.port?`:${location.port}`:'';
+    const dir  = location.pathname.replace(/\/[^/]*$/,'');
+    base = `${location.protocol}//${host}${port}${dir}`;
+  }
+  _phoneQrUrl = `${base}/mobile-scan.html?s=${_phoneSid}`;
+
+  /* Exibe PIN e QR */
+  _cqShowPinDigits(_phoneSid);
   await _cqRenderQR(_phoneQrUrl);
+
+  /* Broadcast para dispositivos registrados */
+  _broadcastToDevices(_phoneSid, _phoneQrUrl);
+
   _phoneChannel=window._sbClient.channel(`erp-scan-${_phoneSid}`,{config:{broadcast:{self:false}}});
   _phoneChannel
     .on('broadcast',{event:'phone-connected'},()=>{_phoneConnected=true;_phoneSetStatus('connected','📱 Celular conectado');_cqFlipConnected();})
@@ -92,10 +111,43 @@ async function _cqSetupQR(){
     .subscribe();
 }
 
+function _cqShowPinDigits(sid){
+  const el=$('cq-pin-digits');
+  if(!el)return;
+  const mk=d=>`<span class="cq-pin-d">${d}</span>`;
+  el.innerHTML=sid.slice(0,3).split('').map(mk).join('')+'<span class="cq-pin-sep"></span>'+sid.slice(3).split('').map(mk).join('');
+}
+
+async function cqCopyLink(){
+  if(!_phoneQrUrl){showToast('Aguarde o código ser gerado');return;}
+  const btn=$('cq-copy-btn');
+  const orig=btn?.innerHTML;
+  try{
+    await navigator.clipboard.writeText(_phoneQrUrl);
+    if(btn){
+      btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copiado!';
+      btn.style.background='#16A34A';
+      setTimeout(()=>{btn.innerHTML=orig;btn.style.background='';},2000);
+    }
+  }catch(e){showToast(_phoneQrUrl);}
+}
+
 async function _cqRenderQR(url){
   const c=$('cq-qr-canvas'),i=$('cq-qr-img');
-  if(window.QRCode&&c){try{await QRCode.toCanvas(c,url,{width:180,margin:1,color:{dark:'#111',light:'#fff'}});c.style.display='block';if(i)i.style.display='none';return;}catch(e){}}
-  if(i){i.src=`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(url)}`;i.style.display='block';if(c)c.style.display='none';}
+  const opt=$('cq-qr-option'), div=$('cq-conn-or');
+  let ok=false;
+
+  if(window.QRCode&&c){
+    try{await QRCode.toCanvas(c,url,{width:140,margin:1,color:{dark:'#111',light:'#fff'}});c.style.display='block';if(i)i.style.display='none';ok=true;}catch(e){}
+  }
+  if(!ok&&i){
+    i.onload=()=>{if(opt)opt.style.display='block';if(div)div.style.display='flex';};
+    i.onerror=()=>{};
+    i.src=`https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=6&data=${encodeURIComponent(url)}`;
+    i.style.display='block';if(c)c.style.display='none';
+    return;
+  }
+  if(ok){if(opt)opt.style.display='block';if(div)div.style.display='flex';}
 }
 
 function _cqFlipConnected(){
@@ -142,31 +194,103 @@ function cqShowProduct(p){
   if($('cq-search-results'))$('cq-search-results').style.display='none';
   if($('cq-placeholder'))$('cq-placeholder').style.display='none';
   const el=$('cq-product-card');if(!el)return;
-  const sc=p.st===0?'var(--err)':p.st<=3?'#D97706':'var(--ok)';
-  const sl=p.st===0?'Sem estoque':p.st<=3?`Baixo — ${p.st} un.`:`${p.st} un. em estoque`;
-  const thumb=p.img?`<img src="${p.img}" class="cq-pi-img" alt="">`:`<div class="cq-pi-em">${p.em||'📦'}</div>`;
-  el.innerHTML=`<div class="cq-prod">
-    <div class="cq-prod-top">${thumb}
-      <div class="cq-prod-info">
-        <div class="cq-prod-nm">${p.nm}</div>
-        ${p.cat?`<div class="cq-prod-cat">${p.cat}</div>`:''}
-        <div class="cq-prod-price"><span class="cq-price-val">${brl(p.pd??p.pr)}</span>${p.pd?`<del class="cq-price-old">${brl(p.pr)}</del>`:''}</div>
-        <div class="cq-prod-stock" style="color:${sc}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-          ${sl}</div>
-        ${p.bc?`<div class="cq-prod-bc">EAN ${p.bc}</div>`:''}
+
+  /* ── Estoque ── */
+  const stColor = p.st===0?'var(--err)':p.st<=3?'#D97706':'var(--ok)';
+  const stLabel = p.st===0?'Sem estoque':p.st<=3?'Estoque baixo':'Disponível';
+  const stPct   = Math.min(100, Math.round((p.st/Math.max(p.st,20))*100));
+
+  /* ── Preço ── */
+  const hasDisc  = p.pd!=null && p.pd<p.pr;
+  const savings  = hasDisc ? p.pr-p.pd : 0;
+  const discPct  = hasDisc ? Math.round((savings/p.pr)*100) : 0;
+
+  /* ── Histórico de vendas ── */
+  const peds = (DB.peds||[]).filter(o=>o.itens?.some(i=>i.pid===p.id));
+  const totalSold = peds.reduce((acc,o)=>{const i=o.itens?.find(x=>x.pid===p.id);return acc+(i?i.q:0);},0);
+  const totalRev  = peds.reduce((acc,o)=>{const i=o.itens?.find(x=>x.pid===p.id);return acc+(i?i.sub:0);},0);
+  const lastPed   = peds.length ? [...peds].sort((a,b)=>b.dt.localeCompare(a.dt))[0] : null;
+  const lastDate  = lastPed ? lastPed.dt.split('-').reverse().join('/') : null;
+
+  /* ── Thumb ── */
+  const thumb = p.img
+    ? `<img src="${p.img}" class="cq-v2-img" alt="">`
+    : `<div class="cq-v2-em">${p.em||'📦'}</div>`;
+
+  /* ── Badges ── */
+  const bgs=[];
+  if(p.dt==='sale') bgs.push(`<span class="cq-badge cq-bdg-sale">Promoção</span>`);
+  if(p.dt==='new')  bgs.push(`<span class="cq-badge cq-bdg-new">Novo</span>`);
+  if(p.st===0)      bgs.push(`<span class="cq-badge cq-bdg-out">Sem estoque</span>`);
+  else if(p.st<=3)  bgs.push(`<span class="cq-badge cq-bdg-low">Baixo estoque</span>`);
+
+  el.innerHTML=`
+  <div class="cq-v2">
+
+    <!-- Hero -->
+    <div class="cq-v2-hero">
+      ${thumb}
+      <div class="cq-v2-hero-body">
+        ${bgs.length?`<div class="cq-v2-badges">${bgs.join('')}</div>`:''}
+        <div class="cq-v2-name">${p.em?p.em+' ':''}${p.nm}</div>
+        ${p.cat?`<div class="cq-v2-cat">${cNm?.[p.cat]||p.cat}</div>`:''}
+        <div class="cq-v2-price-row">
+          <span class="cq-v2-price">${brl(p.pd??p.pr)}</span>
+          ${hasDisc?`<del class="cq-v2-price-old">${brl(p.pr)}</del><span class="cq-v2-disc">-${discPct}%</span>`:''}
+        </div>
+        ${hasDisc?`<div class="cq-v2-savings">Economia de ${brl(savings)}</div>`:''}
       </div>
     </div>
-    ${p.desc?`<p class="cq-prod-desc">${p.desc}</p>`:''}
-    ${p.feats?.length?`<div class="cq-prod-feats">${p.feats.map(f=>`<span class="cq-feat">${f}</span>`).join('')}</div>`:''}
-    <div class="cq-prod-actions">
+
+    <!-- Grade de dados -->
+    <div class="cq-v2-grid">
+
+      <div class="cq-v2-block">
+        <div class="cq-v2-block-label">Estoque</div>
+        <div class="cq-v2-stock-bar-bg"><div class="cq-v2-stock-bar" style="width:${stPct}%;background:${stColor}"></div></div>
+        <div class="cq-v2-stock-txt" style="color:${stColor}"><strong>${p.st} unidades</strong> · ${stLabel}</div>
+      </div>
+
+      <div class="cq-v2-block">
+        <div class="cq-v2-block-label">Preços</div>
+        <div class="cq-v2-price-table">
+          <div class="cq-v2-pt-row"><span>Preço normal</span><span>${brl(p.pr)}</span></div>
+          ${hasDisc?`<div class="cq-v2-pt-row cq-v2-pt-promo"><span>Promoção</span><span>${brl(p.pd)}</span></div>`:''}
+          ${p.bump!=null?`<div class="cq-v2-pt-row"><span>Order bump</span><span>${brl(p.bump)}</span></div>`:''}
+        </div>
+      </div>
+
+      <div class="cq-v2-block">
+        <div class="cq-v2-block-label">Vendas</div>
+        <div class="cq-v2-stat-row">
+          <div class="cq-v2-stat"><div class="cq-v2-stat-val">${totalSold}</div><div class="cq-v2-stat-lbl">un. vendidas</div></div>
+          <div class="cq-v2-stat"><div class="cq-v2-stat-val">${totalRev>0?brl(totalRev):'—'}</div><div class="cq-v2-stat-lbl">faturado</div></div>
+          <div class="cq-v2-stat"><div class="cq-v2-stat-val">${lastDate||'—'}</div><div class="cq-v2-stat-lbl">última venda</div></div>
+        </div>
+      </div>
+
+      ${p.bc?`
+      <div class="cq-v2-block">
+        <div class="cq-v2-block-label">Código de barras</div>
+        <div class="cq-v2-bc">${p.bc}</div>
+      </div>`:''}
+
+    </div>
+
+    ${p.desc?`<div class="cq-v2-section"><div class="cq-v2-block-label">Descrição</div><p class="cq-v2-desc">${p.desc}</p></div>`:''}
+    ${p.feats?.length?`<div class="cq-v2-section"><div class="cq-v2-block-label">Características</div><div class="cq-v2-feats">${p.feats.map(f=>`<span class="cq-feat">${f}</span>`).join('')}</div></div>`:''}
+
+    <!-- Ações -->
+    <div class="cq-v2-actions">
       <button class="btn btn-outline cq-act-btn" onclick="cqEdit(${p.id})">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar produto
       </button>
       <button class="btn btn-primary cq-act-btn" onclick="cqSell(${p.id})"${p.st===0?' disabled':''}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Vender
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Vender agora
       </button>
-    </div></div>`;
+    </div>
+
+  </div>`;
   el.style.display='block';
 }
 function cqEdit(id){_cqStopCamera();setTimeout(()=>editP(id),80);}

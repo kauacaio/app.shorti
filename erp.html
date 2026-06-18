@@ -261,6 +261,9 @@
             <img src="logo-mark.svg" class="emh-logo-img" width="26" height="26" alt="Shorti">
             <span class="emh-name">Shorti<b>.</b></span>
           </div>
+          <button class="emh-bell" aria-label="Scanner mobile" onclick="window.open('https://kauacaio.github.io/app.shorti/mobile-scan.html','_blank')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </button>
           <button class="emh-bell" aria-label="Notificações" onclick="toggleNotifPanel()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <span class="emh-bell-dot" id="notif-badge-mobile" aria-hidden="true"></span>
@@ -329,6 +332,10 @@
               <p class="dash-greeting-date" id="dash-date"></p>
             </div>
             <div class="dash-greeting-actions">
+              <button class="btn btn-outline" onclick="window.open('https://kauacaio.github.io/app.shorti/mobile-scan.html','_blank')" title="Scanner mobile">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                Scanner
+              </button>
               <button class="btn btn-outline" onclick="epage('extrato', null)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Extrato
@@ -1185,21 +1192,55 @@
               <!-- QR / estados (desktop) -->
               <div id="cq-qr-wrap" style="display:none" class="cq-qr-wrap-page">
                 <div id="cq-state-waiting">
-                  <div class="cq-qr-card">
-                    <p class="cq-qr-label">Escaneie com o celular</p>
-                    <div class="cq-qr-frame">
-                      <canvas id="cq-qr-canvas" width="180" height="180"></canvas>
-                      <img id="cq-qr-img" width="180" height="180" alt="QR" style="display:none;border-radius:6px">
+
+                  <p class="cq-conn-heading">Conectar celular</p>
+
+                  <!-- Opção A: QR code -->
+                  <div class="cq-conn-option" id="cq-qr-option" style="display:none">
+                    <div class="cq-conn-opt-badge cq-badge-fast-green">Mais rápido</div>
+                    <div class="cq-conn-opt-row">
+                      <div class="cq-qr-frame">
+                        <canvas id="cq-qr-canvas" width="140" height="140"></canvas>
+                        <img id="cq-qr-img" width="140" height="140" alt="QR" style="display:none;border-radius:6px">
+                      </div>
+                      <div class="cq-conn-opt-text">
+                        <p class="cq-conn-opt-title">Escaneie o QR code</p>
+                        <p class="cq-conn-opt-sub">Aponte a câmera do celular para o QR. Conecta automaticamente, sem digitar nada.</p>
+                      </div>
                     </div>
                   </div>
-                  <div class="cq-qr-caption">
-                    <div class="cq-qr-caption-title">Leia o QR code<br>para conectar</div>
-                    <div class="cq-qr-caption-sub">Abra a câmera do celular e aponte<br>para o código ao lado</div>
-                    <div class="cq-phone-status">
-                      <span class="cq-phone-dot" id="cq-phone-dot"></span>
-                      <span id="cq-phone-txt">Aguardando celular…</span>
+
+                  <!-- Divisor -->
+                  <div class="cq-conn-or" id="cq-conn-or" style="display:none"><span>ou</span></div>
+
+                  <!-- Opção B: Link + código -->
+                  <div class="cq-conn-option">
+                    <p class="cq-conn-opt-title">Abra o app e digite o código</p>
+                    <p class="cq-conn-opt-sub">Envie o link para o celular e insira o código abaixo.</p>
+                    <button class="cq-copy-btn" id="cq-copy-btn" onclick="cqCopyLink()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copiar link do app
+                    </button>
+                    <p class="cq-pin-eyebrow">Código a digitar no app</p>
+                    <div class="cq-pin-digits" id="cq-pin-digits">
+                      <span class="cq-pin-d">·</span><span class="cq-pin-d">·</span><span class="cq-pin-d">·</span>
+                      <span class="cq-pin-sep"></span>
+                      <span class="cq-pin-d">·</span><span class="cq-pin-d">·</span><span class="cq-pin-d">·</span>
                     </div>
                   </div>
+
+                  <!-- Segurança -->
+                  <div class="cq-conn-security">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Não compartilhe este código com ninguém
+                  </div>
+
+                  <!-- Status -->
+                  <div class="cq-phone-status" style="margin-top:4px">
+                    <span class="cq-phone-dot" id="cq-phone-dot"></span>
+                    <span id="cq-phone-txt">Aguardando celular…</span>
+                  </div>
+
                 </div>
 
                 <div id="cq-state-connected" class="cq-connected-card" style="display:none">
@@ -1745,58 +1786,112 @@
 
       <!-- ── Painel QR code (Scanner por celular) ── -->
       <div class="scn-phone-panel" id="scn-phone-panel" style="display:none">
-        <!-- Reconectando a um celular pareado anteriormente -->
-        <div class="scn-reconnect-state" id="scn-reconnect-state">
-          <div class="scn-reconnect-spinner"></div>
-          <p class="scn-reconnect-txt">Conectando ao celular pareado anteriormente…</p>
-        </div>
-        <!-- PIN de pareamento (método principal) -->
-        <div class="scn-pin-block" id="scn-pin-block" style="display:none">
-          <p class="scn-pin-label">Código de pareamento</p>
-          <div class="scn-pin-code" id="scn-pin-code">· · ·  · · ·</div>
-          <button class="scn-open-mobile-btn" onclick="shareMobileScanApp()">📲 Enviar para o celular</button>
-          <p class="scn-pin-sub">Abre o menu de compartilhamento do navegador</p>
-        </div>
-        <!-- Dispositivos registrados -->
-        <div class="scn-devices-wrap" id="scn-devices-wrap" style="display:none">
-          <div class="scn-devices-header">
-            <span class="scn-devices-title">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              Meus dispositivos
-            </span>
-            <button class="scn-add-dev-btn" onclick="toggleAddDevice()" title="Adicionar dispositivo">+</button>
-          </div>
-          <div id="scn-device-list"></div>
-          <div id="scn-add-dev-form" style="display:none">
-            <input id="scn-dev-code-inp" class="scn-dev-inp" placeholder="Código do celular (ex: MXK 7P2)" maxlength="7"
-                   oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addDevice()">
-            <input id="scn-dev-name-inp" class="scn-dev-inp" placeholder="Nome (ex: iPhone da Milena)" onkeydown="if(event.key==='Enter')addDevice()">
-            <div style="display:flex;gap:8px;margin-top:6px">
-              <button class="scn-dev-save-btn" onclick="addDevice()">Salvar</button>
-              <button class="scn-dev-cancel-btn" onclick="toggleAddDevice()">Cancelar</button>
+
+        <!-- Cabeçalho branco -->
+        <div class="scn-panel-header">
+          <div class="scn-panel-brand">
+            <div class="scn-panel-brand-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
             </div>
+            <span class="scn-panel-brand-name">Shorti Scanner</span>
+          </div>
+          <button class="scn-panel-close" onclick="closeScanner()" title="Fechar">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <!-- Corpo scrollável -->
+        <div class="scn-panel-body">
+
+          <!-- Reconectando -->
+          <div class="scn-reconnect-state" id="scn-reconnect-state">
+            <div class="scn-reconnect-spinner"></div>
+            <p class="scn-reconnect-txt">Conectando ao celular pareado…</p>
+          </div>
+
+          <div id="scn-pin-block" style="display:none">
+
+            <p class="scn-connect-title">Conectar celular</p>
+
+            <!-- Opção A: QR (caminho rápido) -->
+            <div class="scn-option-card" id="scn-qr-secondary" style="display:none">
+              <div class="scn-option-badge scn-badge-fast">Mais rápido</div>
+              <div class="scn-qr-hero-row">
+                <div class="scn-qr-wrap">
+                  <canvas id="scn-qr-canvas" width="120" height="120"></canvas>
+                  <img id="scn-qr-img" width="120" height="120" alt="QR" style="display:none">
+                </div>
+                <div class="scn-qr-hero-text">
+                  <p class="scn-option-title">Escaneie o QR code</p>
+                  <p class="scn-option-sub">Abra a câmera do celular e aponte para o QR. A câmera conecta automaticamente, sem digitar nada.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Divisor -->
+            <div class="scn-or-divider"><span>ou</span></div>
+
+            <!-- Opção B: Link + código manual -->
+            <div class="scn-option-card">
+              <p class="scn-option-title">Abra o app e digite o código</p>
+              <p class="scn-option-sub">Envie o link para o celular e, no app, digite o código abaixo para conectar.</p>
+              <button class="scn-share-btn" id="scn-copy-link-btn" onclick="copyMobileScanLink()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar link do app
+              </button>
+              <p class="scn-code-label">Código a digitar no app</p>
+              <div class="scn-pin-digits" id="scn-pin-digits">
+                <span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span>
+                <span class="scn-pin-divider"></span>
+                <span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span>
+              </div>
+            </div>
+
+            <!-- Aviso de segurança -->
+            <div class="scn-security-notice">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Não compartilhe este código com ninguém. Ele dá acesso direto ao seu scanner.
+            </div>
+
+            <!-- Dispositivos registrados -->
+            <div class="scn-devices-section" id="scn-devices-wrap" style="display:none">
+              <div class="scn-devices-header">
+                <span class="scn-devices-title">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                  Meus dispositivos
+                </span>
+                <button class="scn-add-dev-btn" onclick="toggleAddDevice()" title="Adicionar">+</button>
+              </div>
+              <div id="scn-device-list"></div>
+              <div id="scn-add-dev-form" style="display:none">
+                <input id="scn-dev-code-inp" class="scn-dev-inp" placeholder="Código do celular (ex: MXK7P2)" maxlength="7"
+                       oninput="this.value=this.value.replace(/\s/g,'').toUpperCase()" onkeydown="if(event.key==='Enter')addDevice()">
+                <input id="scn-dev-name-inp" class="scn-dev-inp" placeholder="Nome (ex: iPhone da Milena)" onkeydown="if(event.key==='Enter')addDevice()">
+                <div style="display:flex;gap:8px">
+                  <button class="scn-dev-save-btn" onclick="addDevice()">Salvar</button>
+                  <button class="scn-dev-cancel-btn" onclick="toggleAddDevice()">Cancelar</button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /scn-pin-block -->
+          <p id="scn-qr-url" style="display:none"></p>
+          <p class="scn-qr-net-hint" id="scn-qr-net-hint" style="display:none"></p>
+
+        </div><!-- /scn-panel-body -->
+
+        <!-- Footer fixo -->
+        <div class="scn-panel-footer">
+          <div class="scn-phone-status" id="scn-phone-status">
+            <span class="scn-phone-dot" id="scn-phone-dot"></span>
+            <span id="scn-phone-status-txt">Aguardando celular…</span>
+          </div>
+          <div class="scn-phone-actions">
+            <button class="scn-refresh-btn" id="scn-refresh-btn" onclick="refreshPhoneQr()" title="Novo código">↻ Novo código</button>
+            <button class="scn-disconnect-btn" onclick="disconnectPhone()">Desconectar</button>
           </div>
         </div>
 
-        <!-- QR code (secundário) -->
-        <div class="scn-qr-secondary" id="scn-qr-secondary" style="display:none">
-          <p class="scn-qr-secondary-label">ou escaneie o QR</p>
-          <div class="scn-qr-wrap">
-            <canvas id="scn-qr-canvas" width="160" height="160"></canvas>
-            <img id="scn-qr-img" width="160" height="160" alt="QR Code" style="display:none;border-radius:4px">
-          </div>
-        </div>
-        <p id="scn-qr-url" style="display:none;font-size:10px;color:rgba(255,255,255,.3);word-break:break-all;text-align:center;padding:0 8px;margin-top:4px"></p>
-        <p class="scn-qr-net-hint" id="scn-qr-net-hint" style="display:none"></p>
-        <div class="scn-phone-status" id="scn-phone-status">
-          <span class="scn-phone-dot" id="scn-phone-dot"></span>
-          <span id="scn-phone-status-txt">Aguardando celular...</span>
-        </div>
-        <p class="scn-phone-hint-txt">Digite o código no celular para conectar a câmera</p>
-        <div class="scn-phone-actions">
-          <button class="scn-refresh-btn" id="scn-refresh-btn" onclick="refreshPhoneQr()" title="Gerar novo código">↻ Novo código</button>
-          <button class="scn-disconnect-btn" onclick="disconnectPhone()" title="Encerrar sessão do celular">✕ Desconectar</button>
-        </div>
       </div>
 
       <!-- Câmera + frame -->
@@ -2384,6 +2479,7 @@
     if (btn) { btn.classList.add('ld'); btn.disabled = true; }
     try {
       DB.settings.displayName = nome;
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(DB.settings)); } catch(ee) {}
       await SBSettings.set(DB.settings, window._tenant?.id);
       window._userName = nome;
       const parts = nome.split(' ');

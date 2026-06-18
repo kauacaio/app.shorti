@@ -572,12 +572,16 @@ async function _startPhonePairing() {
   /* ── Envia sessão para dispositivos registrados (auto-connect) ── */
   const mobileBase = `${baseUrl}/mobile-scan.html`;
   _broadcastToDevices(_phoneSid, `${mobileBase}?s=${_phoneSid}`);
-  const pinBlock   = $('scn-pin-block');
-  const pinCode    = $('scn-pin-code');
-  const pinUrlTxt  = $('scn-pin-url-txt');
-  if (pinBlock)  pinBlock.style.display  = 'block';
-  if (pinCode)   pinCode.textContent     = _phoneSid.slice(0,3) + '  ' + _phoneSid.slice(3);
-  if (pinUrlTxt) pinUrlTxt.textContent   = mobileBase;
+  const pinBlock = $('scn-pin-block');
+  if (pinBlock) pinBlock.style.display = 'block';
+  const pinDigits = $('scn-pin-digits');
+  if (pinDigits) {
+    const mkBox = d => `<span class="scn-pin-digit">${d}</span>`;
+    pinDigits.innerHTML =
+      _phoneSid.slice(0,3).split('').map(mkBox).join('') +
+      '<span class="scn-pin-divider"></span>' +
+      _phoneSid.slice(3).split('').map(mkBox).join('');
+  }
 
   /* ── Tenta QR como secundário (não bloqueia nem trava se falhar) ── */
   _phoneQrUrl = `${mobileBase}?s=${_phoneSid}`;
@@ -612,27 +616,26 @@ async function refreshPhoneQr() {
   await _startPhonePairing();
 }
 
-async function shareMobileScanApp() {
+async function copyMobileScanLink() {
   if (!_phoneQrUrl) { showToast('Gere um código primeiro'); return; }
-  const pin = _phoneSid.slice(0,3) + ' ' + _phoneSid.slice(3);
 
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: 'ERP Scanner',
-        text: `Código de conexão: ${pin}`,
-        url: _phoneQrUrl,
-      });
-    } catch(e) { /* usuário cancelou */ }
-    return;
-  }
+  const btn = document.getElementById('scn-copy-link-btn');
+  const orig = btn?.innerHTML;
 
-  /* Fallback: copia o link para área de transferência */
   try {
     await navigator.clipboard.writeText(_phoneQrUrl);
-    showToast('Link copiado! Cole no celular.');
+    if (btn) {
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Link copiado!';
+      btn.style.background = '#16A34A';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
+    }
   } catch(e) {
-    showToast(_phoneQrUrl);
+    /* fallback: share API */
+    if (navigator.share) {
+      try { await navigator.share({ title: 'ERP Scanner', url: _phoneQrUrl }); } catch(e2) {}
+    } else {
+      showToast(_phoneQrUrl);
+    }
   }
 }
 
