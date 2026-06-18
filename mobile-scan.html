@@ -126,6 +126,28 @@
     #scan-count { text-align: center; font-size: 11.5px; color: #4B5563; padding-top: 6px; }
     #count-num  { color: #9CA3AF; font-weight: 600; }
 
+    /* Manual code input */
+    #manual-row {
+      display: flex; gap: 8px; margin-bottom: 10px;
+    }
+    #manual-inp {
+      flex: 1; background: rgba(255,255,255,.07);
+      border: 1.5px solid rgba(255,255,255,.12);
+      border-radius: 10px; padding: 11px 14px;
+      color: #fff; font-size: 15px; font-family: 'Courier New', monospace;
+      letter-spacing: .04em; outline: none;
+      transition: border-color .2s;
+    }
+    #manual-inp:focus { border-color: #2563EB; }
+    #manual-inp::placeholder { color: #4B5563; font-family: system-ui; letter-spacing: 0; }
+    #manual-send {
+      background: #2563EB; color: #fff; border: none;
+      border-radius: 10px; padding: 0 16px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      white-space: nowrap; transition: opacity .15s;
+    }
+    #manual-send:active { opacity: .75; }
+
     /* Error/loading states */
     #error-view {
       position: fixed; inset: 0; z-index: 200;
@@ -144,6 +166,88 @@
       border: none; border-radius: 10px;
       font-size: 14px; font-weight: 600; cursor: pointer;
     }
+
+    /* PIN entry screen */
+    #pin-view {
+      position: fixed; inset: 0; z-index: 300;
+      background: #0A0A0F;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px; text-align: center;
+    }
+    #pin-view.show { display: flex; }
+    .pin-logo    { font-size: 32px; margin-bottom: 24px; }
+    .pin-title   { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .pin-sub     { font-size: 13px; color: #6B7280; margin-bottom: 32px; line-height: 1.5; }
+    #pin-inp {
+      font-size: 32px; font-weight: 700; letter-spacing: 8px;
+      text-align: center; width: 200px;
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(255,255,255,.15);
+      border-radius: 14px; padding: 16px 12px;
+      color: #fff; outline: none;
+      font-family: 'Courier New', monospace;
+      caret-color: #60A5FA;
+      transition: border-color .2s;
+    }
+    #pin-inp:focus { border-color: #2563EB; }
+    #pin-inp.shake { animation: pinShake .35s ease; }
+    @keyframes pinShake {
+      0%,100% { transform: none; }
+      20%,60% { transform: translateX(-6px); }
+      40%,80% { transform: translateX(6px); }
+    }
+    #pin-btn {
+      margin-top: 20px; width: 200px; padding: 14px;
+      background: #2563EB; color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity .2s;
+    }
+    #pin-btn:active { opacity: .8; }
+    .pin-hint { margin-top: 20px; font-size: 12px; color: #374151; }
+
+    /* Código de dispositivo (fixo, para conexão automática) */
+    .pin-device-sep {
+      width: 100%; max-width: 280px; border: none;
+      border-top: 1px solid rgba(255,255,255,.08);
+      margin: 24px 0 20px;
+    }
+    .pin-device-label {
+      font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.25); margin-bottom: 10px;
+    }
+    .pin-device-code {
+      font-size: 22px; font-weight: 700; letter-spacing: 6px;
+      color: rgba(255,255,255,.7); font-family: 'Courier New', monospace;
+      margin-bottom: 6px;
+    }
+    .pin-device-sub {
+      font-size: 11px; color: rgba(255,255,255,.2); line-height: 1.5;
+      max-width: 240px; margin-bottom: 12px;
+    }
+    .pin-device-copy {
+      font-size: 11px; color: #60A5FA; background: none; border: none;
+      cursor: pointer; padding: 4px 8px; text-decoration: underline;
+    }
+
+    /* Auto-connect toast */
+    #autoconn-toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      background: #1D4ED8; color: #fff; border-radius: 12px;
+      padding: 14px 20px; font-size: 14px; font-weight: 600;
+      display: none; flex-direction: column; align-items: center; gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4); z-index: 400; min-width: 240px;
+      text-align: center;
+    }
+    #autoconn-toast.show { display: flex; }
+    #autoconn-toast .act-btns { display: flex; gap: 8px; }
+    #autoconn-toast .act-btn {
+      padding: 7px 16px; border-radius: 8px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .act-confirm { background: #fff; color: #1D4ED8; }
+    .act-dismiss { background: rgba(255,255,255,.15); color: #fff; }
   </style>
 </head>
 <body>
@@ -187,7 +291,39 @@
         Enviado para o PC
       </div>
     </div>
+    <div id="manual-row">
+      <input id="manual-inp" type="text" inputmode="numeric" placeholder="Digitar código manualmente"
+             autocomplete="off" onkeydown="if(event.key==='Enter')sendManual()">
+      <button id="manual-send" onclick="sendManual()">Enviar</button>
+    </div>
     <div id="scan-count">Códigos enviados: <span id="count-num">0</span></div>
+  </div>
+
+  <!-- Tela de entrada de PIN -->
+  <div id="pin-view">
+    <div class="pin-logo">📱</div>
+    <div class="pin-title">Conectar ao ERP</div>
+    <div class="pin-sub">Digite o código de 6 dígitos<br>exibido no computador</div>
+    <input id="pin-inp" type="tel" inputmode="numeric" maxlength="7"
+           placeholder="000 000" autocomplete="off"
+           oninput="onPinInput(this)" onkeydown="if(event.key==='Enter')submitPin()">
+    <button id="pin-btn" onclick="submitPin()">Conectar</button>
+    <p class="pin-hint">O código aparece no painel do scanner do ERP</p>
+
+    <hr class="pin-device-sep">
+    <p class="pin-device-label">Seu código de dispositivo</p>
+    <div class="pin-device-code" id="my-device-code">——————</div>
+    <p class="pin-device-sub">Registre este código no ERP para conectar automaticamente na próxima vez</p>
+    <button class="pin-device-copy" onclick="copyDeviceCode()">Copiar código</button>
+  </div>
+
+  <!-- Toast de auto-conexão recebida do PC -->
+  <div id="autoconn-toast">
+    <span>📡 Nova sessão do ERP disponível</span>
+    <div class="act-btns">
+      <button class="act-btn act-confirm" onclick="acceptAutoConn()">Conectar</button>
+      <button class="act-btn act-dismiss" onclick="dismissAutoConn()">Agora não</button>
+    </div>
   </div>
 
   <!-- View de erro -->
@@ -205,7 +341,66 @@
     const SB_URL = 'https://aksgxwucgkajznhxyciz.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrc2d4d3VjZ2thanpuaHh5Y2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTIyMjAsImV4cCI6MjA5NDQyODIyMH0.ggBOday3Mktl_Oc5pGG6rs-VG3iwDYc3GWNsGcH__5k';
 
-    const sessionId = new URLSearchParams(location.search).get('s');
+    let _sid = new URLSearchParams(location.search).get('s');
+
+    /* ── Código permanente de dispositivo ── */
+    const DEV_KEY = 'erp_device_code';
+    const CHARS   = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    function _genDeviceCode() {
+      return Array.from({length:6}, () => CHARS[Math.floor(Math.random()*CHARS.length)]).join('');
+    }
+    let _deviceCode = localStorage.getItem(DEV_KEY);
+    if (!_deviceCode) { _deviceCode = _genDeviceCode(); localStorage.setItem(DEV_KEY, _deviceCode); }
+
+    let _pendingAutoSid = null;
+
+    function copyDeviceCode() {
+      navigator.clipboard?.writeText(_deviceCode).catch(()=>{});
+      const el = document.getElementById('my-device-code');
+      const orig = el.textContent;
+      el.textContent = 'Copiado!';
+      setTimeout(() => { el.textContent = orig; }, 1200);
+    }
+
+    function acceptAutoConn() {
+      dismissAutoConn();
+      if (!_pendingAutoSid) return;
+      _sid = _pendingAutoSid;
+      _pendingAutoSid = null;
+      document.getElementById('pin-view').classList.remove('show');
+      requestCameraPermission();
+      init();
+    }
+
+    function dismissAutoConn() {
+      document.getElementById('autoconn-toast').classList.remove('show');
+      _pendingAutoSid = null;
+    }
+
+    function _subscribeDeviceChannel(client) {
+      const ch = client.channel(`erp-device-${_deviceCode}`, {
+        config: { broadcast: { self: false } }
+      });
+      ch.on('broadcast', { event: 'device-ping' }, () => {
+        ch.send({ type: 'broadcast', event: 'device-ack', payload: { name: _deviceCode } });
+      });
+      ch.on('broadcast', { event: 'new-session' }, ({ payload }) => {
+        if (!payload?.pin) return;
+        _pendingAutoSid = payload.pin;
+        /* Se já está conectado, troca de sessão silenciosamente */
+        if (_channel) {
+          _sid = payload.pin;
+          _channel.unsubscribe();
+          _channel = null;
+          init();
+          return;
+        }
+        /* Senão mostra o toast de auto-connect */
+        document.getElementById('autoconn-toast').classList.add('show');
+        setTimeout(dismissAutoConn, 20000);
+      });
+      ch.subscribe();
+    }
 
     function showError(icon, title, msg) {
       document.getElementById('err-icon').textContent = icon;
@@ -214,8 +409,36 @@
       document.getElementById('error-view').classList.add('show');
     }
 
-    if (!sessionId) { showError('🔗', 'Sem sessão', 'Abra esta página pelo QR code gerado no computador.'); }
-    else { requestCameraPermission(); init(); }
+    function onPinInput(el) {
+      const digits = el.value.replace(/\D/g, '').slice(0, 6);
+      el.value = digits.length > 3 ? digits.slice(0,3) + ' ' + digits.slice(3) : digits;
+    }
+
+    function submitPin() {
+      const pin = document.getElementById('pin-inp').value.replace(/\D/g, '');
+      if (pin.length !== 6) {
+        const inp = document.getElementById('pin-inp');
+        inp.classList.remove('shake');
+        void inp.offsetWidth;
+        inp.classList.add('shake');
+        return;
+      }
+      _sid = pin;
+      document.getElementById('pin-view').classList.remove('show');
+      requestCameraPermission();
+      init();
+    }
+
+    /* Exibe o código de dispositivo na tela de PIN */
+    const _dcEl = document.getElementById('my-device-code');
+    if (_dcEl) _dcEl.textContent = _deviceCode.slice(0,3) + ' ' + _deviceCode.slice(3);
+
+    if (!_sid) {
+      document.getElementById('pin-view').classList.add('show');
+    } else {
+      requestCameraPermission();
+      init();
+    }
 
     /* Solicita permissão de câmera imediatamente quando a página abre —
        o popup de autorização aparece na hora, sem esperar o Supabase conectar. */
@@ -257,23 +480,23 @@
       const connText = document.getElementById('conn-text');
 
       /* Criar canal broadcast */
-      const channel = client.channel(`erp-scan-${sessionId}`, {
+      _channel = client.channel(`erp-scan-${_sid}`, {
         config: { broadcast: { self: false } }
       });
 
-      /* Responde a "ping" do PC — permite que o ERP detecte e reconecte
-         automaticamente a este celular já pareado, sem mostrar o QR de novo. */
-      channel.on('broadcast', { event: 'ping' }, () => {
-        channel.send({ type: 'broadcast', event: 'pong', payload: {} });
+      /* Responde a "ping" do PC */
+      _channel.on('broadcast', { event: 'ping' }, () => {
+        _channel.send({ type: 'broadcast', event: 'pong', payload: {} });
       });
 
-      channel.subscribe(async (status) => {
+      _subscribeDeviceChannel(client);
+
+      _channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           pill.className = 'connected';
           connText.textContent = 'Conectado';
-          /* Avisar o PC que o celular está conectado */
-          await channel.send({ type: 'broadcast', event: 'phone-connected', payload: {} });
-          startCamera(channel);
+          await _channel.send({ type: 'broadcast', event: 'phone-connected', payload: {} });
+          startCamera();
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           pill.className = 'error';
           connText.textContent = 'Erro';
@@ -282,10 +505,32 @@
       });
     }
 
-    let _scanCool = false;
-    let _count    = 0;
+    let _scanCool  = false;
+    let _count     = 0;
+    let _channel   = null;
 
-    function startCamera(channel) {
+    async function sendManual() {
+      const inp   = document.getElementById('manual-inp');
+      const clean = (inp.value || '').replace(/\D/g, '');
+      if (!clean || !_channel) return;
+      inp.value = '';
+      await sendCode(clean);
+    }
+
+    async function sendCode(clean) {
+      playBeepMobile();
+      if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+      _count++;
+      document.getElementById('last-code-val').textContent = clean;
+      const lc = document.getElementById('last-code');
+      lc.classList.remove('visible');
+      void lc.offsetWidth;
+      lc.classList.add('visible');
+      document.getElementById('count-num').textContent = _count;
+      await _channel.send({ type: 'broadcast', event: 'barcode', payload: { code: clean } });
+    }
+
+    function startCamera() {
       const scanner = new Html5Qrcode('reader');
       const cfg = {
         fps: 15,
@@ -309,33 +554,11 @@
         async (code) => {
           if (_scanCool) return;
           _scanCool = true;
-
-          const clean = code.replace(/\D/g, '') || code;
-
-          /* Feedback */
-          playBeepMobile();
-          if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
-
-          /* Atualizar UI */
-          _count++;
-          document.getElementById('last-code-val').textContent = clean;
-          const lc = document.getElementById('last-code');
-          lc.classList.remove('visible');
-          void lc.offsetWidth;
-          lc.classList.add('visible');
-          document.getElementById('count-num').textContent = _count;
-
-          /* Enviar ao PC */
-          await channel.send({
-            type: 'broadcast',
-            event: 'barcode',
-            payload: { code: clean }
-          });
-
+          await sendCode(code.replace(/\D/g, '') || code);
           setTimeout(() => { _scanCool = false; }, 1800);
         },
         () => {}
-      ).catch(err => {
+      ).catch(() => {
         showError('📷', 'Câmera bloqueada',
           'Permita o acesso à câmera nas configurações do navegador e recarregue a página.');
       });

@@ -1750,9 +1750,41 @@
           <div class="scn-reconnect-spinner"></div>
           <p class="scn-reconnect-txt">Conectando ao celular pareado anteriormente…</p>
         </div>
-        <div class="scn-qr-wrap">
-          <canvas id="scn-qr-canvas" width="200" height="200"></canvas>
-          <img id="scn-qr-img" width="200" height="200" alt="QR Code" style="display:none;border-radius:6px">
+        <!-- PIN de pareamento (método principal) -->
+        <div class="scn-pin-block" id="scn-pin-block" style="display:none">
+          <p class="scn-pin-label">Código de pareamento</p>
+          <div class="scn-pin-code" id="scn-pin-code">· · ·  · · ·</div>
+          <button class="scn-open-mobile-btn" onclick="shareMobileScanApp()">📲 Enviar para o celular</button>
+          <p class="scn-pin-sub">Abre o menu de compartilhamento do navegador</p>
+        </div>
+        <!-- Dispositivos registrados -->
+        <div class="scn-devices-wrap" id="scn-devices-wrap" style="display:none">
+          <div class="scn-devices-header">
+            <span class="scn-devices-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              Meus dispositivos
+            </span>
+            <button class="scn-add-dev-btn" onclick="toggleAddDevice()" title="Adicionar dispositivo">+</button>
+          </div>
+          <div id="scn-device-list"></div>
+          <div id="scn-add-dev-form" style="display:none">
+            <input id="scn-dev-code-inp" class="scn-dev-inp" placeholder="Código do celular (ex: MXK 7P2)" maxlength="7"
+                   oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addDevice()">
+            <input id="scn-dev-name-inp" class="scn-dev-inp" placeholder="Nome (ex: iPhone da Milena)" onkeydown="if(event.key==='Enter')addDevice()">
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button class="scn-dev-save-btn" onclick="addDevice()">Salvar</button>
+              <button class="scn-dev-cancel-btn" onclick="toggleAddDevice()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR code (secundário) -->
+        <div class="scn-qr-secondary" id="scn-qr-secondary" style="display:none">
+          <p class="scn-qr-secondary-label">ou escaneie o QR</p>
+          <div class="scn-qr-wrap">
+            <canvas id="scn-qr-canvas" width="160" height="160"></canvas>
+            <img id="scn-qr-img" width="160" height="160" alt="QR Code" style="display:none;border-radius:4px">
+          </div>
         </div>
         <p id="scn-qr-url" style="display:none;font-size:10px;color:rgba(255,255,255,.3);word-break:break-all;text-align:center;padding:0 8px;margin-top:4px"></p>
         <p class="scn-qr-net-hint" id="scn-qr-net-hint" style="display:none"></p>
@@ -1760,9 +1792,9 @@
           <span class="scn-phone-dot" id="scn-phone-dot"></span>
           <span id="scn-phone-status-txt">Aguardando celular...</span>
         </div>
-        <p class="scn-phone-hint-txt">Escaneie o QR code com seu celular<br>para usar a câmera do celular como scanner</p>
+        <p class="scn-phone-hint-txt">Digite o código no celular para conectar a câmera</p>
         <div class="scn-phone-actions">
-          <button class="scn-refresh-btn" id="scn-refresh-btn" onclick="refreshPhoneQr()" title="Gerar um novo QR code">↻ Gerar novo QR</button>
+          <button class="scn-refresh-btn" id="scn-refresh-btn" onclick="refreshPhoneQr()" title="Gerar novo código">↻ Novo código</button>
           <button class="scn-disconnect-btn" onclick="disconnectPhone()" title="Encerrar sessão do celular">✕ Desconectar</button>
         </div>
       </div>

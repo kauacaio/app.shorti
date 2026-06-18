@@ -235,7 +235,104 @@ let _phoneConnected = false;
 let _phoneSid       = null;
 let _phoneQrUrl     = null;
 
-const PHONE_SID_KEY = 'erp_phone_sid';
+const PHONE_SID_KEY  = 'erp_phone_sid';
+const DEVICES_LS_KEY = 'erp_paired_devices';
+let   _deviceChannels = {}; /* deviceCode → supabase channel */
+
+/* ── Gerenciamento de dispositivos registrados ─────── */
+function _getDevices() {
+  try { return JSON.parse(localStorage.getItem(DEVICES_LS_KEY)) || []; } catch { return []; }
+}
+function _saveDevices(list) { localStorage.setItem(DEVICES_LS_KEY, JSON.stringify(list)); }
+
+function toggleAddDevice() {
+  const form = $('scn-add-dev-form');
+  if (!form) return;
+  const open = form.style.display !== 'none';
+  form.style.display = open ? 'none' : 'block';
+  if (!open) setTimeout(() => $('scn-dev-code-inp')?.focus(), 50);
+}
+
+function addDevice() {
+  const rawCode = ($('scn-dev-code-inp')?.value || '').replace(/\s/g,'').toUpperCase();
+  const name    = ($('scn-dev-name-inp')?.value || '').trim() || 'Meu celular';
+  if (rawCode.length < 4) { showToast('Digite o código do celular'); return; }
+
+  const devices = _getDevices();
+  if (!devices.find(d => d.code === rawCode)) {
+    devices.push({ code: rawCode, name, addedAt: new Date().toISOString() });
+    _saveDevices(devices);
+  }
+  if ($('scn-dev-code-inp')) $('scn-dev-code-inp').value = '';
+  if ($('scn-dev-name-inp')) $('scn-dev-name-inp').value = '';
+  toggleAddDevice();
+  _renderDeviceList();
+  _subscribeDeviceChannel(rawCode, name);
+  showToast(`${name} adicionado`);
+}
+
+function removeDevice(code) {
+  _saveDevices(_getDevices().filter(d => d.code !== code));
+  if (_deviceChannels[code]) {
+    try { _deviceChannels[code].unsubscribe(); } catch(e) {}
+    delete _deviceChannels[code];
+  }
+  _renderDeviceList();
+}
+
+function _renderDeviceList() {
+  const list = $('scn-device-list');
+  const wrap = $('scn-devices-wrap');
+  const devices = _getDevices();
+  if (wrap) wrap.style.display = 'block';
+  if (!list) return;
+  if (!devices.length) {
+    list.innerHTML = '<p class="scn-no-devices">Nenhum dispositivo — clique em + para adicionar</p>';
+    return;
+  }
+  list.innerHTML = devices.map(d => `
+    <div class="scn-device-item">
+      <span class="scn-dev-dot" id="ddot-${d.code}"></span>
+      <span class="scn-dev-name">📱 ${d.name}</span>
+      <button class="scn-dev-remove" onclick="removeDevice('${d.code}')" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function _setDeviceOnline(code, online) {
+  const dot = document.getElementById(`ddot-${code}`);
+  if (dot) dot.className = `scn-dev-dot ${online ? 'online' : ''}`;
+}
+
+function _subscribeDeviceChannel(code, name) {
+  if (_deviceChannels[code] || !window._sbClient || window._sbClient._local) return;
+  const ch = window._sbClient.channel(`erp-device-${code}`, {
+    config: { broadcast: { self: false } }
+  });
+  ch.on('broadcast', { event: 'device-ack' }, () => _setDeviceOnline(code, true));
+  ch.subscribe(status => {
+    if (status === 'SUBSCRIBED') {
+      ch.send({ type: 'broadcast', event: 'device-ping', payload: {} });
+    }
+  });
+  _deviceChannels[code] = ch;
+}
+
+function _initDeviceChannels() {
+  _getDevices().forEach(d => _subscribeDeviceChannel(d.code, d.name));
+  _renderDeviceList();
+}
+
+async function _broadcastToDevices(pin, url) {
+  const devices = _getDevices();
+  for (const d of devices) {
+    const ch = _deviceChannels[d.code];
+    if (!ch) continue;
+    try {
+      await ch.send({ type: 'broadcast', event: 'new-session', payload: { pin, url } });
+    } catch(e) {}
+  }
+}
 
 function _getLocalIP() {
   return new Promise(resolve => {
@@ -283,6 +380,36 @@ async function _renderQR(url) {
   if (urlEl) { urlEl.textContent = url; urlEl.style.display = 'block'; }
 }
 
+/* Tenta renderizar QR no bloco secundário — silencioso se falhar */
+async function _tryRenderQrSecondary(url) {
+  const wrap   = $('scn-qr-secondary');
+  const canvas = $('scn-qr-canvas');
+  const img    = $('scn-qr-img');
+
+  /* Tenta biblioteca QRCode.js primeiro */
+  if (window.QRCode && canvas) {
+    try {
+      await QRCode.toCanvas(canvas, url, {
+        width: 160, margin: 1,
+        color: { dark: '#111111', light: '#ffffff' }
+      });
+      canvas.style.display = 'block';
+      if (img) img.style.display = 'none';
+      if (wrap) wrap.style.display = 'block';
+      return;
+    } catch(e) {}
+  }
+
+  /* Fallback: imagem via api.qrserver.com */
+  if (img) {
+    if (canvas) canvas.style.display = 'none';
+    img.style.display = 'block';
+    img.onload  = () => { if (wrap) wrap.style.display = 'block'; };
+    img.onerror = () => { /* silencioso — QR secundário simplesmente não aparece */ };
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=${encodeURIComponent(url)}`;
+  }
+}
+
 function _phoneSetStatus(state, msg) {
   const dot = $('scn-phone-dot');
   const txt = $('scn-phone-status-txt');
@@ -309,6 +436,8 @@ async function togglePhoneScanner() {
   const panel = $('scn-phone-panel');
   if (cam)   cam.style.display   = 'none';
   if (panel) panel.style.display = 'flex';
+
+  _initDeviceChannels();
 
   if (_scanner) {
     try { await _scanner.stop(); } catch(e) {}
@@ -419,7 +548,8 @@ function _setQrNetHint(viaTunnel) {
 }
 
 async function _startPhonePairing() {
-  _phoneSid       = [...Array(14)].map(() => Math.random().toString(36)[2]).join('');
+  /* PIN de 6 dígitos — fácil de digitar, único o suficiente para uma sessão */
+  _phoneSid       = String(Math.floor(100000 + Math.random() * 900000));
   _phoneConnected = false;
 
   /* Porta 3000 = servidor local (server.js) rodando → tenta pegar URL do túnel.
@@ -431,8 +561,6 @@ async function _startPhonePairing() {
 
   if (!baseUrl) {
     let host = location.hostname;
-    /* Só resolve IP real via WebRTC quando o host é localhost,
-       pois aí o celular não conseguiria usar 'localhost' para acessar o PC. */
     if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') {
       host = await _getLocalIP() || host;
     }
@@ -440,8 +568,21 @@ async function _startPhonePairing() {
     const dir  = location.pathname.replace(/\/[^/]*$/, '');
     baseUrl = `${location.protocol}//${host}${port}${dir}`;
   }
-  _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}`;
-  await _renderQR(_phoneQrUrl);
+
+  /* ── Envia sessão para dispositivos registrados (auto-connect) ── */
+  const mobileBase = `${baseUrl}/mobile-scan.html`;
+  _broadcastToDevices(_phoneSid, `${mobileBase}?s=${_phoneSid}`);
+  const pinBlock   = $('scn-pin-block');
+  const pinCode    = $('scn-pin-code');
+  const pinUrlTxt  = $('scn-pin-url-txt');
+  if (pinBlock)  pinBlock.style.display  = 'block';
+  if (pinCode)   pinCode.textContent     = _phoneSid.slice(0,3) + '  ' + _phoneSid.slice(3);
+  if (pinUrlTxt) pinUrlTxt.textContent   = mobileBase;
+
+  /* ── Tenta QR como secundário (não bloqueia nem trava se falhar) ── */
+  _phoneQrUrl = `${mobileBase}?s=${_phoneSid}`;
+  _tryRenderQrSecondary(_phoneQrUrl);
+
   _setQrNetHint(viaTunnel || !hasLocalServer);
   _phoneSetStatus('waiting', 'Aguardando celular...');
 
@@ -461,10 +602,38 @@ async function refreshPhoneQr() {
   localStorage.removeItem(PHONE_SID_KEY);
 
   const hint = $('scn-qr-net-hint');
-  if (hint) hint.style.display = 'none';
+  const pinBlock = $('scn-pin-block');
+  const qrSec   = $('scn-qr-secondary');
+  if (hint)     hint.style.display     = 'none';
+  if (pinBlock) pinBlock.style.display = 'none';
+  if (qrSec)   qrSec.style.display    = 'none';
 
-  showToast('Gerando novo QR code...');
+  showToast('Gerando novo código...');
   await _startPhonePairing();
+}
+
+async function shareMobileScanApp() {
+  if (!_phoneQrUrl) { showToast('Gere um código primeiro'); return; }
+  const pin = _phoneSid.slice(0,3) + ' ' + _phoneSid.slice(3);
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'ERP Scanner',
+        text: `Código de conexão: ${pin}`,
+        url: _phoneQrUrl,
+      });
+    } catch(e) { /* usuário cancelou */ }
+    return;
+  }
+
+  /* Fallback: copia o link para área de transferência */
+  try {
+    await navigator.clipboard.writeText(_phoneQrUrl);
+    showToast('Link copiado! Cole no celular.');
+  } catch(e) {
+    showToast(_phoneQrUrl);
+  }
 }
 
 function _hidePhonePanel() {
