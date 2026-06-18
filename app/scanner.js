@@ -422,20 +422,18 @@ async function _startPhonePairing() {
   _phoneSid       = [...Array(14)].map(() => Math.random().toString(36)[2]).join('');
   _phoneConnected = false;
 
-  const isLocal = ['localhost', '127.0.0.1', '0.0.0.0'].includes(location.hostname);
-  const tunnel  = isLocal ? await _fetchTunnelUrl() : null;
+  /* Porta 3000 = servidor local (server.js) rodando → tenta pegar URL do túnel.
+     Em produção (GitHub Pages, Vercel) a porta é vazia → pula o fetch. */
+  const hasLocalServer = location.port === '3000';
+  const tunnel  = hasLocalServer ? await _fetchTunnelUrl() : null;
   let baseUrl   = tunnel?.url;
   let viaTunnel = !!baseUrl;
 
   if (!baseUrl) {
-    /* Sem túnel: usar o endereço que o PC está usando AGORA para acessar o
-       ERP — é garantidamente alcançável (foi por ele que a página carregou).
-       Só tenta adivinhar o IP da rede via WebRTC quando o acesso é por
-       localhost/127.0.0.1 (nesse caso location.hostname não serviria
-       para o celular alcançar o PC). A adivinhação por WebRTC pode pegar
-       um IP de VPN/Docker/adaptador virtual e causar "conexão recusada". */
     let host = location.hostname;
-    if (isLocal) {
+    /* Só resolve IP real via WebRTC quando o host é localhost,
+       pois aí o celular não conseguiria usar 'localhost' para acessar o PC. */
+    if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') {
       host = await _getLocalIP() || host;
     }
     const port = location.port ? `:${location.port}` : '';
@@ -444,7 +442,7 @@ async function _startPhonePairing() {
   }
   _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}`;
   await _renderQR(_phoneQrUrl);
-  _setQrNetHint(viaTunnel || !isLocal);
+  _setQrNetHint(viaTunnel || !hasLocalServer);
   _phoneSetStatus('waiting', 'Aguardando celular...');
 
   _phoneChannel = window._sbClient.channel(`erp-scan-${_phoneSid}`, {
