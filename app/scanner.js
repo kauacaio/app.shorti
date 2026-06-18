@@ -439,7 +439,8 @@ async function _startPhonePairing() {
       host = await _getLocalIP() || host;
     }
     const port = location.port ? `:${location.port}` : '';
-    baseUrl = `${location.protocol}//${host}${port}`;
+    const dir  = location.pathname.replace(/\/[^/]*$/, '');
+    baseUrl = `${location.protocol}//${host}${port}${dir}`;
   }
   _phoneQrUrl = `${baseUrl}/mobile-scan.html?s=${_phoneSid}`;
   await _renderQR(_phoneQrUrl);
