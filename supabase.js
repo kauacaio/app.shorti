@@ -217,6 +217,19 @@ const SBIds = {
 };
 
 /* ── Produtos ───────────────────────────────────────── */
+/* Helper: injeta tenant_id do usuário logado em qualquer row */
+function _withTenant(row) {
+  const tid = window._tenant?.id;
+  if (tid && !row.tenant_id) row.tenant_id = tid;
+  return row;
+}
+/* Helper: filtro composto (tenant_id, id) para writes seguros */
+function _tenantFilter(q, id) {
+  const tid = window._tenant?.id;
+  if (tid) q = q.eq('tenant_id', tid);
+  return q.eq('id', id);
+}
+
 const SBProds = {
   async list(tenantId) {
     let q = _sbClient.from('products').select('*').order('id');
@@ -226,15 +239,15 @@ const SBProds = {
     return data.map(_rowToProduct);
   },
   async upsert(p) {
-    const { error } = await _sbClient.from('products').upsert(_productToRow(p));
+    const { error } = await _sbClient.from('products').upsert(_withTenant(_productToRow(p)));
     if (error) throw error;
   },
   async delete(id) {
-    const { error } = await _sbClient.from('products').delete().eq('id', id);
+    const { error } = await _tenantFilter(_sbClient.from('products').delete(), id);
     if (error) throw error;
   },
   async updateStock(id, st) {
-    const { error } = await _sbClient.from('products').update({ st }).eq('id', id);
+    const { error } = await _tenantFilter(_sbClient.from('products').update({ st }), id);
     if (error) throw error;
   }
 };
@@ -249,11 +262,15 @@ const SBClis = {
     return data.map(_rowToClient);
   },
   async upsert(c) {
-    const { error } = await _sbClient.from('clients').upsert(_clientToRow(c));
+    const { error } = await _sbClient.from('clients').upsert(_withTenant(_clientToRow(c)));
     if (error) throw error;
   },
   async update(id, patch) {
-    const { error } = await _sbClient.from('clients').update(patch).eq('id', id);
+    const { error } = await _tenantFilter(_sbClient.from('clients').update(patch), id);
+    if (error) throw error;
+  },
+  async delete(id) {
+    const { error } = await _tenantFilter(_sbClient.from('clients').delete(), id);
     if (error) throw error;
   }
 };
@@ -268,11 +285,11 @@ const SBPeds = {
     return data.map(_rowToOrder);
   },
   async upsert(ped) {
-    const { error } = await _sbClient.from('orders').upsert(_orderToRow(ped));
+    const { error } = await _sbClient.from('orders').upsert(_withTenant(_orderToRow(ped)));
     if (error) throw error;
   },
   async updateStatus(id, st) {
-    const { error } = await _sbClient.from('orders').update({ st }).eq('id', id);
+    const { error } = await _tenantFilter(_sbClient.from('orders').update({ st }), id);
     if (error) throw error;
   }
 };
@@ -305,7 +322,7 @@ const SBTrans = {
     return data.map(_rowToTrans);
   },
   async upsert(t) {
-    const { error } = await _sbClient.from('transactions').upsert(_transToRow(t));
+    const { error } = await _sbClient.from('transactions').upsert(_withTenant(_transToRow(t)));
     if (error) throw error;
   }
 };
@@ -320,15 +337,15 @@ const SBSolics = {
     return data.map(_rowToSolic);
   },
   async upsert(s) {
-    const { error } = await _sbClient.from('solicitacoes').upsert(_solicToRow(s));
+    const { error } = await _sbClient.from('solicitacoes').upsert(_withTenant(_solicToRow(s)));
     if (error) throw error;
   },
   async delete(id) {
-    const { error } = await _sbClient.from('solicitacoes').delete().eq('id', id);
+    const { error } = await _tenantFilter(_sbClient.from('solicitacoes').delete(), id);
     if (error) throw error;
   },
   async updateStatus(id, st) {
-    const { error } = await _sbClient.from('solicitacoes').update({ st }).eq('id', id);
+    const { error } = await _tenantFilter(_sbClient.from('solicitacoes').update({ st }), id);
     if (error) throw error;
   }
 };
@@ -343,11 +360,11 @@ const SBNotifs = {
     return data.map(_rowToNotif);
   },
   async upsert(n) {
-    const { error } = await _sbClient.from('notifications').upsert(_notifToRow(n));
+    const { error } = await _sbClient.from('notifications').upsert(_withTenant(_notifToRow(n)));
     if (error) throw error;
   },
   async delete(id) {
-    const { error } = await _sbClient.from('notifications').delete().eq('id', id);
+    const { error } = await _tenantFilter(_sbClient.from('notifications').delete(), id);
     if (error) throw error;
   }
 };

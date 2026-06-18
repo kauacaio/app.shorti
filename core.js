@@ -85,14 +85,15 @@ async function initDB() {
   if (!window._sbClient) return;
   _sbReady = true;
   const safe = async fn => { try { return await fn(); } catch(e) { console.warn('[initDB]', e.message); return null; } };
+  const tid = window._tenant?.id || null;
   const [prods, clis, peds, trans, solics, notifs, settings] = await Promise.all([
-    safe(() => SBProds.list()),
-    safe(() => SBClis.list()),
-    safe(() => SBPeds.list()),
-    safe(() => SBTrans.list()),
-    safe(() => SBSolics.list()),
-    safe(() => SBNotifs.list()),
-    safe(() => SBSettings.get())
+    safe(() => SBProds.list(tid)),
+    safe(() => SBClis.list(tid)),
+    safe(() => SBPeds.list(tid)),
+    safe(() => SBTrans.list(tid)),
+    safe(() => SBSolics.list(tid)),
+    safe(() => SBNotifs.list(tid)),
+    safe(() => SBSettings.get(tid))
   ]);
   if (prods)    { DB.prods  = prods;  if (prods.length)  DB.nid.p   = Math.max(...prods.map(x => x.id))  + 1; }
   if (clis)     { DB.clis   = clis;   if (clis.length)   DB.nid.c   = Math.max(...clis.map(x => x.id))   + 1; }
