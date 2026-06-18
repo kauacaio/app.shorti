@@ -261,13 +261,15 @@
             <img src="logo-mark.svg" class="emh-logo-img" width="26" height="26" alt="Shorti">
             <span class="emh-name">Shorti<b>.</b></span>
           </div>
-          <button class="emh-bell" aria-label="Scanner mobile" onclick="window.open('https://kauacaio.github.io/app.shorti/mobile-scan.html','_blank')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          </button>
-          <button class="emh-bell" aria-label="Notificações" onclick="toggleNotifPanel()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span class="emh-bell-dot" id="notif-badge-mobile" aria-hidden="true"></span>
-          </button>
+          <div style="display:flex;align-items:center;gap:2px">
+            <button class="emh-bell" aria-label="Scanner mobile" onclick="window.open('https://kauacaio.github.io/app.shorti/mobile-scan.html','_blank')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </button>
+            <button class="emh-bell" aria-label="Notificações" onclick="toggleNotifPanel()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="emh-bell-dot" id="notif-badge-mobile" aria-hidden="true"></span>
+            </button>
+          </div>
         </div>
         <div class="emh-greet">
           <p class="emh-greet-ctx" id="emh-ctx">Dashboard</p>
@@ -313,6 +315,10 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Voltar à loja
               </button>
+              <button class="tb-mi" onclick="window.open('legal.html','_blank'); closeTbMenu()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Privacidade &amp; Termos
+              </button>
               <div class="tb-ms"></div>
               <button class="tb-mi danger" onclick="doLogout()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -332,10 +338,6 @@
               <p class="dash-greeting-date" id="dash-date"></p>
             </div>
             <div class="dash-greeting-actions">
-              <button class="btn btn-outline" onclick="window.open('https://kauacaio.github.io/app.shorti/mobile-scan.html','_blank')" title="Scanner mobile">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                Scanner
-              </button>
               <button class="btn btn-outline" onclick="epage('extrato', null)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Extrato
@@ -1002,11 +1004,56 @@
               <p class="page-subtitle">Análise do negócio</p>
             </div>
           </div>
-          <div class="card-grid-wide">
-            <article class="data-card chart-card"><div class="card-title">Top produtos vendidos</div><div class="chart-shell"><canvas id="ch-top"></canvas></div></article>
-            <article class="data-card chart-card"><div class="card-title">Vendas por dia da semana</div><div class="chart-shell"><canvas id="ch-dia"></canvas></div></article>
+
+          <!-- KPIs do ano -->
+          <div class="dashboard-grid" id="rel-kpis" style="margin-bottom:20px"></div>
+
+          <!-- Gráficos -->
+          <div class="card-grid-wide" style="margin-bottom:20px">
+            <article class="data-card">
+              <div class="card-header" style="margin-bottom:16px">
+                <div>
+                  <div class="card-title" style="margin:0">Top produtos</div>
+                  <div style="font-size:12px;color:var(--tx-m);margin-top:3px">Por quantidade vendida</div>
+                </div>
+              </div>
+              <div class="chart-shell" style="height:220px"><canvas id="ch-top"></canvas></div>
+            </article>
+            <article class="data-card">
+              <div class="card-header" style="margin-bottom:16px">
+                <div>
+                  <div class="card-title" style="margin:0">Vendas por dia</div>
+                  <div style="font-size:12px;color:var(--tx-m);margin-top:3px">Distribuição semanal</div>
+                </div>
+              </div>
+              <div class="chart-shell" style="height:220px"><canvas id="ch-dia"></canvas></div>
+            </article>
           </div>
-          <div class="data-card"><div class="card-title">Resumo anual</div><div class="table-shell"><table><thead><tr><th>Mês</th><th>Pedidos</th><th>Receita</th><th>Ticket Médio</th><th>Novos Clientes</th><th>Meta</th></tr></thead><tbody id="ratt"></tbody></table></div></div>
+
+          <!-- Resumo mensal -->
+          <article class="data-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title" style="margin:0">Resumo mensal</div>
+                <div style="font-size:12px;color:var(--tx-m);margin-top:3px">Últimos 6 meses</div>
+              </div>
+            </div>
+            <div class="table-shell">
+              <table class="rel-table">
+                <thead>
+                  <tr>
+                    <th>Mês</th>
+                    <th>Pedidos</th>
+                    <th>Receita</th>
+                    <th>Ticket Médio</th>
+                    <th>Clientes</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ratt"></tbody>
+              </table>
+            </div>
+          </article>
         </section>
         <section class="erp-page" id="ep-loja">
           <div class="page-header">

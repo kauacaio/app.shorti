@@ -379,7 +379,7 @@ function checkout() {
     // Só pid/q vão para o servidor — preço, nome e total são recalculados
     // lá a partir do catálogo real (nunca confiamos no que o navegador envia).
     const itens = DB.cart.map(i => ({ pid: i.id, q: i.q }));
-    const slug = window._tenant?.slug || new URLSearchParams(location.search).get('loja') || 'milena-lima-beauty';
+    const slug = window._tenant?.slug || new URLSearchParams(location.search).get('loja') || '';
     SBStorefront.createOrder({ slug, nome, tel, itens }).catch(e => console.warn('[pedido loja]', e?.message));
   }
 }
@@ -569,7 +569,8 @@ async function loadFromSupabase() {
   if (!window._sbClient) return;
   const safe = async fn => { try { return await fn(); } catch(e) { return null; } };
 
-  const slug = new URLSearchParams(location.search).get('loja') || 'milena-lima-beauty';
+  const slug = new URLSearchParams(location.search).get('loja');
+  if (!slug) { showLojaNaoEncontrada(); return; }
   const tenant = await safe(() => Tenants.getBySlug(slug));
   if (!tenant) { showLojaNaoEncontrada(); return; }
   window._tenant = tenant;
@@ -588,6 +589,16 @@ async function loadFromSupabase() {
   }
 
   document.title = tenant.nome;
+
+  /* Restaura URL limpa se viemos via 404-routing (GitHub Pages) */
+  const _rtSlug = sessionStorage.getItem('_srt_slug');
+  const _rtBase = sessionStorage.getItem('_srt_base');
+  if (_rtSlug && _rtSlug === slug && _rtBase !== null) {
+    sessionStorage.removeItem('_srt_slug');
+    sessionStorage.removeItem('_srt_base');
+    history.replaceState(null, '', _rtBase + '/' + _rtSlug);
+  }
+
   if ($('site-intro-brand')) $('site-intro-brand').textContent = tenant.nome;
   if ($('site-brand-link'))  $('site-brand-link').textContent  = tenant.nome;
   if ($('footer-copyright-text')) {

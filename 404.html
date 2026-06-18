@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shorti</title>
+  <script>
+    (function () {
+      /* GitHub Pages 404 trick — roteamento de loja por slug
+         Quando alguém acessa /app.shorti/milena-lima-beauty,
+         o GitHub Pages não encontra o arquivo e serve este 404.html.
+         Aqui detectamos o slug e redirecionamos para loja.html. */
+
+      const known = new Set([
+        'erp.html', 'login.html', 'loja.html', 'index.html',
+        'admin.html', 'onboarding.html', 'legal.html',
+        'mobile-scan.html', '404.html', 'shorti.html',
+        'manifest.json', 'sw.js', 'favicon.svg'
+      ]);
+
+      const segs   = window.location.pathname.split('/').filter(Boolean);
+      const last   = segs[segs.length - 1] || '';
+
+      /* É um slug válido: não contém ponto e não é um arquivo conhecido */
+      const isSlug = last && !last.includes('.') && !known.has(last);
+
+      if (isSlug) {
+        const base = window.location.pathname.slice(
+          0, window.location.pathname.lastIndexOf('/' + last)
+        );
+        /* Guarda slug + base para loja.html restaurar a URL limpa depois */
+        sessionStorage.setItem('_srt_slug', last);
+        sessionStorage.setItem('_srt_base', base);
+        window.location.replace(base + '/loja.html?loja=' + encodeURIComponent(last));
+      } else {
+        /* Caminho desconhecido — volta para o início */
+        const root = '/' + segs.slice(0, -1).join('/');
+        window.location.replace(root || '/');
+      }
+    })();
+  </script>
+</head>
+<body></body>
+</html>

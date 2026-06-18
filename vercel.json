@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/:slug",
+      "destination": "/loja.html?loja=:slug"
+    }
+  ]
+}

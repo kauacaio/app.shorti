@@ -1136,6 +1136,25 @@ table tbody tr:hover td { background: #EFF6FF; }
 table tbody tr:hover { outline: none; }
 .table-shell       { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .table-shell table { min-width: 480px; }
+
+/* ── Tabela de relatórios ───────────────────────────── */
+.rel-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.rel-table thead th {
+  text-align: left; padding: 0 14px 12px;
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--tx-s);
+  border-bottom: 1px solid var(--bd);
+}
+.rel-table thead th:not(:first-child) { text-align: right; }
+.rel-table tbody tr { border-bottom: 1px solid var(--bd); transition: background .12s; }
+.rel-table tbody tr:last-child { border-bottom: none; }
+.rel-table tbody tr:hover { background: var(--bg); }
+.rel-table tbody td { padding: 13px 14px; color: var(--tx); }
+.rel-table tbody td:not(:first-child) { text-align: right; color: var(--tx-m); }
+.rel-table tbody td:last-child { text-align: right; }
+.rel-month { font-weight: 600; color: var(--tx); }
+.rel-year  { color: var(--tx-s); font-size: 12px; }
+.rel-val   { font-weight: 600; color: var(--tx) !important; }
 .compact-table     { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .cell-strong       { font-weight: 500; }
 .emoji-cell        { font-size: 1.1rem; }
@@ -3837,12 +3856,12 @@ table tbody tr:hover { outline: none; }
   .emh-name b { color: #818CF8; }
 
   .emh-bell {
-    position: relative; width: 38px; height: 38px; border-radius: 50%;
+    position: relative; width: 36px; height: 36px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.16);
-    color: #fff; cursor: pointer; padding: 0;
-    backdrop-filter: blur(8px);
+    background: none; border: none;
+    color: rgba(255,255,255,.75); cursor: pointer; padding: 0;
   }
+  .emh-bell:active { color: #fff; }
   .emh-bell-dot {
     display: none;
     position: absolute; top: 6px; right: 7px;
@@ -3851,7 +3870,7 @@ table tbody tr:hover { outline: none; }
   }
   .emh-bell-dot.on { display: block; }
 
-  .emh-greet { position: relative; z-index: 1; margin-top: 22px; }
+.emh-greet { position: relative; z-index: 1; margin-top: 22px; }
   .emh-greet-ctx {
     font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
     color: rgba(255,255,255,.35); margin: 0 0 5px;
@@ -3902,7 +3921,8 @@ table tbody tr:hover { outline: none; }
   .mc-trend { font-weight: 800 !important; border-radius: 6px !important; padding: 3px 8px !important; }
   .dash-main-row         { grid-template-columns: 1fr !important; gap: 12px !important; }
   .card-grid-wide        { grid-template-columns: minmax(0,1fr) !important; gap: 10px !important; }
-  .chart-card            { display: none !important; }
+  /* .chart-card removido — gráficos agora visíveis no mobile via data-card */
+  #ep-relatorios .chart-shell { height: 160px !important; }
   .finance-grid          { grid-template-columns: repeat(2,1fr) !important; }
   .dash-activity         { padding: 16px 14px; }
 

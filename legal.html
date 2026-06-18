@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shorti — Termos, Privacidade e Compliance</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: #F8FAFC;
+      color: #0F172A;
+      line-height: 1.7;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .topbar-logo  { width: 28px; height: 28px; border-radius: 8px; background: #1B44B8; display: flex; align-items: center; justify-content: center; }
+    .topbar-logo svg { width: 15px; height: 15px; }
+    .topbar-name  { font-size: 15px; font-weight: 800; color: #0F172A; letter-spacing: -.03em; }
+    .topbar-name b { color: #1B44B8; }
+    .topbar-back  {
+      font-size: 13px; font-weight: 500; color: #64748B; text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+      transition: color .15s;
+    }
+    .topbar-back:hover { color: #1B44B8; }
+
+    /* ── Layout ── */
+    .layout { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ── */
+    .hero { text-align: center; margin-bottom: 48px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: #1B44B8; background: #EFF4FF; border: 1px solid #BFDBFE;
+      border-radius: 100px; padding: 4px 12px; margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 36px; font-weight: 800; letter-spacing: -.04em; color: #0F172A;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .hero p { font-size: 15px; color: #64748B; max-width: 520px; margin: 0 auto; }
+    .hero-meta { margin-top: 20px; font-size: 12.5px; color: #94A3B8; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+    .hero-meta span { display: flex; align-items: center; gap: 5px; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 4px; background: #F1F5F9;
+      border-radius: 12px; padding: 4px; margin-bottom: 36px;
+    }
+    .tab-btn {
+      flex: 1; padding: 9px 16px; border-radius: 9px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', system-ui; color: #64748B;
+      background: none; transition: all .15s;
+    }
+    .tab-btn.on { background: #fff; color: #1B44B8; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Panels ── */
+    .panel { display: none; }
+    .panel.on { display: block; }
+
+    /* ── Document styles ── */
+    .doc-section { margin-bottom: 36px; }
+    .doc-section h2 {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: #94A3B8; margin-bottom: 16px; padding-bottom: 10px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    .doc-section h3 {
+      font-size: 16px; font-weight: 700; color: #0F172A;
+      letter-spacing: -.02em; margin: 20px 0 8px;
+    }
+    .doc-section h3:first-of-type { margin-top: 0; }
+    .doc-section p { font-size: 14px; color: #374151; margin-bottom: 12px; }
+    .doc-section ul, .doc-section ol {
+      padding-left: 20px; margin-bottom: 12px;
+    }
+    .doc-section li { font-size: 14px; color: #374151; margin-bottom: 6px; }
+    .doc-section strong { color: #0F172A; font-weight: 600; }
+
+    /* ── Info boxes ── */
+    .infobox {
+      border-radius: 10px; padding: 14px 16px; margin: 16px 0;
+      display: flex; gap: 12px; align-items: flex-start;
+      font-size: 13.5px;
+    }
+    .infobox-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .infobox-blue  { background: #EFF4FF; border: 1px solid #BFDBFE; color: #1e40af; }
+    .infobox-green { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .infobox-amber { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+
+    /* ── Data table ── */
+    .data-tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 12px 0 20px; }
+    .data-tbl thead th {
+      text-align: left; padding: 8px 12px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: #94A3B8; background: #F8FAFC; border-bottom: 1px solid #E2E8F0;
+    }
+    .data-tbl tbody td { padding: 10px 12px; border-bottom: 1px solid #F1F5F9; color: #374151; vertical-align: top; }
+    .data-tbl tbody tr:last-child td { border-bottom: none; }
+    .data-tbl tbody td:first-child { font-weight: 600; color: #0F172A; white-space: nowrap; }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 100px;
+    }
+    .badge-green { background: #D1FAE5; color: #065F46; }
+    .badge-blue  { background: #DBEAFE; color: #1e40af; }
+    .badge-gray  { background: #F3F4F6; color: #374151; }
+
+    /* ── Compliance checklist ── */
+    .check-list { list-style: none; padding: 0; }
+    .check-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid #F1F5F9;
+      font-size: 14px; color: #374151;
+    }
+    .check-list li:last-child { border-bottom: none; }
+    .check-icon { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .check-done { background: #D1FAE5; color: #059669; }
+    .check-pend { background: #FEF3C7; color: #D97706; }
+    .check-na   { background: #F3F4F6; color: #6B7280; }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: #fff; border: 1px solid #E2E8F0; border-radius: 14px;
+      padding: 20px 22px; margin-top: 20px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .contact-card-ic {
+      width: 44px; height: 44px; border-radius: 12px; background: #EFF4FF;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .contact-card-ic svg { width: 20px; height: 20px; color: #1B44B8; }
+    .contact-card-info h4 { font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 3px; }
+    .contact-card-info p  { font-size: 13px; color: #64748B; margin: 0; }
+    .contact-card-info a  { color: #1B44B8; text-decoration: none; font-weight: 500; }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 0 16px; }
+      .layout { padding: 28px 16px 60px; }
+      .hero h1 { font-size: 26px; }
+      .tabs { gap: 2px; }
+      .tab-btn { font-size: 12px; padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="topbar-brand" href="erp.html">
+      <div class="topbar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/>
+          <line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+      </div>
+      <span class="topbar-name">Shorti<b>.</b></span>
+    </a>
+    <a class="topbar-back" href="erp.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Voltar ao ERP
+    </a>
+  </div>
+
+  <div class="layout">
+
+    <div class="hero">
+      <div class="hero-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Jurídico &amp; Compliance
+      </div>
+      <h1>Termos, Privacidade<br>e Conformidade</h1>
+      <p>Documentação legal da plataforma Shorti — como coletamos, usamos e protegemos os seus dados.</p>
+      <div class="hero-meta">
+        <span>📅 Vigência: 18 de junho de 2026</span>
+        <span>🏢 GrupoLima Tecnologia</span>
+        <span>🇧🇷 Lei 13.709/2018 — LGPD</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn on" onclick="showTab('termos')">Termos de Uso</button>
+      <button class="tab-btn" onclick="showTab('privacidade')">Privacidade</button>
+      <button class="tab-btn" onclick="showTab('compliance')">Compliance LGPD</button>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         TERMOS DE USO
+    ════════════════════════════════════════════ -->
+    <div class="panel on" id="panel-termos">
+
+      <div class="doc-section">
+        <h2>01 — Partes e Objeto</h2>
+        <h3>1.1 Identificação das partes</h3>
+        <p>O presente instrumento é celebrado entre <strong>GrupoLima Tecnologia</strong> ("Shorti", "nós" ou "Plataforma"), responsável pelo desenvolvimento e operação do sistema ERP Shorti, e o <strong>Lojista</strong> ("você" ou "Usuário"), pessoa física ou jurídica que se cadastra e utiliza a plataforma.</p>
+
+        <h3>1.2 Objeto</h3>
+        <p>O Shorti é uma plataforma SaaS de gestão empresarial voltada a pequenos negócios e consultoras autônomas, oferecendo módulos de estoque, pedidos, clientes, financeiro, loja virtual e relatórios.</p>
+
+        <div class="infobox infobox-blue">
+          <span class="infobox-icon">ℹ️</span>
+          <div>Ao criar uma conta e acessar o painel, você declara ter lido, compreendido e aceito integralmente estes Termos. O uso da plataforma implica concordância automática.</div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>02 — Acesso e Conta</h2>
+        <h3>2.1 Cadastro</h3>
+        <p>O acesso ao ERP exige criação de conta com e-mail e senha. Cada conta corresponde a um <strong>tenant</strong> (workspace isolado), podendo ter múltiplos usuários com papéis distintos (Admin, Funcionário).</p>
+
+        <h3>2.2 Credenciais</h3>
+        <p>Você é inteiramente responsável pela confidencialidade das suas credenciais. Em caso de acesso não autorizado, notifique imediatamente a GrupoLima pelo canal de suporte. Senhas são armazenadas pelo provedor de autenticação Supabase com hash seguro — a GrupoLima não tem acesso à sua senha em texto claro.</p>
+
+        <h3>2.3 Autenticação multifator</h3>
+        <p>A plataforma suporta MFA via TOTP (aplicativos autenticadores como Google Authenticator). Recomendamos fortemente a ativação do 2FA para contas com acesso a dados de clientes.</p>
+
+        <h3>2.4 Suspensão e encerramento</h3>
+        <p>A GrupoLima reserva-se o direito de suspender ou encerrar contas que:</p>
+        <ul>
+          <li>Violem estes Termos ou a legislação vigente;</li>
+          <li>Utilizem a plataforma para fins ilícitos;</li>
+          <li>Estejam inadimplentes por mais de 30 dias (quando aplicável);</li>
+          <li>Apresentem comportamento abusivo com dados de terceiros.</li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>03 — Uso Permitido e Proibido</h2>
+        <h3>3.1 Uso permitido</h3>
+        <ul>
+          <li>Gerenciar produtos, estoque, pedidos e clientes do seu negócio;</li>
+          <li>Publicar e configurar sua loja virtual;</li>
+          <li>Registrar transações financeiras e gerar relatórios;</li>
+          <li>Convidar colaboradores para o workspace;</li>
+          <li>Utilizar o scanner mobile para leitura de códigos de barras.</li>
+        </ul>
+
+        <h3>3.2 Uso proibido</h3>
+        <ul>
+          <li>Cadastrar dados de clientes sem consentimento ou para fins não relacionados ao negócio;</li>
+          <li>Realizar engenharia reversa, descompilar ou alterar o código da plataforma;</li>
+          <li>Compartilhar credenciais de acesso com terceiros não autorizados;</li>
+          <li>Usar a plataforma para envio de spam, phishing ou qualquer atividade fraudulenta;</li>
+          <li>Sobrecarregar deliberadamente os servidores (ataques de negação de serviço);</li>
+          <li>Revender, sublicenciar ou redistribuir o acesso à plataforma.</li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>04 — Propriedade Intelectual</h2>
+        <h3>4.1 Plataforma</h3>
+        <p>Todo o código-fonte, design, marca, logotipos e materiais da plataforma Shorti são de propriedade exclusiva da GrupoLima Tecnologia, protegidos pela Lei 9.279/1996 (Propriedade Industrial) e Lei 9.610/1998 (Direitos Autorais).</p>
+
+        <h3>4.2 Seus dados</h3>
+        <p>Os dados inseridos por você na plataforma (produtos, clientes, pedidos, transações) permanecem de sua propriedade. A GrupoLima não reivindica titularidade sobre eles e não os vende ou cede a terceiros.</p>
+      </div>
+
+      <div class="doc-section">
+        <h2>05 — Disponibilidade e Suporte</h2>
+        <h3>5.1 SLA</h3>
+        <p>A GrupoLima empreenderá esforços razoáveis para manter a plataforma disponível 24/7. Não há garantia formal de SLA (Service Level Agreement) nas versões sem contrato ativo. Manutenções programadas serão comunicadas com antecedência mínima de 24 horas.</p>
+
+        <h3>5.2 Backup</h3>
+        <p>Os dados armazenados no banco de dados Supabase contam com backups automáticos conforme a política do provedor. Recomendamos que o usuário exporte seus dados periodicamente através dos relatórios da plataforma.</p>
+      </div>
+
+      <div class="doc-section">
+        <h2>06 — Limitação de Responsabilidade</h2>
+        <p>A GrupoLima não se responsabiliza por:</p>
+        <ul>
+          <li>Perdas decorrentes de uso indevido das credenciais pelo próprio usuário;</li>
+          <li>Danos causados por interrupções de serviço do provedor de infraestrutura (Supabase/AWS);</li>
+          <li>Erros em dados inseridos pelo próprio usuário;</li>
+          <li>Decisões de negócio tomadas com base nas informações exibidas pela plataforma.</li>
+        </ul>
+
+        <div class="infobox infobox-amber">
+          <span class="infobox-icon">⚠️</span>
+          <div>O Shorti é uma ferramenta de gestão. As informações exibidas dependem diretamente dos dados cadastrados pelo Lojista. A GrupoLima não audita nem valida a veracidade dos dados inseridos.</div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>07 — Alterações e Vigência</h2>
+        <p>A GrupoLima pode atualizar estes Termos a qualquer momento. Alterações relevantes serão comunicadas por e-mail ou notificação in-app com antecedência mínima de 15 dias. O uso continuado após esse prazo implica aceitação das novas condições.</p>
+        <p>Este documento entra em vigor em <strong>18 de junho de 2026</strong> e substitui todas as versões anteriores.</p>
+      </div>
+
+    </div><!-- /panel-termos -->
+
+
+    <!-- ════════════════════════════════════════════
+         POLÍTICA DE PRIVACIDADE
+    ════════════════════════════════════════════ -->
+    <div class="panel" id="panel-privacidade">
+
+      <div class="doc-section">
+        <h2>01 — Controlador e Encarregado</h2>
+        <p><strong>Controlador de dados:</strong> GrupoLima Tecnologia, responsável por determinar as finalidades e meios do tratamento dos dados pessoais processados pela plataforma Shorti.</p>
+        <p><strong>Encarregado (DPO):</strong> Para exercício dos seus direitos ou dúvidas sobre privacidade, entre em contato pelo e-mail <strong>privacidade@shorti.com.br</strong>.</p>
+
+        <div class="infobox infobox-green">
+          <span class="infobox-icon">✅</span>
+          <div>Esta Política está em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018)</strong> e, quando aplicável, com o Regulamento Geral de Proteção de Dados da União Europeia (GDPR — Regulamento 2016/679).</div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>02 — Dados que Coletamos</h2>
+        <h3>2.1 Dados do Lojista (operador da plataforma)</h3>
+        <table class="data-tbl">
+          <thead><tr><th>Dado</th><th>Finalidade</th><th>Base Legal (LGPD)</th></tr></thead>
+          <tbody>
+            <tr><td>E-mail</td><td>Autenticação, comunicações do sistema</td><td>Execução de contrato — Art. 7º, V</td></tr>
+            <tr><td>Senha (hash)</td><td>Autenticação segura</td><td>Execução de contrato — Art. 7º, V</td></tr>
+            <tr><td>Nome de exibição</td><td>Personalização da interface</td><td>Legítimo interesse — Art. 7º, IX</td></tr>
+            <tr><td>WhatsApp</td><td>Integração com atendimento ao cliente</td><td>Legítimo interesse — Art. 7º, IX</td></tr>
+            <tr><td>Chave Pix</td><td>Facilitar recebimentos via loja</td><td>Execução de contrato — Art. 7º, V</td></tr>
+            <tr><td>Nome do negócio (tenant)</td><td>Identificação do workspace</td><td>Execução de contrato — Art. 7º, V</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2.2 Dados de clientes cadastrados pelo Lojista</h3>
+        <p>O Lojista atua como <strong>controlador independente</strong> dos dados de seus clientes finais. A GrupoLima atua como <strong>operadora</strong> nessa relação, processando esses dados apenas sob instrução do Lojista.</p>
+        <table class="data-tbl">
+          <thead><tr><th>Campo</th><th>Descrição</th><th>Obrigatoriedade</th></tr></thead>
+          <tbody>
+            <tr><td>Nome (nm)</td><td>Nome completo do cliente final</td><td><span class="badge badge-blue">Obrigatório</span></td></tr>
+            <tr><td>Telefone (tel)</td><td>Contato para comunicação</td><td><span class="badge badge-gray">Opcional</span></td></tr>
+            <tr><td>E-mail (em)</td><td>Contato para comunicação</td><td><span class="badge badge-gray">Opcional</span></td></tr>
+            <tr><td>Cidade / Estado</td><td>Dados de localização para entrega</td><td><span class="badge badge-gray">Opcional</span></td></tr>
+            <tr><td>Data de aniversário (an)</td><td>Ações de relacionamento</td><td><span class="badge badge-gray">Opcional</span></td></tr>
+            <tr><td>Perfil (pe)</td><td>Classificação interna (Normal, VIP, Fiado)</td><td><span class="badge badge-gray">Opcional</span></td></tr>
+            <tr><td>Histórico de compras</td><td>Total gasto, última compra, pedidos vinculados</td><td>Gerado automaticamente</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Responsabilidade do Lojista:</strong> Ao cadastrar dados de clientes, o Lojista declara possuir base legal adequada (consentimento ou legítimo interesse) e se compromete a informá-los sobre o armazenamento de seus dados.</p>
+
+        <h3>2.3 Dados técnicos e de uso</h3>
+        <ul>
+          <li>Tokens de sessão JWT (armazenados no <code>localStorage</code> do navegador);</li>
+          <li>Código de dispositivo para o scanner mobile (gerado localmente, sem dados pessoais);</li>
+          <li>Logs de acesso mantidos pelo provedor Supabase;</li>
+          <li>Preferências de interface (idioma, tema) em <code>localStorage</code>.</li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>03 — Como Usamos os Dados</h2>
+        <ul>
+          <li><strong>Prestação do serviço:</strong> autenticação, armazenamento e sincronização de dados entre dispositivos;</li>
+          <li><strong>Funcionalidades da plataforma:</strong> geração de relatórios, scanner mobile via Supabase Realtime, notificações push;</li>
+          <li><strong>Segurança:</strong> detecção de acessos suspeitos, logs de auditoria, biometria local;</li>
+          <li><strong>Comunicação:</strong> notificações sobre atualizações, alertas de sistema e suporte técnico;</li>
+          <li><strong>Melhoria do produto:</strong> análise agregada e anonimizada do uso para aprimorar funcionalidades.</li>
+        </ul>
+
+        <div class="infobox infobox-blue">
+          <span class="infobox-icon">ℹ️</span>
+          <div>A GrupoLima <strong>não utiliza</strong> os dados do Lojista ou de seus clientes para fins de publicidade de terceiros, perfilamento para marketing externo ou venda de dados.</div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>04 — Compartilhamento com Terceiros</h2>
+        <table class="data-tbl">
+          <thead><tr><th>Fornecedor</th><th>Papel</th><th>Dados Acessados</th><th>País</th></tr></thead>
+          <tbody>
+            <tr><td>Supabase Inc.</td><td>Operador — banco de dados, autenticação e Realtime</td><td>Todos os dados cadastrados</td><td>🇺🇸 EUA</td></tr>
+            <tr><td>Google Fonts</td><td>CDN de tipografia</td><td>IP (requisição HTTP)</td><td>🇺🇸 EUA</td></tr>
+            <tr><td>jsDelivr / unpkg</td><td>CDN de bibliotecas JS</td><td>IP (requisição HTTP)</td><td>🌐 Global</td></tr>
+            <tr><td>api.qrserver.com</td><td>Geração de QR codes</td><td>URL/PIN de sessão (sem dados pessoais)</td><td>🇩🇪 Alemanha</td></tr>
+          </tbody>
+        </table>
+        <p>A Supabase é certificada SOC 2 Type II e possui Data Processing Agreement (DPA) disponível em <strong>supabase.com/privacy</strong>. A transferência internacional de dados para os EUA é realizada com base nas Cláusulas Contratuais Padrão (SCCs) da Comissão Europeia, aplicadas analogicamente conforme a LGPD.</p>
+      </div>
+
+      <div class="doc-section">
+        <h2>05 — Armazenamento e Retenção</h2>
+        <ul>
+          <li><strong>Banco de dados Supabase:</strong> dados mantidos enquanto a conta estiver ativa. Após encerramento da conta, os dados são excluídos em até 90 dias.</li>
+          <li><strong>localStorage do navegador:</strong> dados de sessão e cache local. Limpos automaticamente no logout ou a qualquer momento pelo próprio usuário.</li>
+          <li><strong>Logs de acesso:</strong> retidos por até 12 meses pelo Supabase, conforme política do provedor.</li>
+          <li><strong>Backups:</strong> retidos conforme política de backup do Supabase (mínimo 7 dias para planos pagos).</li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>06 — Segurança dos Dados</h2>
+        <ul>
+          <li>Transmissão criptografada via <strong>HTTPS/TLS 1.3</strong> em todas as comunicações;</li>
+          <li><strong>Row Level Security (RLS)</strong> no banco de dados — cada tenant acessa apenas seus próprios dados;</li>
+          <li>Senhas armazenadas com <strong>bcrypt</strong> pelo serviço de autenticação Supabase Auth;</li>
+          <li>Tokens JWT com expiração e <strong>refresh automático</strong>;</li>
+          <li>Suporte a <strong>autenticação multifator (MFA/TOTP)</strong>;</li>
+          <li><strong>Biometria local</strong> (WebAuthn) para bloqueio adicional no dispositivo;</li>
+          <li>Comunicação scanner-ERP via <strong>canal broadcast criptografado</strong> do Supabase Realtime.</li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>07 — Seus Direitos (LGPD Art. 18)</h2>
+        <p>Como titular de dados, você tem direito a:</p>
+        <ul>
+          <li><strong>Confirmação e acesso:</strong> saber quais dados temos sobre você e obter uma cópia;</li>
+          <li><strong>Correção:</strong> atualizar dados incompletos, inexatos ou desatualizados;</li>
+          <li><strong>Anonimização, bloqueio ou eliminação:</strong> de dados desnecessários ou tratados em desconformidade;</li>
+          <li><strong>Portabilidade:</strong> receber seus dados em formato estruturado (JSON/CSV);</li>
+          <li><strong>Eliminação:</strong> exclusão completa dos seus dados ao encerrar a conta;</li>
+          <li><strong>Informação:</strong> sobre compartilhamentos realizados e possibilidade de não consentir;</li>
+          <li><strong>Revogação do consentimento</strong> a qualquer momento, sem prejuízo ao tratamento anterior.</li>
+        </ul>
+        <p>Para exercer qualquer direito, entre em contato via <strong>privacidade@shorti.com.br</strong>. Responderemos em até <strong>15 dias úteis</strong>.</p>
+      </div>
+
+      <div class="doc-section">
+        <h2>08 — Cookies e Armazenamento Local</h2>
+        <p>O Shorti <strong>não utiliza cookies de rastreamento</strong> ou publicidade. O armazenamento local (<code>localStorage</code>) é utilizado exclusivamente para:</p>
+        <ul>
+          <li>Manter a sessão autenticada entre visitas (token JWT);</li>
+          <li>Cachear configurações da loja para carregamento offline;</li>
+          <li>Armazenar preferências de interface (ex.: tema escolhido);</li>
+          <li>Salvar o código de dispositivo do scanner mobile.</li>
+        </ul>
+        <p>Esses dados podem ser removidos a qualquer momento limpando o armazenamento do navegador, mas isso encerrará a sessão ativa.</p>
+      </div>
+
+    </div><!-- /panel-privacidade -->
+
+
+    <!-- ════════════════════════════════════════════
+         COMPLIANCE LGPD
+    ════════════════════════════════════════════ -->
+    <div class="panel" id="panel-compliance">
+
+      <div class="doc-section">
+        <h2>01 — Declaração de Conformidade</h2>
+        <p>A GrupoLima Tecnologia declara que a plataforma Shorti foi desenvolvida com <strong>Privacy by Design</strong> e <strong>Privacy by Default</strong>, princípios estabelecidos no Art. 46 da LGPD, incorporando proteção de dados desde a concepção da arquitetura.</p>
+
+        <div class="infobox infobox-green">
+          <span class="infobox-icon">🛡️</span>
+          <div>Esta auditoria de conformidade reflete o estado da plataforma em <strong>18 de junho de 2026</strong> e deve ser revisada a cada 12 meses ou após alterações significativas no tratamento de dados.</div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>02 — Mapeamento de Tratamento (ROPA)</h2>
+        <p>Registro de Operações de Tratamento de Dados Pessoais conforme Art. 37 da LGPD:</p>
+        <table class="data-tbl">
+          <thead><tr><th>Atividade</th><th>Titular</th><th>Finalidade</th><th>Base Legal</th><th>Retenção</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Autenticação de usuários</td>
+              <td>Lojista</td>
+              <td>Controle de acesso à plataforma</td>
+              <td>Contrato (Art. 7º, V)</td>
+              <td>Até encerramento da conta</td>
+            </tr>
+            <tr>
+              <td>Gestão de clientes</td>
+              <td>Clientes do Lojista</td>
+              <td>Relacionamento comercial</td>
+              <td>Legítimo interesse / Contrato (Art. 7º, V e IX)</td>
+              <td>Até encerramento da conta do Lojista</td>
+            </tr>
+            <tr>
+              <td>Histórico de pedidos</td>
+              <td>Clientes do Lojista</td>
+              <td>Gestão de vendas e relatórios</td>
+              <td>Legítimo interesse (Art. 7º, IX)</td>
+              <td>Até encerramento da conta</td>
+            </tr>
+            <tr>
+              <td>Transações financeiras</td>
+              <td>Lojista</td>
+              <td>Controle financeiro</td>
+              <td>Obrigação legal / Contrato (Art. 7º, II e V)</td>
+              <td>5 anos (obrigação fiscal)</td>
+            </tr>
+            <tr>
+              <td>Notificações push</td>
+              <td>Lojista</td>
+              <td>Alertas operacionais em tempo real</td>
+              <td>Consentimento (Art. 7º, I)</td>
+              <td>Até revogação do consentimento</td>
+            </tr>
+            <tr>
+              <td>Scanner mobile (Realtime)</td>
+              <td>Lojista</td>
+              <td>Leitura de códigos EAN/QR</td>
+              <td>Legítimo interesse (Art. 7º, IX)</td>
+              <td>Sessão apenas (não persiste)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="doc-section">
+        <h2>03 — Checklist de Conformidade</h2>
+        <ul class="check-list">
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Bases legais documentadas</strong> — Todas as atividades de tratamento possuem base legal identificada conforme Art. 7º da LGPD.</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Criptografia em trânsito</strong> — HTTPS/TLS obrigatório em todas as comunicações cliente-servidor.</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Controle de acesso por tenant</strong> — Row Level Security (RLS) garante isolamento total de dados entre workspaces.</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Minimização de dados</strong> — Apenas os campos estritamente necessários são coletados; campos sensíveis (tel, e-mail, aniversário) são opcionais.</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Autenticação segura</strong> — Senhas com hash bcrypt, tokens JWT com expiração, suporte a MFA/TOTP e biometria local.</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Direitos dos titulares</strong> — Procedimento documentado para exercício dos direitos do Art. 18 da LGPD com prazo de resposta de 15 dias úteis.</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Operador contratado adequadamente</strong> — Supabase Inc. possui DPA, certificação SOC 2 Type II e cláusulas de transferência internacional (SCCs).</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Privacy by Design</strong> — Proteção de dados incorporada desde o design do sistema: sem cookies de rastreamento, sem coleta além do necessário, RLS ativado por padrão.</div>
+          </li>
+          <li>
+            <div class="check-icon check-done">✓</div>
+            <div><strong>Política de retenção definida</strong> — Prazos de retenção documentados para cada categoria de dado; exclusão automática em até 90 dias após encerramento.</div>
+          </li>
+          <li>
+            <div class="check-icon check-pend">!</div>
+            <div><strong>Encarregado de dados (DPO) formal</strong> — Canal de contato definido (privacidade@shorti.com.br). Recomenda-se formalizar a nomeação do DPO quando a base de usuários ultrapassar 500 tenants ativos.</div>
+          </li>
+          <li>
+            <div class="check-icon check-pend">!</div>
+            <div><strong>RIPD — Relatório de Impacto</strong> — Recomendado quando o processamento de dados de clientes finais (pelos Lojistas) atingir escala que implique risco elevado a titulares vulneráveis.</div>
+          </li>
+          <li>
+            <div class="check-icon check-na">—</div>
+            <div><strong>Consentimento de cookies</strong> — Não aplicável: o Shorti não utiliza cookies de terceiros ou rastreamento publicitário.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>04 — Responsabilidades do Lojista (Controlador)</h2>
+        <p>O Lojista, ao utilizar o Shorti para armazenar dados de seus clientes finais, assume as obrigações de <strong>controlador de dados</strong> perante a LGPD:</p>
+        <ul>
+          <li>Obter o <strong>consentimento</strong> dos clientes para coleta e armazenamento de dados pessoais, ou ter outra base legal válida;</li>
+          <li>Informar os clientes sobre a coleta, finalidade e seus direitos;</li>
+          <li>Garantir a <strong>exatidão e atualização</strong> dos dados cadastrados;</li>
+          <li>Atender às solicitações de exclusão, correção ou portabilidade feitas pelos clientes;</li>
+          <li>Não utilizar os dados de clientes para finalidades incompatíveis com as declaradas;</li>
+          <li>Comunicar à GrupoLima qualquer <strong>incidente de segurança</strong> do qual tome conhecimento.</li>
+        </ul>
+
+        <div class="infobox infobox-amber">
+          <span class="infobox-icon">⚠️</span>
+          <div>A GrupoLima atua como <strong>operadora</strong> no processamento dos dados de clientes finais. A responsabilidade primária perante os titulares é do Lojista (controlador). Em caso de fiscalização pela ANPD, o Lojista deve ser capaz de demonstrar a base legal do tratamento.</div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>05 — Resposta a Incidentes</h2>
+        <h3>Procedimento interno</h3>
+        <ol>
+          <li><strong>Detecção:</strong> Monitoramento contínuo via logs do Supabase e alertas de acesso anômalo;</li>
+          <li><strong>Contenção:</strong> Revogação imediata de tokens comprometidos e isolamento do tenant afetado;</li>
+          <li><strong>Avaliação:</strong> Análise do escopo do incidente, dados afetados e titulares envolvidos;</li>
+          <li><strong>Notificação:</strong> Comunicação ao usuário afetado em até <strong>72 horas</strong> após a confirmação do incidente;</li>
+          <li><strong>Autoridade (ANPD):</strong> Notificação à Autoridade Nacional de Proteção de Dados quando o incidente puder acarretar risco ou dano relevante aos titulares, conforme Art. 48 da LGPD;</li>
+          <li><strong>Remediação:</strong> Correção da vulnerabilidade, atualização de credenciais e relatório pós-incidente.</li>
+        </ol>
+      </div>
+
+      <div class="doc-section">
+        <h2>06 — Auditorias e Revisão</h2>
+        <p>Esta documentação de compliance deve ser revisada:</p>
+        <ul>
+          <li>Anualmente, como revisão de rotina;</li>
+          <li>Após qualquer alteração significativa na arquitetura ou nos fluxos de dados;</li>
+          <li>Após incidentes de segurança;</li>
+          <li>Quando houver alterações na legislação aplicável (LGPD, regulamentos da ANPD).</li>
+        </ul>
+        <p><strong>Próxima revisão programada:</strong> 18 de junho de 2027.</p>
+      </div>
+
+      <div class="doc-section">
+        <h2>07 — Contato e Canal de Privacidade</h2>
+        <div class="contact-card">
+          <div class="contact-card-ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div class="contact-card-info">
+            <h4>Canal de Privacidade — GrupoLima Tecnologia</h4>
+            <p>Para exercício de direitos, dúvidas sobre privacidade ou reporte de incidentes:<br>
+              <a href="mailto:privacidade@shorti.com.br">privacidade@shorti.com.br</a> · Prazo de resposta: 15 dias úteis
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-compliance -->
+
+  </div><!-- /layout -->
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+      document.getElementById('panel-' + id).classList.add('on');
+      event.currentTarget.classList.add('on');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
