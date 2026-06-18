@@ -599,21 +599,15 @@ async function loadFromSupabase() {
     history.replaceState(null, '', _rtBase + '/' + _rtSlug);
   }
 
-  if ($('site-intro-brand')) $('site-intro-brand').textContent = tenant.nome;
-  if ($('site-brand-link'))  $('site-brand-link').textContent  = tenant.nome;
+  if ($('site-intro-brand'))   $('site-intro-brand').textContent   = tenant.nome;
+  if ($('site-intro-eyebrow')) $('site-intro-eyebrow').textContent = tenant.nome;
+  if ($('site-brand-link'))    $('site-brand-link').textContent    = tenant.nome;
   if ($('footer-copyright-text')) {
     const kicker = DB.settings.heroKicker ? ' · ' + DB.settings.heroKicker : '';
     $('footer-copyright-text').textContent = '© ' + new Date().getFullYear() + ' ' + tenant.nome + kicker;
   }
 
-  if (prods) {
-    rHeroCards();
-    rProds(_currentCat || 'todos');
-    rFeaturedProds();
-    initTelao();
-    applySettings();
-    requestAnimationFrame(initScrollReveal);
-  }
+  rStore();
 }
 
 /* ── Init ────────────────────────────────────────── */
@@ -634,8 +628,27 @@ function rStore() {
   if ($('cc-tel')) $('cc-tel').value = customer.tel || '';
 }
 
-rStore();
-loadFromSupabase(); // re-renderiza com dados do banco se disponível
+/* Se Supabase disponível: segura o intro como loading screen,
+   aguarda os dados do tenant e só então renderiza.
+   Modo local (?local) ou offline: renderiza imediatamente com defaults. */
+if (window._sbClient && !window._localMode) {
+  const intro = document.getElementById('site-intro');
+  if (intro) {
+    /* Cancela o auto-dismiss do CSS e mantém o intro visível */
+    intro.style.animation = 'none';
+    intro.style.opacity   = '1';
+    intro.style.pointerEvents = 'none';
+  }
+  loadFromSupabase().finally(() => {
+    if (intro) {
+      intro.style.transition = 'opacity .55s ease';
+      intro.style.opacity    = '0';
+      setTimeout(() => intro.remove(), 600);
+    }
+  });
+} else {
+  rStore();
+}
 
 /* ── Prévia ao vivo (iframe do ERP envia atualizações de tema/conteúdo) ── */
 if (new URLSearchParams(location.search).has('preview')) {

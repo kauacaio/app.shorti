@@ -760,19 +760,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       const tenant = await Tenants.create({ slug, nome });
 
       const defaultSettings = {
-        banner:    'Frete <em>GRÁTIS</em> em compras acima de R$ 150 · Consultoria personalizada inclusa em cada pedido',
+        banner:    '',
         whatsapp:  '',
         pix:       '',
         pixVerified: false,
         heroKicker: nome,
-        heroLines: ['Beleza que', 'transforma.', 'Cuidado que', 'permanece.'],
-        heroSub:   'Produtos de alta performance para pele, corpo e bem-estar. Consultoria personalizada, feita para você.',
-        heroProof: '',
-        marquee:   'Skincare · Maquiagem · Corpo & Banho · Fragrâncias · Autocuidado · Consultoria ·',
+        heroLines:  [nome, '', '', ''],
+        heroSub:    '',
+        heroProof:  '',
+        marquee:    nome + ' ·',
         benefits: [
-          { title: 'Entrega para todo o Brasil',  desc: 'Rápido e com rastreamento' },
-          { title: 'Parcelamento em até 12x',     desc: 'Sem juros no cartão' },
-          { title: 'Consultoria personalizada',   desc: 'Atendimento exclusivo grátis' }
+          { title: 'Entrega para todo o Brasil', desc: 'Rápido e com rastreamento' },
+          { title: 'Parcelamento em até 12x',    desc: 'Sem juros no cartão' },
+          { title: 'Qualidade garantida',        desc: 'Produtos 100% originais' },
+          { title: 'Atendimento personalizado',  desc: 'Suporte exclusivo para você' }
         ],
         theme: { template: 'classico', primary: '#3D6655', accent: '#C4897A', font: 'elegante' },
         published: true

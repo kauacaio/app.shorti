@@ -28,20 +28,20 @@ const DB = {
   cart: [],
   nid: { p: 200, c: 200, ped: 2000, t: 200, s: 100, notif: 1 },
   settings: {
-    banner:    'Frete <em>GRÁTIS</em> em compras acima de R$ 150 · Consultoria personalizada inclusa em cada pedido',
-    whatsapp:  '5511999999999',
+    banner:    '',
+    whatsapp:  '',
     pix:       '',
     pixVerified: false,
-    heroKicker:'Consultora Oficial Mary Kay',
-    heroLines: ['Beleza que', 'transforma.', 'Cuidado que', 'permanece.'],
-    heroSub:   'Produtos de alta performance para pele, corpo e bem-estar. Consultoria personalizada, feita para você.',
-    heroProof: '+500 clientes · Avaliação 4.9/5',
-    marquee:   'Skincare · Maquiagem · Corpo & Banho · Fragrâncias · Autocuidado · Mary Kay · Consultoria ·',
+    heroKicker: '',
+    heroLines:  ['', '', '', ''],
+    heroSub:    '',
+    heroProof:  '',
+    marquee:    '',
     benefits: [
-      { title: 'Entrega para todo o Brasil',  desc: 'Rápido e com rastreamento' },
-      { title: 'Parcelamento em até 12x',     desc: 'Sem juros no cartão' },
-      { title: '100% Originais Mary Kay',     desc: 'Garantia de autenticidade' },
-      { title: 'Consultoria personalizada',   desc: 'Atendimento exclusivo grátis' }
+      { title: '', desc: '' },
+      { title: '', desc: '' },
+      { title: '', desc: '' },
+      { title: '', desc: '' }
     ],
     theme: { template: 'classico', primary: '#3D6655', accent: '#C4897A', font: 'elegante' },
     published: true
