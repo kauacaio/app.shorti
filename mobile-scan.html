@@ -449,6 +449,9 @@
     if (!_deviceCode) { _deviceCode = _genDeviceCode(); localStorage.setItem(DEV_KEY, _deviceCode); }
 
     let _pendingAutoSid = null;
+    /* Cliente Supabase inicializado logo no carregamento da página */
+    let _sbEarly = null;
+    try { _sbEarly = supabase.createClient(SB_URL, SB_KEY); } catch(e) {}
 
     function copyDeviceCode() {
       navigator.clipboard?.writeText(_deviceCode).catch(()=>{});
@@ -458,14 +461,17 @@
       setTimeout(() => { el.textContent = orig; }, 1200);
     }
 
-    function acceptAutoConn() {
-      dismissAutoConn();
-      if (!_pendingAutoSid) return;
-      _sid = _pendingAutoSid;
+    function _autoConnect(pin) {
+      _sid = pin;
       _pendingAutoSid = null;
       document.getElementById('pin-view').classList.remove('show');
+      document.getElementById('autoconn-toast').classList.remove('show');
       requestCameraPermission();
       init();
+    }
+
+    function acceptAutoConn() {
+      if (_pendingAutoSid) _autoConnect(_pendingAutoSid);
     }
 
     function dismissAutoConn() {
@@ -482,8 +488,7 @@
       });
       ch.on('broadcast', { event: 'new-session' }, ({ payload }) => {
         if (!payload?.pin) return;
-        _pendingAutoSid = payload.pin;
-        /* Se já está conectado, troca de sessão silenciosamente */
+        /* Se já conectado — troca de sessão silenciosamente */
         if (_channel) {
           _sid = payload.pin;
           _channel.unsubscribe();
@@ -491,12 +496,26 @@
           init();
           return;
         }
-        /* Senão mostra o toast de auto-connect */
+        /* Se está aguardando (sem SID) — conecta automaticamente sem confirmar */
+        if (!_sid) {
+          _autoConnect(payload.pin);
+          return;
+        }
+        /* Caso raro: SID diferente chegou enquanto já havia um PIN manual */
+        _pendingAutoSid = payload.pin;
         document.getElementById('autoconn-toast').classList.add('show');
         setTimeout(dismissAutoConn, 20000);
       });
-      ch.subscribe();
+      ch.subscribe(status => {
+        /* Avisa o ERP que o celular está pronto para receber uma sessão */
+        if (status === 'SUBSCRIBED') {
+          ch.send({ type: 'broadcast', event: 'device-ready', payload: { code: _deviceCode } });
+        }
+      });
     }
+
+    /* Inscreve no canal do dispositivo imediatamente — sem precisar de PIN */
+    if (_sbEarly) _subscribeDeviceChannel(_sbEarly);
 
     function showError(icon, title, msg) {
       document.getElementById('err-icon').textContent = icon;
@@ -563,12 +582,12 @@
     }
 
     async function init() {
-      /* Conectar ao Supabase */
-      let client;
-      try {
-        client = supabase.createClient(SB_URL, SB_KEY);
-      } catch(e) {
-        showError('❌', 'Erro de conexão', 'Não foi possível inicializar o cliente Supabase: ' + e.message);
+      /* Reutiliza o cliente já criado no carregamento; cria um novo só se falhou */
+      const client = _sbEarly || (() => {
+        try { return supabase.createClient(SB_URL, SB_KEY); } catch(e) { return null; }
+      })();
+      if (!client) {
+        showError('❌', 'Erro de conexão', 'Não foi possível inicializar o cliente Supabase.');
         return;
       }
 
@@ -585,7 +604,7 @@
         _channel.send({ type: 'broadcast', event: 'pong', payload: {} });
       });
 
-      _subscribeDeviceChannel(client);
+      /* Canal de dispositivo já subscrito no load — não duplicar */
 
       _channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {

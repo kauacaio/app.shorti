@@ -19,7 +19,24 @@ let _sbClient = null;
 if (!_localMode) {
   try {
     if (typeof supabase !== 'undefined') {
-      _sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      _sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession:    true,
+          autoRefreshToken:  true,
+          detectSessionInUrl: true,
+          storageKey:        'srt-auth-v1',
+        }
+      });
+
+      // PWA: quando o app volta ao foco, força o refresh do token
+      // (o auto-refresh para quando o app fica em background)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          _sbClient.auth.startAutoRefresh();
+        } else {
+          _sbClient.auth.stopAutoRefresh();
+        }
+      });
     }
   } catch(e) {
     console.warn('[supabase.js] Cliente não pôde ser inicializado:', e.message);
@@ -45,6 +62,11 @@ const SBAuth = {
   async getSession() {
     if (!_sbClient) return null;
     const { data } = await _sbClient.auth.getSession();
+    return data?.session ?? null;
+  },
+  async refreshSession() {
+    if (!_sbClient) return null;
+    const { data } = await _sbClient.auth.refreshSession();
     return data?.session ?? null;
   },
   onChange(cb) {

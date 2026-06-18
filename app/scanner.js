@@ -309,7 +309,14 @@ function _subscribeDeviceChannel(code, name) {
   const ch = window._sbClient.channel(`erp-device-${code}`, {
     config: { broadcast: { self: false } }
   });
-  ch.on('broadcast', { event: 'device-ack' }, () => _setDeviceOnline(code, true));
+  ch.on('broadcast', { event: 'device-ack' },   () => _setDeviceOnline(code, true));
+  ch.on('broadcast', { event: 'device-ready' }, () => {
+    _setDeviceOnline(code, true);
+    /* Celular acabou de abrir — se há sessão ativa, envia o PIN imediatamente */
+    if (_phonePanelOpen && _phoneSid && !_phoneConnected) {
+      ch.send({ type: 'broadcast', event: 'new-session', payload: { pin: _phoneSid, url: _phoneQrUrl || '' } });
+    }
+  });
   ch.subscribe(status => {
     if (status === 'SUBSCRIBED') {
       ch.send({ type: 'broadcast', event: 'device-ping', payload: {} });
@@ -571,7 +578,17 @@ async function _startPhonePairing() {
 
   /* ── Envia sessão para dispositivos registrados (auto-connect) ── */
   const mobileBase = `${baseUrl}/mobile-scan.html`;
-  _broadcastToDevices(_phoneSid, `${mobileBase}?s=${_phoneSid}`);
+  _phoneQrUrl = `${mobileBase}?s=${_phoneSid}`;
+  _broadcastToDevices(_phoneSid, _phoneQrUrl);
+
+  /* Retry: reenvia a cada 5s por até 30s, caso o celular ainda esteja abrindo */
+  let _retryCount = 0;
+  const _retryTimer = setInterval(() => {
+    if (_phoneConnected || _retryCount >= 6) { clearInterval(_retryTimer); return; }
+    _retryCount++;
+    _broadcastToDevices(_phoneSid, _phoneQrUrl);
+  }, 5000);
+
   const pinBlock = $('scn-pin-block');
   if (pinBlock) pinBlock.style.display = 'block';
   const pinDigits = $('scn-pin-digits');
@@ -584,7 +601,6 @@ async function _startPhonePairing() {
   }
 
   /* ── Tenta QR como secundário (não bloqueia nem trava se falhar) ── */
-  _phoneQrUrl = `${mobileBase}?s=${_phoneSid}`;
   _tryRenderQrSecondary(_phoneQrUrl);
 
   _setQrNetHint(viaTunnel || !hasLocalServer);
