@@ -293,3 +293,32 @@ function genExtratoNotif() {
     link: 'extrato'
   });
 }
+
+/* ── Realtime: escuta notificações inseridas pelo servidor ── */
+function initRealtimeNotifs() {
+  if (!window._sbClient || window._sbClient._local || !window._tenant?.id) return;
+
+  window._sbClient
+    .channel('rt-notifs-' + window._tenant.id)
+    .on('postgres_changes', {
+      event:  'INSERT',
+      schema: 'public',
+      table:  'notifications',
+      filter: `tenant_id=eq.${window._tenant.id}`
+    }, ({ new: row }) => {
+      const n = {
+        id: row.id, key: row.key, type: row.type, icon: row.icon,
+        title: row.title, msg: row.msg, link: row.link || '',
+        read: !!row.read, dt: row.dt
+      };
+      if (DB.notifs.find(x => x.id === n.id)) return;
+      if (localStorage.getItem('mlb_notif_dismissed_' + n.key)) return;
+      DB.notifs.push(n);
+      DB.nid.notif = Math.max(DB.nid.notif, n.id + 1);
+      rNotif();
+      rNotifBadge();
+      playNotifSound(n.type);
+      fireOSNotification(n);
+    })
+    .subscribe();
+}

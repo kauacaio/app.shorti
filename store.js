@@ -579,7 +579,7 @@ async function loadFromSupabase() {
     safe(() => SBProds.list(tenant.id)),
     safe(() => SBStorefront.getSettings(slug))
   ]);
-  if (prods)    { DB.prods = prods; }
+  if (prods)    { DB.prods = prods.filter(p => p.st > 0); }
   if (settings) Object.assign(DB.settings, settings);
 
   const isPreview = new URLSearchParams(location.search).has('preview');

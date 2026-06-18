@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initDB();
   renderAll();
   showExtPopup();
+  if (typeof initRealtimeNotifs === 'function') initRealtimeNotifs();
 
   document.querySelectorAll('.modal').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) closeMod(m.id); });
