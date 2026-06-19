@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /erp.html
+Disallow: /admin.html
+Disallow: /login.html
+Disallow: /onboarding.html
+Disallow: /mobile-scan.html
+
+Sitemap: https://shorti.com.br/sitemap.xml
