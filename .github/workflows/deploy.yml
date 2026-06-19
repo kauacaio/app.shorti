@@ -1,0 +1,21 @@
+name: Deploy — Produção
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    name: Deploy confirmado
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Info do deploy
+        run: |
+          echo "🚀 Deploy na main iniciado"
+          echo "Commit: ${{ github.sha }}"
+          echo "Autor:  ${{ github.actor }}"
+          echo "Msg:    ${{ github.event.head_commit.message }}"
+          echo "URL:    https://shorti.com.br"

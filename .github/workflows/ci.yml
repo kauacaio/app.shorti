@@ -1,0 +1,80 @@
+name: CI — Shorti
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [staging]
+
+jobs:
+  checks:
+    name: Verificações
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 1. Conflitos de merge não resolvidos ──────────────
+      - name: Sem conflitos de merge
+        run: |
+          if grep -rn "<<<<<<\|>>>>>>\|=======" --include="*.html" --include="*.js" --include="*.css" .; then
+            echo "❌ Conflito de merge encontrado. Resolva antes de mergear."
+            exit 1
+          fi
+          echo "✅ Nenhum conflito de merge."
+
+      # ── 2. Arquivos essenciais existem ────────────────────
+      - name: Arquivos essenciais presentes
+        run: |
+          files=("index.html" "erp.html" "login.html" "loja.html" "store.js" "supabase.js" "erp.css")
+          missing=0
+          for f in "${files[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "❌ Arquivo ausente: $f"
+              missing=1
+            fi
+          done
+          if [ $missing -eq 1 ]; then exit 1; fi
+          echo "✅ Todos os arquivos essenciais presentes."
+
+      # ── 3. Chave Supabase não foi removida por engano ─────
+      - name: Supabase URL configurado
+        run: |
+          if grep -q "SEU_SUPABASE_URL\|YOUR_SUPABASE\|<EMAIL_DA_MILENA>" supabase.js 2>/dev/null; then
+            echo "❌ supabase.js contém placeholders não preenchidos."
+            exit 1
+          fi
+          echo "✅ supabase.js configurado."
+
+      # ── 4. Migrations SQL sem DROP perigoso ───────────────
+      - name: Migrations seguras
+        run: |
+          if ls migration_*.sql 1>/dev/null 2>&1; then
+            if grep -l "DROP TABLE\|TRUNCATE TABLE" migration_*.sql 2>/dev/null; then
+              echo "⚠️  Migration com DROP TABLE ou TRUNCATE detectada. Revise com cuidado."
+              # Aviso apenas — não bloqueia o merge
+            fi
+          fi
+          echo "✅ Checagem de migrations concluída."
+
+      # ── 5. console.log não entrou em produção ─────────────
+      - name: Sem console.log esquecido
+        run: |
+          count=$(grep -rn "console\.log" --include="*.js" . | grep -v "node_modules" | grep -v ".github" | wc -l)
+          if [ "$count" -gt 20 ]; then
+            echo "⚠️  $count console.log encontrados nos arquivos JS."
+            grep -rn "console\.log" --include="*.js" . | grep -v "node_modules" | head -10
+            # Aviso apenas — não bloqueia
+          fi
+          echo "✅ Checagem de logs concluída ($count encontrados)."
+
+      # ── 6. vercel.json válido ─────────────────────────────
+      - name: vercel.json válido
+        run: |
+          if [ -f vercel.json ]; then
+            python3 -c "import json,sys; json.load(open('vercel.json'))" && echo "✅ vercel.json válido." || (echo "❌ vercel.json inválido." && exit 1)
+          fi
+
+      - name: Resumo
+        run: echo "🚀 Todas as verificações passaram. Pronto para mergear na main."
