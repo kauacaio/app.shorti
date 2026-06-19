@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderAll();
   showExtPopup();
   if (typeof initRealtimeNotifs === 'function') initRealtimeNotifs();
+  if (typeof window._onSentryReady === 'function') window._onSentryReady();
+  if (typeof initTour === 'function') initTour();
 
   document.querySelectorAll('.modal').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) closeMod(m.id); });

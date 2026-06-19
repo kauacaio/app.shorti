@@ -4699,3 +4699,75 @@ table tbody tr:hover { outline: none; }
 .nv-pix-overlay-box img { border-radius: 8px; }
 .nv-pix-overlay-val { font-size: 24px; font-weight: 800; color: var(--gl); }
 .nv-pix-overlay-key { font-size: 12px; color: var(--tx-m); word-break: break-all; }
+
+/* ── Tour — prompt de boas-vindas ────────────────── */
+.tour-prompt {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+  z-index: 9000; opacity: 0; pointer-events: none;
+  display: flex; align-items: center; gap: 16px;
+  background: #fff; border: 1px solid var(--bd);
+  border-radius: 16px; padding: 16px 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+  max-width: 520px; width: calc(100% - 48px);
+  transition: opacity .35s ease, transform .35s ease;
+}
+.tour-prompt.on { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.tp-icon { font-size: 22px; flex-shrink: 0; color: var(--gl); }
+.tp-body { flex: 1; min-width: 0; }
+.tp-title { font-size: 14px; font-weight: 700; color: var(--tx); letter-spacing: -.02em; }
+.tp-sub   { font-size: 12px; color: var(--tx-m); margin-top: 2px; line-height: 1.4; }
+.tp-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.tp-btn-yes {
+  padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+  background: var(--gl); color: #fff;
+  font-size: 12.5px; font-weight: 700; font-family: 'Inter', sans-serif;
+  white-space: nowrap; transition: opacity .14s;
+}
+.tp-btn-yes:hover { opacity: .88; }
+.tp-btn-no {
+  padding: 6px 16px; border-radius: 8px; border: none; cursor: pointer;
+  background: none; color: var(--tx-s);
+  font-size: 12px; font-family: 'Inter', sans-serif;
+  white-space: nowrap; transition: color .14s;
+}
+.tp-btn-no:hover { color: var(--tx); }
+
+/* ── Driver.js — override visual para o tema Shorti ─ */
+.driver-popover.srt-tour-pop {
+  background: #fff; border: 1px solid var(--bd);
+  border-radius: 14px; padding: 20px 22px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.14);
+  max-width: 300px;
+}
+.driver-popover.srt-tour-pop .driver-popover-title {
+  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
+  color: var(--tx); letter-spacing: -.02em; margin-bottom: 6px;
+}
+.driver-popover.srt-tour-pop .driver-popover-description {
+  font-family: 'Inter', sans-serif; font-size: 13px; color: var(--tx-m);
+  line-height: 1.6;
+}
+.driver-popover.srt-tour-pop .driver-popover-footer {
+  margin-top: 16px; gap: 8px;
+}
+.driver-popover.srt-tour-pop .driver-popover-btn-next,
+.driver-popover.srt-tour-pop .driver-popover-btn-done {
+  background: var(--gl); border: none; color: #fff;
+  border-radius: 8px; padding: 8px 14px;
+  font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: opacity .14s;
+}
+.driver-popover.srt-tour-pop .driver-popover-btn-next:hover,
+.driver-popover.srt-tour-pop .driver-popover-btn-done:hover { opacity: .85; }
+.driver-popover.srt-tour-pop .driver-popover-btn-prev {
+  background: var(--bg); border: 1px solid var(--bd); color: var(--tx-m);
+  border-radius: 8px; padding: 8px 14px;
+  font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 500;
+  cursor: pointer;
+}
+.driver-popover.srt-tour-pop .driver-popover-progress-text {
+  font-family: 'Inter', sans-serif; font-size: 11px; color: var(--tx-s);
+}
+.driver-popover.srt-tour-pop .driver-popover-close-btn {
+  color: var(--tx-s); font-size: 18px; top: 12px; right: 14px;
+}

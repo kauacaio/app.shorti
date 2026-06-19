@@ -16,6 +16,25 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./erp.css">
   <style></style>
+  <!-- Driver.js — tour guiado -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js" defer></script>
+
+  <!-- Sentry — monitoramento de erros em produção -->
+  <script src="https://js.sentry-cdn.com/104fd4cfed221ba91ebd2cfc10ebaf89.min.js" crossorigin="anonymous"></script>
+  <script>
+    /* Enriquece eventos com contexto de tenant e usuário — aguarda o Loader Script */
+    if (window.Sentry) {
+      Sentry.onLoad(() => {
+        Sentry.setTag('env', location.hostname === 'localhost' ? 'development' : 'production');
+        /* _tenant e _userId são definidos em init.js após o login */
+        window._onSentryReady = () => {
+          if (window._tenant?.slug) Sentry.setTag('tenant', window._tenant.slug);
+          if (window._userId)       Sentry.setUser({ id: window._userId });
+        };
+      });
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -46,6 +65,19 @@
   </script>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Prompt de tour — aparece uma vez para usuários novos -->
+  <div class="tour-prompt" id="tour-prompt" role="dialog" aria-label="Tour do sistema">
+    <div class="tp-icon">✦</div>
+    <div class="tp-body">
+      <div class="tp-title">Quer conhecer o Shorti?</div>
+      <div class="tp-sub">Fazemos um tour rápido pelo sistema — menos de 2 minutos.</div>
+    </div>
+    <div class="tp-actions">
+      <button class="tp-btn-yes" onclick="acceptTour()">Sim, vamos lá!</button>
+      <button class="tp-btn-no"  onclick="dismissTourPrompt()">Agora não</button>
+    </div>
+  </div>
 
   <!-- Prompt de permissão de notificação (acionado por gesto) -->
   <div class="notif-prompt" id="notif-prompt">
@@ -314,6 +346,10 @@
               <button class="tb-mi" onclick="closeERP(); closeTbMenu()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Voltar à loja
+              </button>
+              <button class="tb-mi" onclick="restartTour()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Tour do sistema
               </button>
               <button class="tb-mi" onclick="window.open('legal.html','_blank'); closeTbMenu()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -2097,6 +2133,7 @@
   <script src="./app/biometria.js" defer></script>
   <script src="./app/loja.js" defer></script>
   <script src="./app/notificacoes.js" defer></script>
+  <script src="./app/tour.js" defer></script>
   <script src="./app/init.js" defer></script>
   <a href="grupolima.html" class="gl-badge">
     <span class="gl-badge-bars">

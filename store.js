@@ -3,7 +3,7 @@
    Depende de: app.js (DB, $, brl, cNm, showToast)
    ===================================================== */
 
-const ERP_PW = 'milena2025';
+/* Acesso ao ERP via Supabase Auth — sem senha hardcoded */
 
 /* ── Cadastro rápido (nome + WhatsApp) salvo por loja ──────────── */
 const CUSTOMER_KEY = 'mlb_customer_' + (new URLSearchParams(location.search).get('loja') || 'default');
@@ -168,8 +168,8 @@ function rHeroCards() {
         ${p.img ? `<img src="${p.img}" alt="${p.nm}" loading="eager" onerror="this.style.display='none'">` : ''}
       </div>
       <div class="hero-gc-foot">
-        <span class="hero-gc-cat">${cNm[p.cat]}</span>
-        <div class="hero-gc-nm">${p.nm}</div>
+        <span class="hero-gc-cat">${esc(cNm[p.cat])}</span>
+        <div class="hero-gc-nm">${esc(p.nm)}</div>
         <span class="hero-gc-pr">${brl(p.pd || p.pr)}</span>
       </div>
     </div>`).join('');
@@ -183,19 +183,19 @@ function rProds(cat) {
   g.innerHTML = list.map(p => `
     <div class="pcard reveal">
       <div class="pcard-img">
-        ${p.img ? `<img src="${p.img}" alt="${p.nm}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.nm)}" loading="lazy" onerror="this.style.display='none'">` : ''}
         ${p.dt ? `<div class="pbadge ${p.dt === 'new' ? 'b-new' : 'b-sale'}">${p.dt === 'new' ? 'Novo' : 'Promo'}</div>` : ''}
         ${p.st > 0 && p.st <= 3 ? `<div class="pstock-pill">Só ${p.st} restantes</div>` : ''}
         ${p.st === 0 ? `<div class="pstock-pill pstock-out">Esgotado</div>` : ''}
         <div class="pcard-overlay">
-          ${p.desc ? `<p class="pcard-overlay-desc">${p.desc}</p>` : ''}
+          ${p.desc ? `<p class="pcard-overlay-desc">${esc(p.desc)}</p>` : ''}
           <button class="pcard-add" onclick="event.stopPropagation(); addC(${p.id})" ${p.st === 0 ? 'disabled' : ''}>${p.st === 0 ? 'Esgotado' : 'Adicionar'}</button>
         </div>
       </div>
       <div class="pcard-foot">
-        <span class="pcard-cat">${cNm[p.cat]}</span>
-        <div class="pcard-name">${p.nm}</div>
-        ${p.desc ? `<p class="pcard-desc">${p.desc}</p>` : ''}
+        <span class="pcard-cat">${esc(cNm[p.cat])}</span>
+        <div class="pcard-name">${esc(p.nm)}</div>
+        ${p.desc ? `<p class="pcard-desc">${esc(p.desc)}</p>` : ''}
         <div class="pcard-price">
           ${p.pd
             ? `<span class="pcard-price-new">${brl(p.pd)}</span><span class="pcard-price-old">${brl(p.pr)}</span>`
@@ -236,9 +236,9 @@ function initTelao() {
   track.innerHTML = featured.map((p, i) => `
     <div class="telao-slide ${i === 0 ? 'on' : ''}">
       <div class="telao-left">
-        <span class="telao-cat">${cNm[p.cat]}</span>
-        <h2 class="telao-name">${p.nm}</h2>
-        <p class="telao-desc">${p.desc || ''}</p>
+        <span class="telao-cat">${esc(cNm[p.cat])}</span>
+        <h2 class="telao-name">${esc(p.nm)}</h2>
+        <p class="telao-desc">${esc(p.desc || '')}</p>
         <div class="telao-prices">
           ${p.pd
             ? `<span class="telao-price-new">${brl(p.pd)}</span><span class="telao-price-old">${brl(p.pr)}</span>`
@@ -392,18 +392,18 @@ function rFeaturedProds() {
   g.innerHTML = list.map(p => `
     <div class="pcard reveal${p.dt === 'sale' ? ' pcard--sale' : ''}">
       <div class="pcard-img">
-        ${p.img ? `<img src="${p.img}" alt="${p.nm}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.nm)}" loading="lazy" onerror="this.style.display='none'">` : ''}
         ${p.dt ? `<div class="pbadge ${p.dt === 'new' ? 'b-new' : 'b-sale'}">${p.dt === 'new' ? 'Novo' : 'Promo'}</div>` : ''}
         ${p.st > 0 && p.st <= 3 ? `<div class="pstock-pill">Só ${p.st} restantes</div>` : ''}
         <div class="pcard-overlay">
-          ${p.desc ? `<p class="pcard-overlay-desc">${p.desc}</p>` : ''}
+          ${p.desc ? `<p class="pcard-overlay-desc">${esc(p.desc)}</p>` : ''}
           <button class="pcard-add" onclick="event.stopPropagation(); addC(${p.id})">Adicionar</button>
         </div>
       </div>
       <div class="pcard-foot">
-        <span class="pcard-cat">${cNm[p.cat]}</span>
-        <div class="pcard-name">${p.nm}</div>
-        ${p.desc ? `<p class="pcard-desc">${p.desc}</p>` : ''}
+        <span class="pcard-cat">${esc(cNm[p.cat])}</span>
+        <div class="pcard-name">${esc(p.nm)}</div>
+        ${p.desc ? `<p class="pcard-desc">${esc(p.desc)}</p>` : ''}
         <div class="pcard-price">
           ${p.pd
             ? `<span class="pcard-price-new">${brl(p.pd)}</span><span class="pcard-price-old">${brl(p.pr)}</span>`

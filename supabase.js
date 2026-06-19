@@ -141,6 +141,21 @@ const Tenants = {
     const { data: sess } = await _sbClient.auth.getSession();
     const uid = sess?.session?.user?.id;
     if (!uid) return null;
+
+    /* workspace pré-selecionado na tela de escolha */
+    const sel = sessionStorage.getItem('_shorti_workspace');
+    if (sel) {
+      const { data: o } = await _sbClient.from('tenants')
+        .select('id,slug,nome').eq('owner_user_id', uid).eq('id', sel).maybeSingle();
+      if (o) return { ...o, role: 'admin' };
+      try {
+        const { data: m } = await _sbClient.from('tenant_members')
+          .select('role,tenants(id,slug,nome)').eq('user_id', uid).eq('tenant_id', sel).maybeSingle();
+        if (m?.tenants) return { ...m.tenants, role: m.role };
+      } catch(e) {}
+      sessionStorage.removeItem('_shorti_workspace');
+    }
+
     /* 1. owner direto */
     const { data: owned } = await _sbClient.from('tenants')
       .select('id,slug,nome').eq('owner_user_id', uid).maybeSingle();
@@ -153,6 +168,25 @@ const Tenants = {
       if (mem?.tenants) return { ...mem.tenants, role: mem.role, memberNome: mem.nome };
     } catch(e) {}
     return null;
+  },
+  /* Retorna todos os workspaces acessíveis pelo usuário (owner + membro) */
+  async getTenantsForUser() {
+    const { data: sess } = await _sbClient.auth.getSession();
+    const uid = sess?.session?.user?.id;
+    if (!uid) return [];
+    const results = [];
+    const { data: owned } = await _sbClient.from('tenants')
+      .select('id,slug,nome').eq('owner_user_id', uid);
+    if (owned?.length) owned.forEach(t => results.push({ ...t, role: 'admin' }));
+    try {
+      const { data: mems } = await _sbClient.from('tenant_members')
+        .select('role,tenants(id,slug,nome)').eq('user_id', uid);
+      if (mems?.length) mems.forEach(m => {
+        if (m.tenants && !results.find(r => r.id === m.tenants.id))
+          results.push({ ...m.tenants, role: m.role });
+      });
+    } catch(e) {}
+    return results;
   },
   async getBySlug(slug) {
     const { data, error } = await _sbClient.from('tenants')
@@ -727,7 +761,8 @@ if (_localMode) {
   SBAuth.updatePassword  = async () => {};
   SBAuth.updateProfile   = async () => {};
   SBAuth.onAuthChange    = () => {};
-  Tenants.getForUser     = async () => ({ id: 'local-tenant', slug: 'local', nome: 'Conta de Testes', role: 'admin' });
+  Tenants.getForUser        = async () => ({ id: 'local-tenant', slug: 'local', nome: 'Conta de Testes', role: 'admin' });
+  Tenants.getTenantsForUser = async () => ([{ id: 'local-tenant', slug: 'local', nome: 'Conta de Testes', role: 'admin' }]);
   SBTeam.list   = async () => [];
   SBTeam.invite = async () => ({ ok: true });
   SBTeam.remove = async () => {};
