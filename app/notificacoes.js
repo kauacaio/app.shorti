@@ -306,6 +306,8 @@ function initRealtimeNotifs() {
       table:  'notifications',
       filter: `tenant_id=eq.${window._tenant.id}`
     }, ({ new: row }) => {
+      /* Barreira extra: rejeita evento de outro tenant mesmo que o filtro server-side falhe */
+      if (row.tenant_id !== window._tenant?.id) return;
       const n = {
         id: row.id, key: row.key, type: row.type, icon: row.icon,
         title: row.title, msg: row.msg, link: row.link || '',
