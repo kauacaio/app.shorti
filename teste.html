@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abstract Shapes Morph & Bounce</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --purple: #7F77DD;
+            --green: #1D9E75;
+            --coral: #D85A30;
+            --shadow-color: rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: sans-serif;
+        }
+
+        /* Container Principal da Animação */
+        .stage {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 0;
+        }
+
+        /* Área onde os shapes se transformam e caem */
+        .animation-zone {
+            position: relative;
+            width: 100%;
+            height: 380px;
+        }
+
+        /* Elemento Base do Shape */
+        .shape {
+            position: absolute;
+            top: 40px; /* Posição inicial no topo do frame */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            opacity: 0;
+            transform-origin: center center;
+        }
+
+        /* 1. Quadrado */
+        .square {
+            background-color: var(--purple);
+        }
+
+        /* 2. Triângulo (via Clip-Path) */
+        .triangle {
+            background-color: var(--green);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        /* 3. Pentágono / Diamante (via Clip-Path) */
+        .polygon {
+            background-color: var(--coral);
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+        }
+
+        /* 4. Círculo Final */
+        .ball {
+            background-color: #534AB7; /* Roxo profundo para a bola */
+            border-radius: 50%;
+            /* Origem no rodapé do shape para o efeito squash-and-stretch funcionar corretamente */
+            transform-origin: bottom center; 
+        }
+
+        /* Sombra de Contato (Ground Shadow) */
+        .shadow-container {
+            width: 100%;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contact-shadow {
+            width: 80px;
+            height: 10px;
+            background-color: var(--shadow-color);
+            border-radius: 50%;
+            transform: scaleX(0);
+            opacity: 0;
+            transition: filter 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stage">
+        <div class="animation-zone">
+            <div class="shape square"></div>
+            <div class="shape triangle"></div>
+            <div class="shape polygon"></div>
+            <div class="shape ball"></div>
+        </div>
+
+        <div class="shadow-container">
+            <div class="contact-shadow"></div>
+        </div>
+    </div>
+
+    <script>
+        function initMorphAnimation() {
+            // Cria uma timeline infinita (loopable)
+            const masterTimeline = gsap.timeline({ repeat: -1, repeatDelay: 1 });
+
+            // Resetar estados iniciais
+            gsap.set(".shape", { opacity: 0, scale: 0, rotation: 0, y: 0 });
+            gsap.set(".contact-shadow", { scaleX: 0, opacity: 0 });
+
+            // --- 1. CONFIGURAÇÃO INICIAL (Aparecimento do Quadrado) ---
+            masterTimeline.to(".square", {
+                opacity: 1,
+                scale: 1,
+                duration: 0.5,
+                ease: "back.out(1.7)"
+            });
+
+            // --- 2. FIRST MORPH (Quadrado -> Triângulo) ---
+            masterTimeline.to(".square", {
+                rotation: 135,
+                scale: 0,
+                opacity: 0,
+                duration: 0.6,
+                ease: "power2.inOut"
+            }, "+=0.4")
+            .to(".triangle", {
+                opacity: 1,
+                scale: 1,
+                rotation: -180,
+                duration: 0.6,
+                ease: "back.out(1.5)"
+            }, "-=0.5");
+
+            // --- 3. SECOND MORPH (Triângulo -> Pentágono) ---
+            masterTimeline.to(".triangle", {
+                rotation: 0,
+                scale: 0,
+                opacity: 0,
+                duration: 0.6,
+                ease: "power2.inOut"
+            }, "+=0.4")
+            .to(".polygon", {
+                opacity: 1,
+                scale: 1,
+                rotation: 144,
+                duration: 0.6,
+                ease: "back.out(1.5)"
+            }, "-=0.5");
+
+            // --- 4. FINAL MORPH INTO A BALL (Pentágono -> Círculo) ---
+            masterTimeline.to(".polygon", {
+                rotation: 360,
+                scale: 0,
+                opacity: 0,
+                duration: 0.5,
+                ease: "power2.in"
+            }, "+=0.4")
+            .to(".ball", {
+                opacity: 1,
+                scale: 1,
+                duration: 0.4,
+                ease: "elastic.out(1, 0.75)"
+            }, "-=0.3");
+
+            // --- 5. DROP AND BOUNCE (Queda e Quiques com Squash & Stretch) ---
+            // Distância exata da queda até o chão (zona de animação menos o tamanho do shape)
+            const dropDistance = 300; 
+
+            // Aparecimento sutil da sombra conforme o objeto inicia a queda
+            masterTimeline.to(".contact-shadow", {
+                opacity: 1,
+                scaleX: 0.3,
+                duration: 0.4,
+                ease: "power2.in"
+            }, "+=0.2");
+
+            // Queda da Bola (Aceleração por gravidade)
+            masterTimeline.to(".ball", {
+                y: dropDistance,
+                duration: 0.45,
+                ease: "power2.in" // Simula gravidade
+            }, "-=0.45");
+
+            // --- SEQUÊNCIA DE QUIQUES (Física Manual de Squash/Stretch) ---
+            
+            // QUICADA 1 (Impacto no chão)
+            masterTimeline.to(".ball", {
+                scaleY: 0.4,  // Achata (Squash)
+                scaleX: 1.5,  // Alarga lateralmente
+                duration: 0.08,
+                ease: "power1.out"
+            })
+            .to(".contact-shadow", {
+                scaleX: 1.2, // Sombra expande no impacto máximo
+                opacity: 1,
+                duration: 0.08,
+                ease: "power1.out"
+            }, "-=0.08")
+
+            // Subida 1
+            .to(".ball", {
+                y: dropDistance - 140, // Altura do primeiro rebote
+                scaleY: 1.3,           // Estica na subida (Stretch)
+                scaleX: 0.8,
+                duration: 0.35,
+                ease: "power2.out"     // Desacelera no topo
+            })
+            .to(".contact-shadow", {
+                scaleX: 0.2,          // Sombra encolhe enquanto a bola sobe
+                opacity: 0.4,
+                duration: 0.35,
+                ease: "power2.out"
+            }, "-=0.35")
+            
+            // Retorno à forma normal no ápice do pulo
+            .to(".ball", {
+                scaleY: 1,
+                scaleX: 1,
+                duration: 0.1,
+                ease: "power1.inOut"
+            }, "-=0.15")
+
+            // Queda 2
+            .to(".ball", {
+                y: dropDistance,
+                duration: 0.3,
+                ease: "power2.in"
+            })
+            .to(".contact-shadow", {
+                scaleX: 0.5,
+                opacity: 0.8,
+                duration: 0.3,
+                ease: "power2.in"
+            }, "-=0.3")
+
+            // QUICADA 2 (Impacto menor)
+            .to(".ball", {
+                scaleY: 0.6,
+                scaleX: 1.3,
+                duration: 0.06,
+                ease: "power1.out"
+            })
+            .to(".contact-shadow", {
+                scaleX: 1.0,
+                opacity: 1,
+                duration: 0.06,
+                ease: "power1.out"
+            }, "-=0.06")
+
+            // Subida 2
+            .to(".ball", {
+                y: dropDistance - 50, // Altura menor
+                scaleY: 1.15,
+                scaleX: 0.9,
+                duration: 0.22,
+                ease: "power2.out"
+            })
+            .to(".contact-shadow", {
+                scaleX: 0.4,
+                opacity: 0.6,
+                duration: 0.22,
+                ease: "power2.out"
+            }, "-=0.22")
+            
+            .to(".ball", {
+                scaleY: 1,
+                scaleX: 1,
+                duration: 0.08,
+                ease: "power1.inOut"
+            }, "-=0.1")
+
+            // Queda 3
+            .to(".ball", {
+                y: dropDistance,
+                duration: 0.2,
+                ease: "power2.in"
+            })
+            .to(".contact-shadow", {
+                scaleX: 0.5,
+                opacity: 0.9,
+                duration: 0.2,
+                ease: "power2.in"
+            }, "-=0.2")
+
+            // QUICADA 3 (Micro impacto de estabilização)
+            .to(".ball", {
+                scaleY: 0.85,
+                scaleX: 1.1,
+                duration: 0.05,
+                ease: "power1.out"
+            })
+            
+            // Estabilização Final (Fim do Movimento)
+            .to(".ball", {
+                scaleY: 1,
+                scaleX: 1,
+                duration: 0.2,
+                ease: "back.out(2)"
+            })
+            .to(".contact-shadow", {
+                scaleX: 0.6,
+                opacity: 0.8,
+                duration: 0.2
+            }, "-=0.2");
+
+            // --- OUTRO (Fade out da bola e da sombra para reiniciar o loop de forma limpa) ---
+            masterTimeline.to([".ball", ".contact-shadow"], {
+                opacity: 0,
+                scale: 0,
+                duration: 0.4,
+                ease: "power2.inOut"
+            }, "+=1.5");
+        }
+
+        // Executa a animação assim que a janela carregar
+        window.onload = initMorphAnimation;
+    </script>
+</body>
+</html>

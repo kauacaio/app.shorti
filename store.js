@@ -3,7 +3,43 @@
    Depende de: app.js (DB, $, brl, cNm, showToast)
    ===================================================== */
 
-const ERP_PW = 'milena2025';
+/* Acesso ao ERP via Supabase Auth — sem senha hardcoded */
+
+/* ── Cadastro rápido (nome + WhatsApp) salvo por loja ──────────── */
+const CUSTOMER_KEY = 'mlb_customer_' + (new URLSearchParams(location.search).get('loja') || 'default');
+
+function loadCustomerInfo() {
+  try {
+    const raw = localStorage.getItem(CUSTOMER_KEY);
+    return raw ? JSON.parse(raw) : { nome: '', tel: '' };
+  } catch(e) { return { nome: '', tel: '' }; }
+}
+function saveCustomerInfo(info) {
+  try { localStorage.setItem(CUSTOMER_KEY, JSON.stringify(info)); } catch(e) {}
+}
+
+/* ── Tema: pares de fonte por estilo ─────────────── */
+const FONT_PAIRS = {
+  elegante:    ["'Cormorant Garamond', Georgia, serif", "'DM Sans', system-ui, sans-serif"],
+  moderno:     ["'Poppins', system-ui, sans-serif", "'Inter', system-ui, sans-serif"],
+  minimal:     ["'Inter', system-ui, sans-serif", "'Inter', system-ui, sans-serif"],
+  classica:    ["'Playfair Display', Georgia, serif", "'Lato', system-ui, sans-serif"],
+  suave:       ["'Quicksand', system-ui, sans-serif", "'Nunito Sans', system-ui, sans-serif"],
+  sofisticada: ["'Marcellus', Georgia, serif", "'Manrope', system-ui, sans-serif"]
+};
+
+/* Clareia (percent > 0) ou escurece (percent < 0) uma cor hex */
+function shade(hex, percent) {
+  const m = (hex || '').replace('#', '');
+  if (!/^[0-9a-fA-F]{6}$/.test(m)) return hex;
+  let r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16);
+  const apply = c => {
+    const v = percent >= 0 ? c + (255 - c) * percent : c * (1 + percent);
+    return Math.max(0, Math.min(255, Math.round(v)));
+  };
+  [r, g, b] = [apply(r), apply(g), apply(b)];
+  return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+}
 
 /* ── Navegação ───────────────────────────────────── */
 function goto(id) {
@@ -132,8 +168,8 @@ function rHeroCards() {
         ${p.img ? `<img src="${p.img}" alt="${p.nm}" loading="eager" onerror="this.style.display='none'">` : ''}
       </div>
       <div class="hero-gc-foot">
-        <span class="hero-gc-cat">${cNm[p.cat]}</span>
-        <div class="hero-gc-nm">${p.nm}</div>
+        <span class="hero-gc-cat">${esc(cNm[p.cat])}</span>
+        <div class="hero-gc-nm">${esc(p.nm)}</div>
         <span class="hero-gc-pr">${brl(p.pd || p.pr)}</span>
       </div>
     </div>`).join('');
@@ -147,19 +183,19 @@ function rProds(cat) {
   g.innerHTML = list.map(p => `
     <div class="pcard reveal">
       <div class="pcard-img">
-        ${p.img ? `<img src="${p.img}" alt="${p.nm}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.nm)}" loading="lazy" onerror="this.style.display='none'">` : ''}
         ${p.dt ? `<div class="pbadge ${p.dt === 'new' ? 'b-new' : 'b-sale'}">${p.dt === 'new' ? 'Novo' : 'Promo'}</div>` : ''}
         ${p.st > 0 && p.st <= 3 ? `<div class="pstock-pill">Só ${p.st} restantes</div>` : ''}
         ${p.st === 0 ? `<div class="pstock-pill pstock-out">Esgotado</div>` : ''}
         <div class="pcard-overlay">
-          ${p.desc ? `<p class="pcard-overlay-desc">${p.desc}</p>` : ''}
+          ${p.desc ? `<p class="pcard-overlay-desc">${esc(p.desc)}</p>` : ''}
           <button class="pcard-add" onclick="event.stopPropagation(); addC(${p.id})" ${p.st === 0 ? 'disabled' : ''}>${p.st === 0 ? 'Esgotado' : 'Adicionar'}</button>
         </div>
       </div>
       <div class="pcard-foot">
-        <span class="pcard-cat">${cNm[p.cat]}</span>
-        <div class="pcard-name">${p.nm}</div>
-        ${p.desc ? `<p class="pcard-desc">${p.desc}</p>` : ''}
+        <span class="pcard-cat">${esc(cNm[p.cat])}</span>
+        <div class="pcard-name">${esc(p.nm)}</div>
+        ${p.desc ? `<p class="pcard-desc">${esc(p.desc)}</p>` : ''}
         <div class="pcard-price">
           ${p.pd
             ? `<span class="pcard-price-new">${brl(p.pd)}</span><span class="pcard-price-old">${brl(p.pr)}</span>`
@@ -200,9 +236,9 @@ function initTelao() {
   track.innerHTML = featured.map((p, i) => `
     <div class="telao-slide ${i === 0 ? 'on' : ''}">
       <div class="telao-left">
-        <span class="telao-cat">${cNm[p.cat]}</span>
-        <h2 class="telao-name">${p.nm}</h2>
-        <p class="telao-desc">${p.desc || ''}</p>
+        <span class="telao-cat">${esc(cNm[p.cat])}</span>
+        <h2 class="telao-name">${esc(p.nm)}</h2>
+        <p class="telao-desc">${esc(p.desc || '')}</p>
         <div class="telao-prices">
           ${p.pd
             ? `<span class="telao-price-new">${brl(p.pd)}</span><span class="telao-price-old">${brl(p.pr)}</span>`
@@ -329,8 +365,23 @@ function crm(id) { DB.cart = DB.cart.filter(x => x.id !== id); updC(); }
 
 function checkout() {
   if (!DB.cart.length) return;
+
+  const nome = ($('cc-nome')?.value || '').trim();
+  const tel = ($('cc-tel')?.value || '').trim();
+  if (!nome) { showToast('Preencha seu nome para continuar'); $('cc-nome')?.focus(); return; }
+  if (!tel) { showToast('Preencha seu WhatsApp para continuar'); $('cc-tel')?.focus(); return; }
+  saveCustomerInfo({ nome, tel });
+
   const msg = encodeURIComponent('Olá Milena! Gostaria de comprar:\n' + DB.cart.map(i => `• ${i.nm} ×${i.q} — ${brl((i.pd || i.pr) * i.q)}`).join('\n') + '\n\nTotal: ' + brl(DB.cart.reduce((a, b) => a + (b.pd || b.pr) * b.q, 0)));
   window.open(`https://wa.me/${(DB.settings?.whatsapp || '5511999999999')}?text=${msg}`, '_blank');
+
+  if (window._sbClient) {
+    // Só pid/q vão para o servidor — preço, nome e total são recalculados
+    // lá a partir do catálogo real (nunca confiamos no que o navegador envia).
+    const itens = DB.cart.map(i => ({ pid: i.id, q: i.q }));
+    const slug = window._tenant?.slug || new URLSearchParams(location.search).get('loja') || '';
+    SBStorefront.createOrder({ slug, nome, tel, itens }).catch(e => console.warn('[pedido loja]', e?.message));
+  }
 }
 
 /* ── Produtos em destaque (segunda sessão) ───────── */
@@ -341,18 +392,18 @@ function rFeaturedProds() {
   g.innerHTML = list.map(p => `
     <div class="pcard reveal${p.dt === 'sale' ? ' pcard--sale' : ''}">
       <div class="pcard-img">
-        ${p.img ? `<img src="${p.img}" alt="${p.nm}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.nm)}" loading="lazy" onerror="this.style.display='none'">` : ''}
         ${p.dt ? `<div class="pbadge ${p.dt === 'new' ? 'b-new' : 'b-sale'}">${p.dt === 'new' ? 'Novo' : 'Promo'}</div>` : ''}
         ${p.st > 0 && p.st <= 3 ? `<div class="pstock-pill">Só ${p.st} restantes</div>` : ''}
         <div class="pcard-overlay">
-          ${p.desc ? `<p class="pcard-overlay-desc">${p.desc}</p>` : ''}
+          ${p.desc ? `<p class="pcard-overlay-desc">${esc(p.desc)}</p>` : ''}
           <button class="pcard-add" onclick="event.stopPropagation(); addC(${p.id})">Adicionar</button>
         </div>
       </div>
       <div class="pcard-foot">
-        <span class="pcard-cat">${cNm[p.cat]}</span>
-        <div class="pcard-name">${p.nm}</div>
-        ${p.desc ? `<p class="pcard-desc">${p.desc}</p>` : ''}
+        <span class="pcard-cat">${esc(cNm[p.cat])}</span>
+        <div class="pcard-name">${esc(p.nm)}</div>
+        ${p.desc ? `<p class="pcard-desc">${esc(p.desc)}</p>` : ''}
         <div class="pcard-price">
           ${p.pd
             ? `<span class="pcard-price-new">${brl(p.pd)}</span><span class="pcard-price-old">${brl(p.pr)}</span>`
@@ -427,6 +478,27 @@ function initCarouselProgress() {
 function applySettings() {
   const s = DB.settings;
   if (!s) return;
+
+  /* Tema: modelo de loja, cores e fontes */
+  const theme = s.theme || {};
+  document.documentElement.setAttribute('data-template', theme.template || 'classico');
+  const root = document.documentElement.style;
+  if (theme.primary) {
+    root.setProperty('--brand', theme.primary);
+    root.setProperty('--sage-accent', theme.primary);
+  }
+  if (theme.accent) {
+    root.setProperty('--rose', theme.accent);
+    root.setProperty('--blush-mid', theme.accent);
+    root.setProperty('--rose-dark', shade(theme.accent, -0.25));
+    root.setProperty('--blush-deep', shade(theme.accent, -0.25));
+    root.setProperty('--rose-soft', shade(theme.accent, 0.85));
+    root.setProperty('--blush', shade(theme.accent, 0.85));
+  }
+  const fonts = FONT_PAIRS[theme.font] || FONT_PAIRS.elegante;
+  root.setProperty('--font-display', fonts[0]);
+  root.setProperty('--font-body', fonts[1]);
+
   const banner = document.querySelector('.urgency-banner');
   if (banner && s.banner) banner.innerHTML = s.banner;
   const kicker = document.querySelector('.hero-kicker');
@@ -480,20 +552,62 @@ function initNavHighlight() {
 }
 
 /* ── Progressive enhancement — carrega dados do Supabase ── */
+function showLojaIndisponivel(title, msg) {
+  const store = $('store');
+  if (!store) return;
+  store.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px;font-family:'DM Sans',sans-serif;">
+      <h1 style="font-size:28px;margin-bottom:8px;">${title}</h1>
+      <p style="color:#64748B;">${msg}</p>
+    </div>`;
+}
+function showLojaNaoEncontrada() {
+  showLojaIndisponivel('Loja não encontrada', 'Verifique o endereço da loja e tente novamente.');
+}
+
 async function loadFromSupabase() {
   if (!window._sbClient) return;
   const safe = async fn => { try { return await fn(); } catch(e) { return null; } };
-  const [prods, settings] = await Promise.all([ safe(() => SBProds.list()), safe(() => SBSettings.get()) ]);
-  if (prods)    { DB.prods = prods; }
+
+  const slug = new URLSearchParams(location.search).get('loja');
+  if (!slug) { showLojaNaoEncontrada(); return; }
+  const tenant = await safe(() => Tenants.getBySlug(slug));
+  if (!tenant) { showLojaNaoEncontrada(); return; }
+  window._tenant = tenant;
+
+  const [prods, settings] = await Promise.all([
+    safe(() => SBProds.list(tenant.id)),
+    safe(() => SBStorefront.getSettings(slug))
+  ]);
+  if (prods)    { DB.prods = prods.filter(p => p.st > 0); }
   if (settings) Object.assign(DB.settings, settings);
-  if (prods) {
-    rHeroCards();
-    rProds(_currentCat || 'todos');
-    rFeaturedProds();
-    initTelao();
-    applySettings();
-    requestAnimationFrame(initScrollReveal);
+
+  const isPreview = new URLSearchParams(location.search).has('preview');
+  if (DB.settings.published === false && !isPreview) {
+    showLojaIndisponivel('Loja indisponível', 'Esta loja está temporariamente fora do ar.');
+    return;
   }
+
+  document.title = tenant.nome;
+
+  /* Restaura URL limpa se viemos via 404-routing (GitHub Pages) */
+  const _rtSlug = sessionStorage.getItem('_srt_slug');
+  const _rtBase = sessionStorage.getItem('_srt_base');
+  if (_rtSlug && _rtSlug === slug && _rtBase !== null) {
+    sessionStorage.removeItem('_srt_slug');
+    sessionStorage.removeItem('_srt_base');
+    history.replaceState(null, '', _rtBase + '/' + _rtSlug);
+  }
+
+  if ($('site-intro-brand'))   $('site-intro-brand').textContent   = tenant.nome;
+  if ($('site-intro-eyebrow')) $('site-intro-eyebrow').textContent = tenant.nome;
+  if ($('site-brand-link'))    $('site-brand-link').textContent    = tenant.nome;
+  if ($('footer-copyright-text')) {
+    const kicker = DB.settings.heroKicker ? ' · ' + DB.settings.heroKicker : '';
+    $('footer-copyright-text').textContent = '© ' + new Date().getFullYear() + ' ' + tenant.nome + kicker;
+  }
+
+  rStore();
 }
 
 /* ── Init ────────────────────────────────────────── */
@@ -508,10 +622,46 @@ function rStore() {
   initNavHighlight();
   initCarouselProgress();
   applySettings();
+
+  const customer = loadCustomerInfo();
+  if ($('cc-nome')) $('cc-nome').value = customer.nome || '';
+  if ($('cc-tel')) $('cc-tel').value = customer.tel || '';
 }
 
-rStore();
-loadFromSupabase(); // re-renderiza com dados do banco se disponível
+const _isPreview = new URLSearchParams(location.search).has('preview');
+
+/* Se Supabase disponível: segura o intro como loading screen,
+   aguarda os dados do tenant e só então renderiza.
+   Preview (iframe ERP) ou modo local: sem intro, renderiza imediatamente. */
+if (window._sbClient && !window._localMode) {
+  const intro = document.getElementById('site-intro');
+  if (intro && _isPreview) {
+    /* No preview o intro não deve aparecer — remove direto */
+    intro.remove();
+  } else if (intro) {
+    intro.style.animation     = 'none';
+    intro.style.opacity       = '1';
+    intro.style.pointerEvents = 'none';
+  }
+  loadFromSupabase().finally(() => {
+    if (intro && !_isPreview) {
+      intro.style.transition = 'opacity .55s ease';
+      intro.style.opacity    = '0';
+      setTimeout(() => intro.remove(), 600);
+    }
+  });
+} else {
+  rStore();
+}
+
+/* ── Prévia ao vivo (iframe do ERP envia atualizações de tema/conteúdo) ── */
+if (_isPreview) {
+  window.addEventListener('message', e => {
+    if (e.data?.type !== 'shorti-preview-update') return;
+    Object.assign(DB.settings, e.data.settings);
+    applySettings();
+  });
+}
 document.addEventListener('DOMContentLoaded', initScrollReveal);
 
 /* ── Card de engajamento ─────────────────────────── */
@@ -549,6 +699,32 @@ function mktGo() {
   dismissMkt();
   goto('produtos');
 }
+
+/* ── Aviso de cookies + Política de Privacidade ──── */
+const COOKIE_CONSENT_KEY = 'mlb_cookie_consent';
+function acceptCookies() {
+  try { localStorage.setItem(COOKIE_CONSENT_KEY, '1'); } catch(e) {}
+  const b = $('cookie-banner');
+  if (b) b.classList.remove('on');
+}
+function openPrivacy(e) {
+  if (e) e.preventDefault();
+  const m = $('privacy-modal');
+  if (m) m.classList.add('on');
+}
+function closePrivacy() {
+  const m = $('privacy-modal');
+  if (m) m.classList.remove('on');
+}
+(function initCookieBanner() {
+  let consented = false;
+  try { consented = localStorage.getItem(COOKIE_CONSENT_KEY) === '1'; } catch(e) {}
+  if (consented) return;
+  setTimeout(() => {
+    const b = $('cookie-banner');
+    if (b) b.classList.add('on');
+  }, 2600);
+})();
 
 function openMobNav() {
   document.getElementById('mob-nav').classList.add('on');

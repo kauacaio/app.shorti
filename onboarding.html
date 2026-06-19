@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Shorti — Configurar loja</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue:   #1B44B8;
+      --blue-h: #1538A0;
+      --blue-l: #EFF4FF;
+      --ok:     #10B981;
+      --ok-l:   #ECFDF5;
+      --err:    #EF4444;
+      --tx:     #0F172A;
+      --tx-m:   #64748B;
+      --tx-s:   #94A3B8;
+      --bd:     #E2E8F0;
+      --bd-s:   #CBD5E1;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: #fff;
+      color: var(--tx);
+      overflow: hidden;
+    }
+
+    /* ════ LAYOUT ════════════════════════════════════ */
+    .page { display: grid; grid-template-columns: 1.1fr .9fr; height: 100vh; }
+
+    /* ════ LEFT ══════════════════════════════════════ */
+    .brand {
+      position: relative;
+      background: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 72px 80px;
+      overflow: hidden;
+    }
+
+    .brand::after {
+      content: '';
+      position: absolute;
+      width: 520px; height: 520px;
+      border-radius: 50%;
+      border: 1px solid rgba(27,68,184,.08);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .brand-ring {
+      position: absolute;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      border: 1px solid rgba(27,68,184,.06);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .brand-orbit {
+      position: absolute;
+      width: 0; height: 0;
+      top: 50%; left: 50%;
+      pointer-events: none;
+      animation: orbitSpin 35s linear infinite;
+    }
+    @keyframes orbitSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .orbit-item { position: absolute; top: 0; left: 0; }
+    .orbit-counter {
+      position: absolute;
+      animation: orbitCounter 35s linear infinite;
+    }
+    @keyframes orbitCounter {
+      from { transform: translate(-50%,-50%) rotate(0deg); }
+      to   { transform: translate(-50%,-50%) rotate(-360deg); }
+    }
+    .orbit-float {
+      display: block;
+      animation: orbitFloat 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes orbitFloat {
+      from { transform: translateY(-5px); }
+      to   { transform: translateY(5px); }
+    }
+    @keyframes hueDrift {
+      0%, 100% { filter: hue-rotate(0deg); }
+      50%      { filter: hue-rotate(36deg); }
+    }
+    .shape { display: block; }
+    .shape-diamond { border: 1.5px solid rgba(27,68,184,.16); border-radius: 4px; transform: rotate(45deg); animation: hueDrift 9s ease-in-out infinite; }
+    .shape-diamond.shape-lg { width: 24px; height: 24px; }
+    .shape-diamond.shape-sm { width: 14px; height: 14px; animation-delay: -4.5s; }
+    .shape-circle { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(124,58,237,.16); animation: hueDrift 11s ease-in-out infinite; animation-delay: -3s; }
+    .shape-square { width: 18px; height: 18px; border: 1.5px solid rgba(27,68,184,.13); border-radius: 3px; animation: hueDrift 13s ease-in-out infinite; animation-delay: -7s; }
+    .shape-tri svg { display: block; animation: hueDrift 10s ease-in-out infinite; animation-delay: -1.5s; }
+
+    .brand-watermark {
+      position: absolute; inset: 0;
+      display: flex; align-items: flex-end; justify-content: center;
+      overflow: hidden; pointer-events: none; z-index: 0;
+    }
+    .brand-watermark span {
+      font-size: clamp(260px, 42vw, 640px);
+      font-weight: 900;
+      letter-spacing: -.05em;
+      line-height: 1;
+      color: rgba(27,68,184,.035);
+      white-space: nowrap;
+      user-select: none;
+      transform: translateY(55%);
+    }
+
+    .brand-grid {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(27,68,184,.09) 1px, transparent 1px);
+      background-size: 28px 28px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 45% 50%, black 5%, transparent 100%);
+      mask-image: radial-gradient(ellipse 80% 80% at 45% 50%, black 5%, transparent 100%);
+    }
+
+    .b-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+
+    .eyebrow {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--tx-s); margin-bottom: 24px;
+      opacity: 0; animation: fadeUp .5s ease .05s forwards;
+    }
+    .e-bars { display: flex; align-items: flex-end; gap: 2px; }
+    .e-bar  {
+      background: var(--tx-s); border-radius: 1.5px; transform: skewX(-14deg);
+    }
+    .e-bar:nth-child(1) { width: 3px; height: 8px; opacity: .5; }
+    .e-bar:nth-child(2) { width: 3.5px; height: 11px; opacity: .8; }
+
+    .wm-row {
+      display: flex; align-items: flex-end; gap: .18em;
+      font-size: clamp(84px, 11.5vw, 134px);
+      margin-bottom: 28px;
+    }
+    .wm-bars { display: flex; align-items: flex-end; gap: .09em; height: .75em; }
+    .wm-bars span {
+      display: block; border-radius: .07em; transform: skewX(-14deg);
+    }
+    .wm-bars span:nth-child(1) { width: .16em; height: .46em; background: rgba(100,116,139,.28); }
+    .wm-bars span:nth-child(2) { width: .2em; height: .75em; background: linear-gradient(180deg, #94A3B8 0%, #475569 100%); }
+    .wm {
+      display: block;
+      font-size: 1em;
+      font-weight: 900;
+      letter-spacing: -.055em;
+      line-height: .75em;
+      color: var(--tx);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .wl {
+      display: inline-block;
+      opacity: 0;
+      animation: lpop .65s cubic-bezier(.34,1.56,.64,1) both;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+      cursor: default;
+    }
+    .wl-dot {
+      background: linear-gradient(135deg, var(--blue) 0%, #7C3AED 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: lpop .65s cubic-bezier(.34,1.56,.64,1) .48s both;
+    }
+    .wl:nth-child(1){animation-delay:.06s} .wl:nth-child(2){animation-delay:.12s}
+    .wl:nth-child(3){animation-delay:.18s} .wl:nth-child(4){animation-delay:.24s}
+    .wl:nth-child(5){animation-delay:.30s} .wl:nth-child(6){animation-delay:.36s}
+    @keyframes lpop { to { opacity: 1; transform: none; } }
+
+    .brand-line {
+      width: 48px; height: 2px;
+      margin: 0 auto;
+      background: linear-gradient(90deg, var(--blue) 0%, rgba(27,68,184,.2) 100%);
+      border-radius: 2px;
+      opacity: 0; animation: fadeUp .5s ease .52s forwards;
+    }
+
+    .b-tagline {
+      margin: 18px auto 0;
+      font-size: 15px; line-height: 1.6; text-align: center;
+      color: var(--tx-m); max-width: 360px;
+    }
+    .b-tagline .bl {
+      display: inline-block;
+      opacity: 0;
+      animation: charIn .5s ease forwards;
+    }
+    @keyframes charIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    /* ════ RIGHT ═════════════════════════════════════ */
+    .form-side {
+      background: #fff;
+      border-left: 1px solid #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100%; max-width: 360px;
+      opacity: 0; animation: cardIn .7s cubic-bezier(.16,1,.3,1) .22s forwards;
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+    .ob-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11.5px; font-weight: 600;
+      color: var(--ok); background: var(--ok-l);
+      border: 1px solid rgba(16,185,129,.18);
+      border-radius: 20px; padding: 5px 12px;
+      margin-bottom: 18px;
+    }
+
+    .c-title {
+      font-size: 22px; font-weight: 700;
+      letter-spacing: -.03em; color: var(--tx);
+      margin-bottom: 4px;
+    }
+    .c-sub {
+      font-size: 13px; color: var(--tx-m);
+      line-height: 1.5; margin-bottom: 28px;
+    }
+
+    /* ── Fields ─────────────────────────────────────── */
+    .field { position: relative; margin-bottom: 14px; }
+
+    .field input {
+      width: 100%;
+      height: 52px;
+      background: #fff;
+      border: 1.5px solid var(--bd);
+      border-radius: 10px;
+      padding: 18px 14px 6px 14px;
+      font-size: 14.5px;
+      font-family: 'Inter', sans-serif;
+      color: var(--tx);
+      outline: none;
+      caret-color: var(--blue);
+      transition: border-color .16s, box-shadow .16s;
+      appearance: none; -webkit-appearance: none;
+    }
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(27,68,184,.08);
+    }
+
+    .field label {
+      position: absolute;
+      left: 14px;
+      top: 26px; transform: translateY(-50%);
+      font-size: 14px; color: var(--tx-s);
+      pointer-events: none;
+      transition: top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, letter-spacing .18s ease;
+    }
+    .field input:focus ~ label,
+    .field input.v ~ label {
+      top: 9px; transform: none;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--blue);
+    }
+
+    /* error */
+    .field.e input { border-color: var(--err); box-shadow: 0 0 0 3px rgba(239,68,68,.08); animation: shk .4s both; }
+    .field.e label { color: var(--err) !important; }
+    @keyframes shk { 0%,100%{transform:none} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+
+    /* URL preview — mini browser chrome */
+    .url-preview {
+      display: flex; align-items: center; gap: 9px;
+      background: #F8FAFC; border: 1.5px solid var(--bd);
+      border-radius: 10px; padding: 11px 14px;
+      margin-top: 8px; transition: border-color .16s;
+    }
+    .field.e .url-preview { border-color: var(--err); }
+    .url-dots { display: flex; gap: 4px; flex-shrink: 0; }
+    .url-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bd-s); }
+    .url-text {
+      font-size: 12.5px; color: var(--tx-s);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+    .url-text b { color: var(--blue); font-weight: 700; }
+
+    /* submit */
+    .btn {
+      width: 100%; height: 48px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 14.5px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; position: relative; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(27,68,184,.22);
+      transition: background .16s, box-shadow .16s, transform .12s;
+      letter-spacing: -.01em;
+      margin-top: 6px;
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--blue-h);
+      box-shadow: 0 6px 22px rgba(27,68,184,.30);
+      transform: translateY(-1px);
+    }
+    .btn:active:not(:disabled) { transform: scale(.99); }
+    .btn:disabled { opacity: .7; cursor: not-allowed; transform: none !important; }
+    .btn::before {
+      content: ''; position: absolute;
+      top: 0; bottom: 0; left: -100%; width: 60%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      transform: skewX(-18deg);
+      transition: left .5s ease;
+    }
+    .btn:hover::before { left: 160%; }
+    .bi { display:flex; align-items:center; justify-content:center; gap:8px; position:relative; z-index:1; }
+    .sp { display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+    .btn.ld .lbl{display:none} .btn.ld .sp{display:block}
+
+    .alert {
+      display:none; margin-top:14px;
+      padding:10px 14px;
+      background:#FEF2F2; border:1px solid #FECACA;
+      border-radius:8px; font-size:12.5px; color:#B91C1C;
+      animation:fadeUp .2s ease;
+    }
+
+    /* footer */
+    .footer { margin-top: 26px; text-align: center; }
+    .gl {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 11px; color: var(--tx-s);
+      text-decoration: none; padding: 5px 10px;
+      border-radius: 20px; transition: background .14s, color .14s;
+    }
+    .gl:hover { background: #F8FAFC; color: var(--tx-m); }
+    .gbs { display:flex; align-items:flex-end; gap:2px; }
+    .gb  { background:var(--blue); border-radius:1.5px; transform:skewX(-14deg); }
+    .gb:nth-child(1){width:3px;height:8px;opacity:.5} .gb:nth-child(2){width:3.5px;height:11px}
+    .gnm { font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--blue); font-size:10px; }
+
+    /* ── Person at PC illustration ─────────────────────── */
+    .pc-wrap {
+      width: 100%; max-width: 280px;
+      margin: 22px auto 0;
+      opacity: 0;
+      animation: fadeUp .5s ease .75s forwards;
+    }
+    .pc-scene {
+      width: 100%; height: auto;
+      overflow: visible;
+      animation: pcFloat 5s ease-in-out infinite;
+    }
+    @keyframes pcFloat {
+      0%,100% { transform: translateY(0px); }
+      50%     { transform: translateY(-9px); }
+    }
+    .pc-bar {
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+      transform: scaleY(0);
+      animation: barGrow .55s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    .pc-bars rect:nth-child(1){ animation-delay:1.0s }
+    .pc-bars rect:nth-child(2){ animation-delay:1.1s }
+    .pc-bars rect:nth-child(3){ animation-delay:1.2s }
+    .pc-bars rect:nth-child(4){ animation-delay:1.3s }
+    .pc-bars rect:nth-child(5){ animation-delay:1.4s }
+    @keyframes barGrow {
+      from { transform: scaleY(0); }
+      to   { transform: scaleY(1); }
+    }
+    .pc-cursor { animation: curBlink 1.1s ease-in-out infinite; }
+    @keyframes curBlink {
+      0%,46%  { opacity: .8; }
+      50%,96% { opacity: 0; }
+    }
+    .pc-glow { animation: glowPulse 3.5s ease-in-out infinite; }
+    @keyframes glowPulse {
+      0%,100% { opacity: .35; }
+      50%     { opacity: .75; }
+    }
+    @media (max-width: 860px) { .pc-wrap { display: none; } }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+    @keyframes spin   { to{transform:rotate(360deg)} }
+
+    /* responsive */
+    @media (max-width: 860px) {
+      html, body { overflow: auto; }
+      .page { grid-template-columns: 1fr; height: auto; }
+      .brand { padding: 56px 36px 44px; min-height: 42vh; justify-content: flex-end; }
+      .wm-row { font-size: clamp(68px,15vw,96px); }
+      .form-side { padding: 52px 28px 60px; border-left: none; border-top: 1px solid #F1F5F9; }
+      .card { max-width: 400px; }
+    }
+    @media (max-width: 480px) {
+      .brand { padding: 44px 24px 36px; }
+      .wm-row { font-size: 64px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══ LEFT ═══ -->
+  <div class="brand">
+    <div class="brand-grid"></div>
+    <div class="brand-ring"></div>
+    <div class="brand-watermark"><span>Shorti</span></div>
+
+    <div class="brand-orbit">
+      <div class="orbit-item" style="transform:translate(244px,89px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:1.6s"><div class="shape shape-diamond shape-lg"></div></div></div>
+      </div>
+      <div class="orbit-item" style="transform:translate(-130px,109px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:2s; animation-delay:.2s"><div class="shape shape-circle"></div></div></div>
+      </div>
+      <div class="orbit-item" style="transform:translate(-236px,-110px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:1.8s; animation-delay:.55s"><div class="shape shape-square"></div></div></div>
+      </div>
+      <div class="orbit-item" style="transform:translate(85px,-147px)">
+        <div class="orbit-counter">
+          <div class="orbit-float" style="animation-duration:2.2s; animation-delay:.35s">
+            <div class="shape shape-tri">
+              <svg width="22" height="20" viewBox="0 0 22 20" fill="none"><polygon points="11,1 21,19 1,19" stroke="rgba(27,68,184,.18)" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="orbit-item" style="transform:translate(-45px,256px)">
+        <div class="orbit-counter"><div class="orbit-float" style="animation-duration:1.9s; animation-delay:.8s"><div class="shape shape-diamond shape-sm"></div></div></div>
+      </div>
+    </div>
+
+    <div class="b-inner">
+      <div class="eyebrow">
+        <div class="e-bars"><div class="e-bar"></div><div class="e-bar"></div></div>
+        ERP · GrupoLima
+      </div>
+
+      <div class="wm-row">
+        <div class="wm-bars"><span></span><span></span></div>
+        <div class="wm" id="wm" aria-label="Shorti.">
+          <span class="wl">S</span><span
+          class="wl">h</span><span
+          class="wl">o</span><span
+          class="wl">r</span><span
+          class="wl">t</span><span
+          class="wl">i</span><span
+          class="wl wl-dot">.</span>
+        </div>
+      </div>
+
+      <div class="brand-line"></div>
+      <p class="b-tagline" id="btag">Sua loja, pronta para vender em minutos.</p>
+
+      <!-- person at laptop illustration -->
+      <div class="pc-wrap">
+        <svg class="pc-scene" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="pcGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stop-color="#1B44B8" stop-opacity=".22"/>
+              <stop offset="100%" stop-color="#1B44B8" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- shadow -->
+          <ellipse cx="148" cy="193" rx="108" ry="6" fill="rgba(27,68,184,.06)"/>
+
+          <!-- DESK -->
+          <rect x="20"  y="162" width="252" height="7" rx="3.5" fill="#E2E8F0"/>
+          <rect x="40"  y="169" width="9"   height="24" rx="3.5" fill="#CBD5E1"/>
+          <rect x="238" y="169" width="9"   height="24" rx="3.5" fill="#CBD5E1"/>
+
+          <!-- LAPTOP BASE -->
+          <rect x="46" y="143" width="158" height="21" rx="6"   fill="#CBD5E1"/>
+          <rect x="51" y="147" width="148" height="13" rx="3"   fill="#B2BFCF" opacity=".35"/>
+          <rect x="108" y="149" width="36" height="8"  rx="4"   fill="#B2BFCF" opacity=".3"/>
+
+          <!-- screen glow -->
+          <ellipse class="pc-glow" cx="125" cy="104" rx="82" ry="50" fill="url(#pcGlow)"/>
+
+          <!-- LAPTOP LID -->
+          <rect x="48" y="58"  width="154" height="88" rx="9" fill="#1E293B"/>
+          <rect x="52" y="62"  width="146" height="80" rx="6" fill="#0F172A"/>
+
+          <!-- screen top bar -->
+          <rect x="58"  y="67" width="46" height="4.5" rx="2.25" fill="#1B44B8"  opacity=".5"/>
+          <rect x="174" y="67" width="18" height="4.5" rx="2.25" fill="#334155"  opacity=".35"/>
+          <rect x="52"  y="75" width="146" height="1"              fill="#1E293B"/>
+
+          <!-- bar chart -->
+          <g class="pc-bars">
+            <rect class="pc-bar" x="58"  y="114" width="12" height="24" rx="2.5" fill="#1B44B8" opacity=".52"/>
+            <rect class="pc-bar" x="74"  y="101" width="12" height="37" rx="2.5" fill="#1B44B8" opacity=".72"/>
+            <rect class="pc-bar" x="90"  y="108" width="12" height="30" rx="2.5" fill="#7C3AED" opacity=".65"/>
+            <rect class="pc-bar" x="106" y="93"  width="12" height="45" rx="2.5" fill="#1B44B8" opacity=".84"/>
+            <rect class="pc-bar" x="122" y="103" width="12" height="35" rx="2.5" fill="#10B981" opacity=".68"/>
+          </g>
+
+          <!-- stats lines -->
+          <rect x="142" y="81"  width="50" height="3.5" rx="1.75" fill="#475569" opacity=".2"/>
+          <rect x="142" y="88"  width="36" height="3.5" rx="1.75" fill="#475569" opacity=".15"/>
+          <rect x="142" y="95"  width="44" height="3.5" rx="1.75" fill="#10B981" opacity=".3"/>
+          <rect x="142" y="102" width="30" height="3.5" rx="1.75" fill="#475569" opacity=".18"/>
+          <rect x="142" y="109" width="42" height="3.5" rx="1.75" fill="#1B44B8" opacity=".22"/>
+          <rect x="142" y="116" width="34" height="3.5" rx="1.75" fill="#475569" opacity=".15"/>
+          <rect class="pc-cursor" x="142" y="126" width="9" height="4" rx="1.5" fill="#1B44B8" opacity=".78"/>
+
+          <!-- hinge -->
+          <rect x="48" y="142" width="154" height="3" rx="1.5" fill="#94A3B8" opacity=".25"/>
+
+          <!-- PERSON -->
+          <!-- chair back -->
+          <rect x="252" y="90"  width="15" height="66" rx="7.5" fill="#E2E8F0"/>
+          <!-- seat -->
+          <rect x="234" y="153" width="32" height="7"  rx="3.5" fill="#E2E8F0"/>
+
+          <!-- shirt -->
+          <rect x="219" y="106" width="32" height="50" rx="13" fill="#1B44B8"/>
+
+          <!-- neck -->
+          <rect x="228" y="97" width="14" height="14" rx="6" fill="#F5CBA7"/>
+
+          <!-- head -->
+          <ellipse cx="235" cy="81" rx="16" ry="16.5" fill="#F5CBA7"/>
+
+          <!-- hair -->
+          <path d="M219 79 Q220 62 235 60 Q250 62 251 79 Q249 69 241 66 Q235 63.5 229 66 Q221 69 219 79Z" fill="#3D2B1F"/>
+          <!-- hair right side curl -->
+          <path d="M249 75 Q252 67 250 61 Q248 56 244 58 Q248 60 249 69Z" fill="#3D2B1F"/>
+          <!-- hair bun -->
+          <ellipse cx="243" cy="62" rx="7.5" ry="6.5" fill="#3D2B1F"/>
+          <ellipse cx="243" cy="62" rx="4.5" ry="3.5" fill="#4a3428"/>
+
+          <!-- ear -->
+          <ellipse cx="219.5" cy="82" rx="3.5" ry="4.5" fill="#F5CBA7"/>
+
+          <!-- eyes -->
+          <ellipse cx="229" cy="82" rx="2.2" ry="2.5" fill="#1E1008"/>
+          <ellipse cx="241" cy="82" rx="2.2" ry="2.5" fill="#1E1008"/>
+          <circle  cx="230" cy="81" r=".9"             fill="#fff"/>
+          <circle  cx="242" cy="81" r=".9"             fill="#fff"/>
+
+          <!-- eyebrows -->
+          <path d="M226 77.5 Q229 76 232 77.5" stroke="#3D2B1F" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <path d="M238 77.5 Q241 76 244 77.5" stroke="#3D2B1F" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+
+          <!-- smile -->
+          <path d="M228 89 Q235 94 242 89" stroke="#C08060" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+          <!-- left arm -->
+          <path d="M223 118 Q200 130 178 143" stroke="#1B44B8" stroke-width="11" stroke-linecap="round" fill="none"/>
+          <ellipse cx="175" cy="144" rx="9.5" ry="6" fill="#F5CBA7"/>
+
+          <!-- right arm -->
+          <path d="M239 118 Q237 131 210 143" stroke="#1B44B8" stroke-width="11" stroke-linecap="round" fill="none"/>
+          <ellipse cx="207" cy="144" rx="9.5" ry="6" fill="#F5CBA7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT ═══ -->
+  <div class="form-side">
+    <div class="card">
+
+      <div class="ob-badge">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3L11.5 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Convite aceito
+      </div>
+
+      <h2 class="c-title">Quase lá!</h2>
+      <p class="c-sub">Escolha o nome e o endereço da sua loja para finalizar. Você pode alterar tudo isso depois.</p>
+
+      <form id="ob-form" novalidate>
+        <div class="field" id="f-nome">
+          <input type="text" id="ob-nome" placeholder=" " autocomplete="off">
+          <label for="ob-nome">Nome da loja</label>
+        </div>
+
+        <div class="field" id="f-slug">
+          <input type="text" id="ob-slug" placeholder=" " autocomplete="off">
+          <label for="ob-slug">Endereço da loja</label>
+          <div class="url-preview">
+            <div class="url-dots"><div class="url-dot"></div><div class="url-dot"></div><div class="url-dot"></div></div>
+            <div class="url-text">shorti.app/<b id="slug-preview">sua-loja</b></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="ob-btn">
+          <div class="bi">
+            <div class="sp"></div>
+            <span class="lbl">Criar minha loja</span>
+          </div>
+        </button>
+
+        <div class="alert" id="ob-alert"></div>
+      </form>
+
+      <div class="footer">
+        <a href="grupolima.html" class="gl">
+          <div class="gbs"><div class="gb"></div><div class="gb"></div></div>
+          <span class="gnm">GrupoLima</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+<script src="./supabase.js" defer></script>
+<script>
+/* wordmark — subtle hover lift */
+const letters = [...document.querySelectorAll('.wl')];
+function wave(idx) {
+  letters.forEach((l, i) => {
+    const d = Math.abs(idx - i);
+    const y = [8, 4, 1, 0][Math.min(d, 3)];
+    l.style.transform = `translateY(-${y}px)`;
+  });
+}
+function unwave() { letters.forEach(l => l.style.transform = ''); }
+letters.forEach((l, i) => {
+  l.addEventListener('mouseenter', () => wave(i));
+  l.addEventListener('mouseleave', unwave);
+});
+
+/* tagline — letters fade in one by one */
+const btag = document.getElementById('btag');
+const btagChars = [...btag.textContent];
+btag.textContent = '';
+btagChars.forEach((ch, i) => {
+  const s = document.createElement('span');
+  s.className = 'bl';
+  s.textContent = ch === ' ' ? ' ' : ch;
+  s.style.animationDelay = (0.62 + i * 0.018) + 's';
+  btag.appendChild(s);
+});
+
+/* idle ripple */
+function autoWave() {
+  let i = -1;
+  const step = setInterval(() => {
+    i++;
+    if (i > letters.length + 1) { clearInterval(step); unwave(); return; }
+    wave(i);
+  }, 80);
+}
+setTimeout(autoWave, 2200);
+setInterval(autoWave, 6000);
+
+/* floating labels */
+function syncFloat(inp) { inp.classList.toggle('v', inp.value.length > 0); }
+document.querySelectorAll('.field input').forEach(inp => {
+  inp.addEventListener('input', () => syncFloat(inp));
+  inp.addEventListener('blur', () => syncFloat(inp));
+  syncFloat(inp);
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window._localMode) { window.location.replace('erp.html?local'); return; }
+
+  if (window._sbClient) {
+    try {
+      const session = await SBAuth.getSession();
+      if (!session) { window.location.replace('login.html'); return; }
+      const tenant = await Tenants.getByOwner();
+      if (tenant) { window.location.replace('erp.html'); return; }
+    } catch(e) {
+      console.warn('[onboarding]', e.message);
+    }
+  }
+
+  const nomeInp = document.getElementById('ob-nome');
+  const slugInp = document.getElementById('ob-slug');
+  const preview = document.getElementById('slug-preview');
+  const fNome   = document.getElementById('f-nome');
+  const fSlug   = document.getElementById('f-slug');
+  const alertEl = document.getElementById('ob-alert');
+  const btn     = document.getElementById('ob-btn');
+
+  let slugTouched = false;
+  const slugify = s => s
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  nomeInp.addEventListener('input', () => {
+    if (!slugTouched) {
+      slugInp.value = slugify(nomeInp.value);
+      syncFloat(slugInp);
+      preview.textContent = slugInp.value || 'sua-loja';
+    }
+  });
+  slugInp.addEventListener('input', () => {
+    slugTouched = true;
+    slugInp.value = slugify(slugInp.value);
+    preview.textContent = slugInp.value || 'sua-loja';
+  });
+
+  function clrErr() {
+    fNome.classList.remove('e');
+    fSlug.classList.remove('e');
+    alertEl.style.display = 'none';
+  }
+  function showAlert(msg) {
+    alertEl.textContent = msg;
+    alertEl.style.display = 'block';
+  }
+  function setLoading(on) {
+    btn.disabled = on;
+    btn.classList.toggle('ld', on);
+  }
+
+  document.getElementById('ob-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    clrErr();
+
+    const nome = nomeInp.value.trim();
+    const slug = slugInp.value.trim();
+    let ok = true;
+    if (!nome) { fNome.classList.add('e'); ok = false; }
+    if (!slug || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) { fSlug.classList.add('e'); ok = false; }
+    if (!ok) { showAlert('Preencha o nome da loja e um endereço válido.'); return; }
+
+    setLoading(true);
+
+    try {
+      const existing = await Tenants.getBySlug(slug);
+      if (existing) {
+        fSlug.classList.add('e');
+        showAlert('Esse endereço já está em uso. Escolha outro.');
+        setLoading(false);
+        return;
+      }
+
+      const tenant = await Tenants.create({ slug, nome });
+
+      const defaultSettings = {
+        banner:    '',
+        whatsapp:  '',
+        pix:       '',
+        pixVerified: false,
+        heroKicker: nome,
+        heroLines:  [nome, '', '', ''],
+        heroSub:    '',
+        heroProof:  '',
+        marquee:    nome + ' ·',
+        benefits: [
+          { title: 'Entrega para todo o Brasil', desc: 'Rápido e com rastreamento' },
+          { title: 'Parcelamento em até 12x',    desc: 'Sem juros no cartão' },
+          { title: 'Qualidade garantida',        desc: 'Produtos 100% originais' },
+          { title: 'Atendimento personalizado',  desc: 'Suporte exclusivo para você' }
+        ],
+        theme: { template: 'classico', primary: '#3D6655', accent: '#C4897A', font: 'elegante' },
+        published: true
+      };
+      await SBSettings.set(defaultSettings, tenant.id);
+
+      window.location.href = 'erp.html';
+    } catch (err) {
+      showAlert(err?.message || 'Erro ao criar a loja. Tente novamente.');
+      setLoading(false);
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Shorti · Design System</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    font-family:'Inter',system-ui,sans-serif; background:#04060C; color:#fff;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+
+  /* ══ APP SHELL ═════════════════════════════════ */
+  .app { position:fixed; inset:0; overflow:hidden; }
+
+  /* ══ TOP BAR ════════════════════════════════════ */
+  .topbar { position:absolute; top:24px; left:0; right:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 24px; transition: color .3s; }
+  @media(min-width:760px){ .topbar { top:34px; padding:0 64px; } }
+  .tb-id { display:flex; align-items:flex-end; gap:8px; }
+  .tb-lb { display:flex; align-items:flex-end; gap:2px; height:11px; }
+  .tb-lb span { display:block; border-radius:2px; transform:skewX(-14deg); background:rgba(255,255,255,.85); transition:background .3s; }
+  .tb-lb span:nth-child(1){ width:4px; height:7px; opacity:.45; }
+  .tb-lb span:nth-child(2){ width:4.5px; height:11px; }
+  .tb-name { font-size:15px; line-height:11px; font-weight:900; letter-spacing:-.05em; color:#fff; transition:color .3s; }
+  .tb-name b { color:#4D7EFF; }
+  .tb-r { display:flex; align-items:center; gap:16px; }
+  .tb-count { font-size:11px; font-weight:800; letter-spacing:.18em; color:rgba(255,255,255,.35); font-variant-numeric:tabular-nums; transition:color .3s; }
+  .tb-close {
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.7);
+    cursor:pointer; backdrop-filter:blur(8px); transition:.2s; text-decoration:none;
+  }
+  .tb-close:hover { background:rgba(255,255,255,.16); color:#fff; transform:rotate(90deg); }
+  #app.light .tb-name { color:#0F172A; }
+  #app.light .tb-lb span { background:rgba(15,23,42,.55); }
+  #app.light .tb-lb span:nth-child(2){ background:#0F172A; }
+  #app.light .tb-count { color:rgba(15,23,42,.35); }
+  #app.light .tb-close { background:rgba(15,23,42,.06); border-color:rgba(15,23,42,.12); color:rgba(15,23,42,.5); }
+  #app.light .tb-close:hover { background:rgba(15,23,42,.12); color:#0F172A; }
+
+  /* ══ DOTS NAV ═══════════════════════════════════ */
+  .dots { position:absolute; top:26px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:7px; }
+  @media(min-width:760px){ .dots { top:38px; } }
+  .dot-btn { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.25); border:none; padding:0; cursor:pointer; transition:.25s; }
+  .dot-btn.on { background:#fff; width:22px; border-radius:4px; }
+  #app.light .dot-btn { background:rgba(15,23,42,.16); }
+  #app.light .dot-btn.on { background:#0F172A; }
+
+  /* ══ ARROW NAV ══════════════════════════════════ */
+  .arrows { position:absolute; right:24px; bottom:28px; z-index:50; display:flex; gap:10px; }
+  @media(min-width:760px){ .arrows { right:64px; bottom:44px; } }
+  .arrow-btn {
+    width:46px; height:46px; border-radius:50%; border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.06); backdrop-filter:blur(8px); color:rgba(255,255,255,.8);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.2s;
+  }
+  .arrow-btn:hover:not(:disabled) { background:rgba(255,255,255,.16); color:#fff; }
+  .arrow-btn:disabled { opacity:.22; cursor:default; }
+  #app.light .arrow-btn { background:rgba(15,23,42,.05); border-color:rgba(15,23,42,.12); color:rgba(15,23,42,.55); }
+  #app.light .arrow-btn:hover:not(:disabled) { background:rgba(15,23,42,.1); color:#0F172A; }
+
+  /* ══ STAGE / SLIDES ═════════════════════════════ */
+  .stage { position:relative; width:100%; height:100%; overflow:hidden; }
+  .slide {
+    position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
+    align-items:flex-start; text-align:left;
+    padding:104px 24px 64px;
+    opacity:0; visibility:hidden; z-index:1;
+    transform: scale(.94);
+    transition: opacity .55s ease, transform .65s cubic-bezier(.16,1,.3,1);
+  }
+  @media(min-width:640px){ .slide { padding:120px 64px 70px; } }
+  @media(min-width:1100px){ .slide { padding:120px 110px 80px; } }
+
+  .slide.active  { opacity:1; visibility:visible; transform:scale(1) translateX(0); z-index:3; }
+  .slide.enter-r { transform: translateX(70px) scale(.92); }
+  .slide.enter-l { transform: translateX(-70px) scale(.92); }
+  .slide.exit-l  { opacity:0; visibility:visible; transform: translateX(-70px) scale(.92); z-index:2; }
+  .slide.exit-r  { opacity:0; visibility:visible; transform: translateX(70px) scale(.92); z-index:2; }
+
+  .slide.center { align-items:center; text-align:center; }
+
+  .slide.dark   { background:#04060C; color:#fff; }
+  .slide.white  { background:#fff; color:#0F172A; }
+  .slide.blue   { background:linear-gradient(155deg,#1B44B8 0%,#0E2670 100%); color:#fff; }
+  .slide.amber  { background:linear-gradient(155deg,#1a1206 0%,#04060C 60%); color:#fff; }
+  .slide.purple { background:linear-gradient(155deg,#1a0f2e 0%,#04060C 60%); color:#fff; }
+
+  .slide.dark::before, .slide.amber::before, .slide.purple::before {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.5; z-index:0;
+    background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 30px 30px;
+    mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+  }
+  .slide.white::before {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.6; z-index:0;
+    background-image: radial-gradient(rgba(15,23,42,.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    mask-image: radial-gradient(circle at 50% 20%, #000 0%, transparent 70%);
+  }
+
+  /* glow blobs */
+  .glow { position:absolute; border-radius:50%; filter:blur(90px); pointer-events:none; opacity:.5; z-index:0; animation: glowfloat 10s ease-in-out infinite; }
+  .glow2 { position:absolute; border-radius:50%; filter:blur(100px); pointer-events:none; opacity:.38; z-index:0; animation: glowfloat 13s ease-in-out infinite reverse; }
+  @keyframes glowfloat { 0%,100%{ transform:translate(0,0) scale(1) } 50%{ transform:translate(-30px,24px) scale(1.2) } }
+  .slide.dark .glow    { width:38vw; height:38vw; max-width:480px; max-height:480px; background:#1B44B8; top:-12vw; right:-10vw; }
+  .slide.dark .glow2   { width:26vw; height:26vw; max-width:340px; max-height:340px; background:#A78BFA; bottom:6%; left:-8vw; }
+  .slide.amber .glow   { width:40vw; height:40vw; max-width:500px; max-height:500px; background:#F59E0B; bottom:-14vw; left:-10vw; opacity:.32; }
+  .slide.purple .glow  { width:40vw; height:40vw; max-width:500px; max-height:500px; background:#A78BFA; top:-12vw; right:-10vw; opacity:.38; }
+  .slide.blue .glow    { width:44vw; height:44vw; max-width:560px; max-height:560px; background:#4D7EFF; top:-14vw; left:-12vw; opacity:.4; }
+  .slide.amber .glow2  { width:28vw; height:28vw; max-width:360px; max-height:360px; background:#FCD34D; top:10%; right:-6vw; opacity:.18; }
+  .slide.purple .glow2 { width:28vw; height:28vw; max-width:360px; max-height:360px; background:#4D7EFF; bottom:-8vw; left:-6vw; opacity:.22; }
+
+  /* numeros gigantes de fundo */
+  .bg-num {
+    position:absolute; z-index:0; font-weight:900; letter-spacing:-.06em; line-height:1; pointer-events:none;
+    font-size:clamp(180px,32vw,460px); color:rgba(255,255,255,.045);
+  }
+  .white .bg-num { color:rgba(15,23,42,.04); }
+  .slide:not(.split) .bg-num { right:-.04em; bottom:-.12em; }
+  .slide.split .bg-num { top:-.08em; right:-.03em; }
+
+  /* ══ TEXT ═══════════════════════════════════════ */
+  .kicker {
+    position:relative; z-index:1; display:inline-flex; align-items:center; gap:9px;
+    font-size:clamp(11px,1vw,13px); font-weight:800; letter-spacing:.24em; text-transform:uppercase;
+    color:rgba(255,255,255,.4); margin-bottom:20px;
+  }
+  .kicker .dot { width:6px; height:6px; border-radius:50%; background:#4D7EFF; flex-shrink:0; animation: dotpulse 1.4s ease-in-out infinite; }
+  @keyframes dotpulse { 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.35; transform:scale(1.5) } }
+  .white .kicker { color:#94A3B8; }
+
+  .h {
+    position:relative; z-index:1; max-width:980px;
+    font-size:clamp(38px,8.5vw,96px); font-weight:900; letter-spacing:-.045em; line-height:1.04;
+    margin-bottom:22px;
+  }
+  .h em { font-style:italic; color:#4D7EFF; }
+  .white .h em { color:#1B44B8; }
+  .blue .h em  { color:#fff; -webkit-text-stroke:1.5px #fff; }
+  .slide.center .h, .slide.center .p { margin-left:auto; margin-right:auto; }
+
+  .p {
+    position:relative; z-index:1; max-width:560px;
+    font-size:clamp(15px,1.7vw,19px); font-weight:300; line-height:1.6; color:rgba(255,255,255,.6);
+  }
+  .white .p { color:#64748B; }
+
+  .tap-hint {
+    position:relative; z-index:1; margin-top:36px;
+    font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(255,255,255,.28); display:flex; align-items:center; gap:8px;
+    animation: tapnudge 1.6s ease-in-out infinite;
+  }
+  @keyframes tapnudge { 0%,100%{transform:translateX(0);opacity:.28} 50%{transform:translateX(6px);opacity:.55} }
+
+  .footer-tag {
+    position:relative; z-index:1; margin-top:14px;
+    font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(255,255,255,.22);
+  }
+
+  /* ══ NAV ZONES ══════════════════════════════════ */
+  .nav { position:absolute; inset:0; z-index:40; display:flex; }
+  .nav-l { flex:0 0 32%; cursor:pointer; }
+  .nav-r { flex:1; cursor:pointer; }
+
+  /* ══ REVEAL "Shorti." ═══════════════════════════ */
+  .reveal {
+    position:relative; z-index:1; display:flex; align-items:flex-end; gap:.16em; margin:10px 0 24px;
+    font-size:clamp(56px,14vw,128px);
+    opacity:0; transform:scale(.4) rotate(-10deg);
+  }
+  .slide.center .reveal { justify-content:center; width:100%; }
+  .slide.active .reveal { animation: revealpop .9s cubic-bezier(.34,1.56,.64,1) .2s forwards; }
+  @keyframes revealpop { to{opacity:1; transform:scale(1) rotate(0)} }
+  .reveal .rb { display:flex; align-items:flex-end; gap:.08em; height:.75em; }
+  .reveal .rb span { display:block; border-radius:.06em; transform:skewX(-14deg); background:rgba(255,255,255,.45); }
+  .reveal .rb span:nth-child(1){ width:.16em; height:.46em; }
+  .reveal .rb span:nth-child(2){ width:.2em; height:.75em; background:#fff; }
+  .reveal .word { position:relative; font-size:1em; line-height:.75em; font-weight:900; letter-spacing:-.06em; overflow:hidden; }
+  .reveal .word b { color:#4D7EFF; }
+  .reveal .word::after {
+    content:''; position:absolute; inset:0; left:-150%;
+    background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%);
+    transform:skewX(-20deg);
+  }
+  .slide.active .reveal .word::after { animation: shinesweep 1.4s ease 1.1s forwards; }
+  @keyframes shinesweep { to{ left:150% } }
+
+  /* ══ PALETTE ════════════════════════════════════ */
+  .palette { position:relative; z-index:1; display:flex; gap:18px; flex-wrap:wrap; margin:8px 0 24px; }
+  .slide.center .palette { justify-content:center; width:100%; }
+  .sw { display:flex; flex-direction:column; align-items:center; gap:7px; opacity:0; transform:translateY(10px) scale(.7); }
+  .slide.active .sw { animation: swin .5s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .sw:nth-child(1){ animation-delay:.05s !important; }
+  .sw:nth-child(2){ animation-delay:.1s !important; }
+  .sw:nth-child(3){ animation-delay:.15s !important; }
+  .sw:nth-child(4){ animation-delay:.2s !important; }
+  .sw:nth-child(5){ animation-delay:.25s !important; }
+  @keyframes swin { to{opacity:1; transform:none} }
+  .sw-c { width:64px; height:64px; border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.18); transition:transform .25s; }
+  @media(min-width:760px){ .sw-c { width:84px; height:84px; border-radius:20px; } }
+  .sw:hover .sw-c { transform:translateY(-4px) scale(1.08) rotate(-4deg); }
+  .sw-n { font-size:11px; font-weight:700; color:rgba(255,255,255,.85); text-align:center; max-width:96px; }
+  .sw-h { font-size:10px; font-weight:700; color:rgba(255,255,255,.4); font-family:'Courier New',monospace; }
+  .white .sw-n { color:#0F172A; }
+  .white .sw-h { color:#94A3B8; }
+
+  /* ══ SPLIT LAYOUT ═══════════════════════════════ */
+  .slide.split { flex-direction:column; justify-content:center; gap:36px; }
+  @media(min-width:880px){
+    .slide.split { flex-direction:row; align-items:center; justify-content:space-between; gap:clamp(40px,6vw,120px); padding-top:0; padding-bottom:0; }
+    .split-text { flex:1; max-width:560px; }
+    .split-visual { flex-shrink:0; }
+  }
+  .split-visual { display:flex; justify-content:center; width:100%; position:relative; z-index:1; }
+
+  /* ══ FEATURE LIST ═══════════════════════════════ */
+  .feat-list { position:relative; z-index:1; display:flex; flex-direction:column; gap:20px; margin-top:8px; max-width:520px; width:100%; }
+  .feat-item { display:flex; gap:16px; align-items:flex-start; opacity:0; transform:translateY(14px); }
+  .slide.active .feat-item { animation: aup .6s cubic-bezier(.16,1,.3,1) forwards; }
+  .feat-item:nth-child(1){ animation-delay:.2s; }
+  .feat-item:nth-child(2){ animation-delay:.3s; }
+  .feat-item:nth-child(3){ animation-delay:.4s; }
+  .feat-item:nth-child(4){ animation-delay:.5s; }
+  .feat-ico { flex-shrink:0; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); margin-top:2px; }
+  .white .feat-ico { background:#F1F5F9; border-color:#E2E8F0; }
+  .feat-ico .fb { display:flex; align-items:flex-end; gap:2px; height:14px; }
+  .feat-ico .fb span { display:block; width:3px; border-radius:1px; transform:skewX(-14deg); background:#4D7EFF; }
+  .feat-ico .fb span:nth-child(1){ height:8px; opacity:.5; }
+  .feat-ico .fb span:nth-child(2){ height:14px; }
+  .feat-tx h4 { font-size:16px; font-weight:800; letter-spacing:-.01em; margin-bottom:4px; }
+  .feat-tx p { font-size:13.5px; line-height:1.55; color:rgba(255,255,255,.5); font-weight:300; }
+  .white .feat-tx p { color:#64748B; }
+
+  /* ══ FEATURE GRID 2x2 ═══════════════════════════ */
+  .feat-grid { position:relative; z-index:1; display:grid; grid-template-columns:1fr; gap:14px; margin-top:30px; max-width:760px; width:100%; }
+  @media(min-width:680px){ .feat-grid{ grid-template-columns:1fr 1fr; } }
+  .fg-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:24px; text-align:left; opacity:0; transform:translateY(14px); }
+  .slide.active .fg-card { animation: aup .6s cubic-bezier(.16,1,.3,1) forwards; }
+  .fg-card:nth-child(1){ animation-delay:.2s; }
+  .fg-card:nth-child(2){ animation-delay:.3s; }
+  .fg-card:nth-child(3){ animation-delay:.4s; }
+  .fg-card:nth-child(4){ animation-delay:.5s; }
+  .fg-card .fg-n { font-size:11px; font-weight:800; letter-spacing:.18em; color:#4D7EFF; margin-bottom:10px; }
+  .fg-card h3 { font-size:17px; font-weight:800; letter-spacing:-.01em; margin-bottom:8px; }
+  .fg-card p { font-size:13px; line-height:1.6; color:rgba(255,255,255,.5); font-weight:300; }
+  .white .fg-card { background:#F8FAFC; border-color:#E2E8F0; }
+  .white .fg-card h3 { color:#0F172A; }
+  .white .fg-card p { color:#64748B; }
+
+  /* do / don't lists (slide tom de voz) */
+  .fg-card ul { list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  .fg-card li { font-size:13.5px; line-height:1.5; padding:9px 12px; border-radius:8px; background:rgba(255,255,255,.04); }
+  .fg-card.good .fg-n { color:#4ADE80; }
+  .fg-card.bad  .fg-n { color:#F87171; }
+  .fg-card.bad li { text-decoration:line-through; opacity:.55; }
+
+  /* ══ TYPE SPECIMEN (tipografia) ═════════════════ */
+  .type-card {
+    position:relative; z-index:1; width:100%; max-width:460px;
+    background:#fff; border:1px solid #E2E8F0; border-radius:18px;
+    box-shadow:0 24px 70px rgba(15,23,42,.1); padding:8px 26px;
+    opacity:0; transform:translateY(24px) scale(.96);
+  }
+  .slide.active .type-card { animation: dmIn .7s cubic-bezier(.16,1,.3,1) .15s forwards; }
+  @keyframes dmIn { to{opacity:1; transform:none} }
+  .type-row { display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px solid #F1F5F9; }
+  .type-row:last-child { border-bottom:none; }
+  .type-sample { color:#0F172A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .type-meta { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#94A3B8; white-space:nowrap; flex-shrink:0; }
+
+  /* ══ UI KIT CARD (componentes) ══════════════════ */
+  .uikit-card {
+    position:relative; z-index:1; width:100%; max-width:380px;
+    background:#fff; border:1px solid #E2E8F0; border-radius:18px;
+    box-shadow:0 24px 70px rgba(15,23,42,.12); padding:24px;
+    display:flex; flex-direction:column; gap:18px;
+    opacity:0; transform:translateY(24px) scale(.96);
+  }
+  .slide.active .uikit-card { animation: dmIn .7s cubic-bezier(.16,1,.3,1) .15s forwards; }
+  .uikit-label { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#94A3B8; margin-bottom:8px; }
+  .uk-btn {
+    width:100%; height:44px; border-radius:10px; background:#1B44B8; color:#fff; border:none;
+    font:600 14px 'Inter',sans-serif; cursor:default; box-shadow:0 2px 12px rgba(27,68,184,.22);
+    position:relative; overflow:hidden;
+  }
+  .uk-btn::before {
+    content:''; position:absolute; top:0; bottom:0; left:-100%; width:60%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+    transform:skewX(-18deg); animation: ukshine 2.6s ease-in-out infinite;
+  }
+  @keyframes ukshine { 0%{left:-100%} 50%{left:160%} 100%{left:160%} }
+  .uk-input {
+    height:44px; border:1.5px solid #E2E8F0; border-radius:10px; padding:0 14px;
+    font:14px 'Inter',sans-serif; color:#94A3B8; display:flex; align-items:center;
+  }
+  .uk-badges { display:flex; gap:8px; flex-wrap:wrap; }
+  .uk-badge { font-size:11px; font-weight:700; padding:5px 11px; border-radius:7px; }
+  .uk-badge.blue   { background:#EFF4FF; color:#1B44B8; }
+  .uk-badge.green  { background:#ECFDF5; color:#059669; }
+  .uk-badge.violet { background:#F5F3FF; color:#7C3AED; }
+  .uk-badge.orange { background:#FFF7ED; color:#EA580C; }
+  .uk-bars { display:flex; align-items:flex-end; gap:3px; height:18px; }
+  .uk-bars span { display:block; width:6px; border-radius:2px; transform:skewX(-14deg); background:#1B44B8; }
+  .uk-bars span:nth-child(1){ height:11px; opacity:.45; }
+  .uk-bars span:nth-child(2){ height:18px; }
+
+  /* ══ FINAL CTA ══════════════════════════════════ */
+  .cta-wrap {
+    position:absolute; left:0; right:0; bottom:36px; z-index:45;
+    display:flex; justify-content:center; padding:0 24px;
+    opacity:0; pointer-events:none; transform:translateY(14px);
+    transition:opacity .4s ease, transform .4s ease;
+  }
+  .cta-wrap.show { opacity:1; pointer-events:auto; transform:none; }
+  @media(min-width:640px){ .cta-wrap{ bottom:54px; } }
+  .cta-row { position:relative; z-index:1; display:flex; gap:14px; flex-wrap:wrap; }
+  .slide.center .cta-row { justify-content:center; }
+  .cta-btn {
+    position:relative; z-index:1; display:inline-flex; align-items:center; gap:12px;
+    background:#fff; color:#1B44B8; border:none; border-radius:13px; padding:18px 32px;
+    font-size:16px; font-weight:800; letter-spacing:-.01em; text-decoration:none;
+    box-shadow:0 8px 30px rgba(0,0,0,.25); transition:transform .2s, box-shadow .2s;
+    overflow:hidden; animation: ctapulse 2.4s ease-in-out infinite;
+  }
+  .cta-btn:hover { transform:translateY(-2px) scale(1.03); box-shadow:0 12px 40px rgba(0,0,0,.32); }
+  .cta-btn::after {
+    content:''; position:absolute; top:0; left:-60%; width:35%; height:100%;
+    background:linear-gradient(115deg, transparent, rgba(27,68,184,.22), transparent);
+    transform:skewX(-18deg); animation: shine 2.6s ease-in-out infinite;
+  }
+  @keyframes shine { 0%{left:-60%} 55%{left:130%} 100%{left:130%} }
+  @keyframes ctapulse { 0%,100%{ box-shadow:0 8px 30px rgba(0,0,0,.25), 0 0 0 0 rgba(255,255,255,.0) } 50%{ box-shadow:0 8px 30px rgba(0,0,0,.25), 0 0 0 10px rgba(255,255,255,.08) } }
+  .cta-ghost {
+    display:inline-flex; align-items:center; gap:10px; padding:18px 28px; border-radius:13px;
+    border:1px solid rgba(255,255,255,.18); color:#fff; text-decoration:none;
+    font-size:15px; font-weight:700; letter-spacing:-.01em; transition:.2s; backdrop-filter:blur(8px);
+  }
+  .cta-ghost:hover { background:rgba(255,255,255,.1); }
+
+  /* ══ ENTRY ANIM ═════════════════════════════════ */
+  .slide.active .a-up { animation: aup .6s cubic-bezier(.16,1,.3,1) forwards; }
+  .a-up { opacity:0; transform:translateY(16px); }
+  .slide.active .a1 { animation-delay:.05s; }
+  .slide.active .a2 { animation-delay:.15s; }
+  .slide.active .a3 { animation-delay:.25s; }
+  .slide.active .a4 { animation-delay:.35s; }
+  @keyframes aup { to{opacity:1; transform:none} }
+</style>
+</head>
+<body>
+
+  <div class="app" id="app">
+
+    <div class="topbar" id="topbar">
+      <div class="tb-id">
+        <div class="tb-lb"><span></span><span></span></div>
+        <div class="tb-name">Shorti<b>.</b></div>
+      </div>
+      <div class="tb-r">
+        <span class="tb-count" id="tbCount">01 / 09</span>
+        <a class="tb-close" href="../shorti.html" aria-label="Voltar">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="dots" id="dots"></div>
+
+    <div class="stage" id="stage">
+
+      <!-- 1 — Capa -->
+      <div class="slide dark center active">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-up a1"><span class="dot"></span>Design System</p>
+        <h1 class="h a-up a2">A cara do Shorti.<br>Em cada tela.</h1>
+        <div class="reveal">
+          <div class="rb"><span></span><span></span></div>
+          <div class="word">Shorti<b>.</b></div>
+        </div>
+        <p class="p a-up a3">Direto ao ponto, leve e confiável: os mesmos princípios visuais conectam o login, o ERP, as apresentações e tudo o que vier por aí.</p>
+        <p class="footer-tag a-up a4">GrupoLima · 2026</p>
+        <div class="tap-hint a-up a4">Use as setas ou arraste →</div>
+      </div>
+
+      <!-- 2 — Cultura (dark center, grid 2x2) -->
+      <div class="slide dark center">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-up a1"><span class="dot"></span>Cultura</p>
+        <h1 class="h a-up a2">Quatro palavras<br>guiam cada decisão.</h1>
+        <div class="feat-grid">
+          <div class="fg-card"><div class="fg-n">01</div><h3>Direto ao ponto</h3><p>Sem telas decorativas, sem passos extras. Quem abre o Shorti resolve o que veio resolver.</p></div>
+          <div class="fg-card"><div class="fg-n">02</div><h3>Leve</h3><p>Visual enxuto: espaço em branco como elemento de design, nunca lotado, nunca pesado.</p></div>
+          <div class="fg-card"><div class="fg-n">03</div><h3>Confiável</h3><p>Sóbrio onde precisa ser. É um sistema que lida com dinheiro, e o visual transmite isso.</p></div>
+          <div class="fg-card"><div class="fg-n">04</div><h3>Feito pro celular</h3><p>Pensado pra quem vende com o telefone na mão, não pra quem está num escritório.</p></div>
+        </div>
+      </div>
+
+      <!-- 3 — Paleta (white center) -->
+      <div class="slide white center">
+        <p class="kicker a-up a1"><span class="dot"></span>Paleta</p>
+        <h1 class="h a-up a2">Uma cor de marca.<br>Acentos com <em>função.</em></h1>
+        <p class="p a-up a3">O azul GrupoLima é a identidade. As demais cores não são decoração: cada uma tem um significado fixo dentro do produto.</p>
+        <div class="palette">
+          <div class="sw"><div class="sw-c" style="background:#1B44B8"></div><div class="sw-n">Marca</div><div class="sw-h">#1B44B8</div></div>
+          <div class="sw"><div class="sw-c" style="background:#059669"></div><div class="sw-n">Sucesso · Faturamento</div><div class="sw-h">#059669</div></div>
+          <div class="sw"><div class="sw-c" style="background:#7C3AED"></div><div class="sw-n">Clientes</div><div class="sw-h">#7C3AED</div></div>
+          <div class="sw"><div class="sw-c" style="background:#EA580C"></div><div class="sw-n">Estoque · Atenção</div><div class="sw-h">#EA580C</div></div>
+          <div class="sw"><div class="sw-c" style="background:#EF4444"></div><div class="sw-n">Erro</div><div class="sw-h">#EF4444</div></div>
+        </div>
+        <div class="palette" style="margin-top:0">
+          <div class="sw"><div class="sw-c" style="background:#0F172A"></div><div class="sw-n">Texto</div><div class="sw-h">#0F172A</div></div>
+          <div class="sw"><div class="sw-c" style="background:#64748B"></div><div class="sw-n">Texto suave</div><div class="sw-h">#64748B</div></div>
+          <div class="sw"><div class="sw-c" style="background:#94A3B8"></div><div class="sw-n">Texto fraco</div><div class="sw-h">#94A3B8</div></div>
+          <div class="sw"><div class="sw-c" style="background:#F8FAFC; border:1px solid #E2E8F0"></div><div class="sw-n">Fundo</div><div class="sw-h">#F8FAFC</div></div>
+        </div>
+      </div>
+
+      <!-- 4 — Tipografia (white split) -->
+      <div class="slide white split">
+        <div class="bg-num">04</div>
+        <div class="split-text">
+          <p class="kicker a-up a1"><span class="dot"></span>Tipografia</p>
+          <h1 class="h a-up a2">Inter.<br>O peso faz a hierarquia.</h1>
+          <p class="p a-up a3">Uma família só, do fino ao black. Tamanho, peso e espaçamento de letras criam a hierarquia, nunca cor ou borda.</p>
+        </div>
+        <div class="split-visual">
+          <div class="type-card">
+            <div class="type-row"><div class="type-sample" style="font-size:34px; font-weight:900; letter-spacing:-.04em;">Shorti.</div><div class="type-meta">900 · Display</div></div>
+            <div class="type-row"><div class="type-sample" style="font-size:23px; font-weight:800; letter-spacing:-.02em;">Acesse sua conta</div><div class="type-meta">800 · Título</div></div>
+            <div class="type-row"><div class="type-sample" style="font-size:17px; font-weight:700;">Vendas hoje</div><div class="type-meta">700 · Subtítulo</div></div>
+            <div class="type-row"><div class="type-sample" style="font-size:14.5px; font-weight:400; color:#475569;">Entre com suas credenciais</div><div class="type-meta">400 · Corpo</div></div>
+            <div class="type-row"><div class="type-sample" style="font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#94A3B8;">Estoque baixo</div><div class="type-meta">700 · Label</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 — Componentes (dark split) -->
+      <div class="slide dark split">
+        <div class="glow"></div><div class="glow2"></div>
+        <div class="bg-num">05</div>
+        <div class="split-text">
+          <p class="kicker a-up a1"><span class="dot"></span>Componentes</p>
+          <h1 class="h a-up a2">Poucos elementos.<br><em>Bem feitos.</em></h1>
+          <div class="feat-list">
+            <div class="feat-item">
+              <div class="feat-ico"><div class="fb"><span></span><span></span></div></div>
+              <div class="feat-tx"><h4>Inputs com label flutuante</h4><p>O rótulo sobe pro topo do campo ao focar, economiza espaço sem esconder o que é cada coisa.</p></div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-ico"><div class="fb"><span></span><span></span></div></div>
+              <div class="feat-tx"><h4>Botões com leve brilho no hover</h4><p>Um sweep sutil de luz, não um efeito chamativo: detalhe que recompensa quem repara.</p></div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-ico"><div class="fb"><span></span><span></span></div></div>
+              <div class="feat-tx"><h4>Badges de status</h4><p>Cor com significado: verde é positivo, laranja é atenção, vermelho é erro, azul é neutro.</p></div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-ico"><div class="fb"><span></span><span></span></div></div>
+              <div class="feat-tx"><h4>As duas barras</h4><p>O símbolo do Shorti (duas barras inclinadas) aparece no favicon, no rodapé e nas telas de carregamento.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="split-visual">
+          <div class="uikit-card">
+            <div><div class="uikit-label">Botão primário</div><button class="uk-btn">Entrar</button></div>
+            <div><div class="uikit-label">Campo de texto</div><div class="uk-input">E-mail</div></div>
+            <div>
+              <div class="uikit-label">Badges</div>
+              <div class="uk-badges">
+                <span class="uk-badge blue">Pedidos</span>
+                <span class="uk-badge green">Faturamento</span>
+                <span class="uk-badge violet">Clientes</span>
+                <span class="uk-badge orange">Estoque</span>
+              </div>
+            </div>
+            <div><div class="uikit-label">Marca</div><div class="uk-bars"><span></span><span></span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 — Movimento (purple center) -->
+      <div class="slide purple center">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-up a1"><span class="dot"></span>Movimento</p>
+        <h1 class="h a-up a2">Animação com <em style="color:#A78BFA">propósito</em>,<br>nunca decoração.</h1>
+        <div class="feat-grid">
+          <div class="fg-card"><div class="fg-n">01</div><h3>Entradas suaves</h3><p>Elementos sobem e aparecem em fade, nunca saltam ou piscam.</p></div>
+          <div class="fg-card"><div class="fg-n">02</div><h3>Hover discreto</h3><p>Leve elevação, no máximo 8px. Convida ao clique sem distrair.</p></div>
+          <div class="fg-card"><div class="fg-n">03</div><h3>Feedback monocromático</h3><p>Ripples e realces usam o azul da marca: nada de arco-íris ou confete em tela de uso real.</p></div>
+          <div class="fg-card"><div class="fg-n">04</div><h3>Velocidade real</h3><p>Toda transição entre 0.15s e 0.7s, rápido o bastante pra parecer instantâneo.</p></div>
+        </div>
+      </div>
+
+      <!-- 7 — Tom de voz (amber center) -->
+      <div class="slide amber center">
+        <div class="glow"></div><div class="glow2"></div>
+        <p class="kicker a-up a1"><span class="dot"></span>Tom de voz</p>
+        <h1 class="h a-up a2">Fala como gente.<br><em style="color:#FCD34D">Não como manual.</em></h1>
+        <div class="feat-grid">
+          <div class="fg-card good">
+            <div class="fg-n">USAMOS</div><h3>Direto e claro</h3>
+            <ul>
+              <li>"Vendas hoje"</li>
+              <li>"Estoque baixo"</li>
+              <li>"Credenciais incorretas. Tente novamente."</li>
+              <li>"Acesse sua conta"</li>
+            </ul>
+          </div>
+          <div class="fg-card bad">
+            <div class="fg-n">EVITAMOS</div><h3>Formal e genérico</h3>
+            <ul>
+              <li>"Saldo de mercadorias disponível"</li>
+              <li>"Realizar autenticação no sistema"</li>
+              <li>"Erro 401: credenciais inválidas"</li>
+              <li>"Faça seu login na plataforma"</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8 — Onde vive (white center, grid 2x2) -->
+      <div class="slide white center">
+        <p class="kicker a-up a1"><span class="dot"></span>Onde vive</p>
+        <h1 class="h a-up a2">Mesma alma.<br>Em cada tela.</h1>
+        <div class="feat-grid">
+          <div class="fg-card"><div class="fg-n">LOGIN</div><h3>Entrada</h3><p>Fundo claro, wordmark gigante e quase transparente, formulário minimalista.</p></div>
+          <div class="fg-card"><div class="fg-n">ERP</div><h3>Painel</h3><p>Glassmorphism sobre gradiente azul/roxo: cards translúcidos, dados em primeiro plano.</p></div>
+          <div class="fg-card"><div class="fg-n">SCANNER</div><h3>Mobile</h3><p>Tela escura, foco total na câmera. Interface quase invisível.</p></div>
+          <div class="fg-card"><div class="fg-n">APRESENTAÇÕES</div><h3>Institucional</h3><p>Slides em tela cheia, fundo escuro com glows, mesma tipografia e o "Shorti." sempre em destaque.</p></div>
+        </div>
+      </div>
+
+      <!-- 9 — Encerramento (blue center) -->
+      <div class="slide blue center">
+        <div class="glow"></div>
+        <p class="kicker a-up a1"><span class="dot"></span>Resumo</p>
+        <h1 class="h a-up a2">Um sistema.<br>Uma identidade.</h1>
+        <p class="p a-up a3">Direto ao ponto, leve, confiável e feito pro celular: esses quatro princípios valem pra qualquer tela nova que entrar no Shorti.</p>
+        <p class="footer-tag a-up a4">GrupoLima · 2026</p>
+      </div>
+
+    </div>
+
+    <div class="nav" id="nav">
+      <div class="nav-l" id="navL"></div>
+      <div class="nav-r" id="navR"></div>
+    </div>
+
+    <div class="cta-wrap" id="ctaWrap">
+      <div class="cta-row">
+        <a class="cta-btn" href="../shorti.html">
+          Ver o Shorti na prática
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a class="cta-ghost" href="../login.html">Tela de login</a>
+      </div>
+    </div>
+
+    <div class="arrows">
+      <button class="arrow-btn" id="prevBtn" aria-label="Anterior">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="arrow-btn" id="nextBtn" aria-label="Próximo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+  </div>
+
+<script>
+(function () {
+  const slides  = document.querySelectorAll('.slide');
+  const stage   = document.getElementById('stage');
+  const app     = document.getElementById('app');
+  const dots    = document.getElementById('dots');
+  const tbCount = document.getElementById('tbCount');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const ctaWrap = document.getElementById('ctaWrap');
+  const total   = slides.length;
+  let cur = 0;
+
+  /* build dots */
+  for (let i = 0; i < total; i++) {
+    const b = document.createElement('button');
+    b.className = 'dot-btn';
+    b.setAttribute('aria-label', 'Slide ' + (i + 1));
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  }
+  const dotEls = dots.querySelectorAll('.dot-btn');
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function update() {
+    app.classList.toggle('light', slides[cur].classList.contains('white'));
+    dotEls.forEach((d, i) => d.classList.toggle('on', i === cur));
+    tbCount.textContent = pad(cur + 1) + ' / ' + total;
+    prevBtn.disabled = cur === 0;
+    nextBtn.disabled = cur === total - 1;
+    ctaWrap.classList.toggle('show', cur === total - 1);
+  }
+
+  function goTo(newIdx) {
+    if (newIdx === cur || newIdx < 0 || newIdx >= total) return;
+    const dir = newIdx > cur ? 1 : -1;
+    const oldSlide = slides[cur];
+    const newSlide = slides[newIdx];
+
+    newSlide.classList.remove('exit-l', 'exit-r', 'enter-l', 'enter-r', 'active');
+    newSlide.classList.add(dir === 1 ? 'enter-r' : 'enter-l');
+    void newSlide.offsetWidth;
+
+    requestAnimationFrame(() => {
+      newSlide.classList.remove('enter-r', 'enter-l');
+      newSlide.classList.add('active');
+      oldSlide.classList.remove('active');
+      oldSlide.classList.add(dir === 1 ? 'exit-l' : 'exit-r');
+    });
+
+    setTimeout(() => {
+      oldSlide.style.transition = 'none';
+      oldSlide.classList.remove('exit-l', 'exit-r', 'enter-l', 'enter-r');
+      void oldSlide.offsetWidth;
+      oldSlide.style.transition = '';
+    }, 700);
+
+    cur = newIdx;
+    update();
+  }
+
+  function next() { if (cur < total - 1) goTo(cur + 1); }
+  function prev() { if (cur > 0) goTo(cur - 1); }
+
+  document.getElementById('navR').addEventListener('click', next);
+  document.getElementById('navL').addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+
+  /* keyboard */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
+
+  /* swipe */
+  let tx = 0, ty = 0;
+  stage.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+  stage.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+  }, {passive:true});
+
+  update();
+})();
+</script>
+</body>
+</html>

@@ -2,16 +2,39 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#ffffff">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Shorti">
   <title>Shorti-ERP</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./erp.css">
   <style></style>
+  <!-- Driver.js — tour guiado -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js" defer></script>
+
+  <!-- Sentry — monitoramento de erros em produção -->
+  <script src="https://js.sentry-cdn.com/104fd4cfed221ba91ebd2cfc10ebaf89.min.js" crossorigin="anonymous"></script>
+  <script>
+    /* Enriquece eventos com contexto de tenant e usuário — aguarda o Loader Script */
+    if (window.Sentry) {
+      Sentry.onLoad(() => {
+        Sentry.setTag('env', location.hostname === 'localhost' ? 'development' : 'production');
+        /* _tenant e _userId são definidos em init.js após o login */
+        window._onSentryReady = () => {
+          if (window._tenant?.slug) Sentry.setTag('tenant', window._tenant.slug);
+          if (window._userId)       Sentry.setUser({ id: window._userId });
+        };
+      });
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -19,97 +42,80 @@
   <script src="./supabase.js" defer></script>
 </head>
 <body>
-  <div class="toast" id="toast"></div>
 
-  <!-- ── Release Modal ─────────────────────────────── -->
-  <div class="rl-ov" id="rl-ov">
-    <div class="rl-blob" id="rl-blob"></div>
-    <div class="rl-ptcl" aria-hidden="true">
-      <span></span><span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span><span></span>
+  <!-- ── Boas-vindas — exibida uma vez por sessão ── -->
+  <div class="srt-welcome" id="srt-welcome">
+    <img src="./logo-mark.svg" alt="Shorti" class="sw-mark">
+    <p class="sw-tag">Olá! Bem-vindo de volta 👋</p>
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js" type="module"></script>
+    <dotlottie-wc src="https://lottie.host/1f36c611-5c9b-47f9-a0a1-c3a8f313a1d4/YkxDt8VqCm.lottie" class="sw-lottie" autoplay loop></dotlottie-wc>
+  </div>
+  <script>
+    (function () {
+      var el = document.getElementById('srt-welcome');
+      /* Só exibe no mobile */
+      if (window.innerWidth > 768) { el.style.display = 'none'; return; }
+      if (sessionStorage.getItem('srt_welcome_v1')) { el.style.display = 'none'; return; }
+      sessionStorage.setItem('srt_welcome_v1', '1');
+      setTimeout(function () {
+        el.classList.add('out');
+        setTimeout(function () { el.remove(); }, 550);
+      }, 2800);
+    })();
+  </script>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Prompt de tour — aparece uma vez para usuários novos -->
+  <div class="tour-prompt" id="tour-prompt" role="dialog" aria-label="Tour do sistema">
+    <div class="tp-icon">✦</div>
+    <div class="tp-body">
+      <div class="tp-title">Quer conhecer o Shorti?</div>
+      <div class="tp-sub">Fazemos um tour rápido pelo sistema — menos de 2 minutos.</div>
     </div>
-
-    <div class="rl-wrap">
-      <div class="rl-story" id="rl-story">
-        <div class="rl-seg act"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-        <div class="rl-seg"><div class="rl-seg-fill"></div></div>
-      </div>
-
-      <button class="rl-x" onclick="rlClose()" aria-label="Fechar">✕</button>
-
-      <div class="rl-scenes">
-
-        <!-- Cena 0: Intro -->
-        <div class="rl-scene rl-s0 on" data-scene="0">
-          <div class="rl-glyph">✦</div>
-          <div class="rl-mask"><span class="rl-line rl-kicker">Milena Lima Beauty</span></div>
-          <div class="rl-mask"><span class="rl-line rl-big">O que há<br>de <em>novo.</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-date">Versão 2.1 · Junho 2026</span></div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Ver novidades →</button></div>
-        </div>
-
-        <!-- Cena 1: Histórico de Vendas -->
-        <div class="rl-scene" data-scene="1">
-          <div class="rl-ghost">01</div>
-          <div class="rl-num">01</div>
-          <span class="rl-pill new">Novo</span>
-          <div class="rl-mask"><span class="rl-line rl-feat-t">Histórico de<br><em>Vendas</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-feat-d">Uma tela dedicada para visualizar e filtrar todas as vendas do painel em tempo real.</span></div>
-          <div class="rl-grid">
-            <div class="rl-gc"><span class="rl-gi">🔍</span><span class="rl-gl">Busca por cliente</span></div>
-            <div class="rl-gc"><span class="rl-gi">📅</span><span class="rl-gl">Filtro por data</span></div>
-            <div class="rl-gc"><span class="rl-gi">📊</span><span class="rl-gl">KPIs dinâmicos</span></div>
-            <div class="rl-gc"><span class="rl-gi">⚡</span><span class="rl-gl">Status em 1 clique</span></div>
-          </div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Próximo →</button></div>
-        </div>
-
-        <!-- Cena 2: Fiado & Cupom -->
-        <div class="rl-scene" data-scene="2">
-          <div class="rl-ghost">02</div>
-          <div class="rl-num">02</div>
-          <span class="rl-pill amb">Novo</span>
-          <div class="rl-mask"><span class="rl-line rl-feat-t">Fiado &<br><em>Cupom</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-feat-d">Controle de vendas no fiado com cupom de compra e envio direto pelo WhatsApp.</span></div>
-          <div class="rl-grid">
-            <div class="rl-gc"><span class="rl-gi">⬤</span><span class="rl-gl">Painel A Receber</span></div>
-            <div class="rl-gc"><span class="rl-gi">📋</span><span class="rl-gl">Cupom automático</span></div>
-            <div class="rl-gc"><span class="rl-gi">⏰</span><span class="rl-gl">Alertas de vencimento</span></div>
-            <div class="rl-gc"><span class="rl-gi">💬</span><span class="rl-gl">Envio por WhatsApp</span></div>
-          </div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Próximo →</button></div>
-        </div>
-
-        <!-- Cena 3: Extrato Mensal -->
-        <div class="rl-scene" data-scene="3">
-          <div class="rl-ghost">03</div>
-          <div class="rl-num">03</div>
-          <span class="rl-pill fix">Melhoria</span>
-          <div class="rl-mask"><span class="rl-line rl-feat-t">Extrato<br><em>Mensal</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-feat-d">Demonstrativo financeiro completo com navegação por mês, KPIs de faturamento e análise de clientes.</span></div>
-          <div class="rl-grid">
-            <div class="rl-gc"><span class="rl-gi">◈</span><span class="rl-gl">Navegação por mês</span></div>
-            <div class="rl-gc"><span class="rl-gi">$</span><span class="rl-gl">KPIs mensais</span></div>
-            <div class="rl-gc"><span class="rl-gi">◎</span><span class="rl-gl">Top clientes</span></div>
-            <div class="rl-gc"><span class="rl-gi">🖨</span><span class="rl-gl">Exportar / imprimir</span></div>
-          </div>
-          <div class="rl-nav"><button class="rl-btn" onclick="rlNext()">Próximo →</button></div>
-        </div>
-
-        <!-- Cena 4: Fim -->
-        <div class="rl-scene rl-s4" data-scene="4">
-          <div class="rl-ghost" style="font-size:190px;right:-8px;bottom:20px">✦</div>
-          <div class="rl-num">✦</div>
-          <div class="rl-mask"><span class="rl-line rl-fin-t">Tudo<br><em>pronto.</em></span></div>
-          <div class="rl-mask"><span class="rl-line rl-fin-s">Todas as novidades já estão disponíveis no painel.</span></div>
-          <button class="rl-cta" onclick="rlClose()">Começar →</button>
-        </div>
-
-      </div>
+    <div class="tp-actions">
+      <button class="tp-btn-yes" onclick="acceptTour()">Sim, vamos lá!</button>
+      <button class="tp-btn-no"  onclick="dismissTourPrompt()">Agora não</button>
     </div>
+  </div>
+
+  <!-- Prompt de permissão de notificação (acionado por gesto) -->
+  <div class="notif-prompt" id="notif-prompt">
+    <span class="notif-prompt-ic">🔔</span>
+    <div class="notif-prompt-text">
+      <div class="notif-prompt-title">Ative as notificações</div>
+      <div class="notif-prompt-sub">Alertas de pedidos, estoque e fiados em tempo real</div>
+    </div>
+    <button class="notif-prompt-btn" onclick="enableNotifFromPrompt()">Ativar</button>
+    <button class="notif-prompt-x" onclick="dismissNotifPrompt()">✕</button>
+  </div>
+
+  <!-- ── Bloqueio por biometria (desbloqueio local do dispositivo) ── -->
+  <div class="bio-lock" id="bio-lock" style="display:none">
+    <div class="bio-lock-box">
+      <div class="bio-lock-icon">🔒</div>
+      <h3>Shorti bloqueado</h3>
+      <p class="bio-lock-desc">Use a biometria deste dispositivo para continuar.</p>
+      <div class="alert" id="bio-lock-alert"></div>
+      <button class="btn btn-primary btn-block" id="bio-lock-btn">
+        <div class="bi"><div class="sp"></div><span class="lbl">Desbloquear</span></div>
+      </button>
+      <button class="btn btn-outline btn-block" style="margin-top:10px" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <!-- ── Release Modal — desktop only ─────────────────── -->
+  <script>
+    // Oculta release em mobile (≤ 860px) ou se já foi visto
+    if (localStorage.getItem('srt_rl_v1') || window.innerWidth <= 860) {
+      document.write('<style>#rl-ov{display:none!important}</style>');
+    }
+  </script>
+  <div class="rl-ov on" id="rl-ov">
+    <button class="rl-x" onclick="rlClose()" aria-label="Fechar">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <iframe class="rl-frame" id="rl-frame" src="comercial/release.html" title="Lançamento Shorti"></iframe>
   </div>
 
   <!-- Popup extrato fechado -->
@@ -117,19 +123,19 @@
     <div class="ext-popup-inner">
       <div class="ext-popup-hd">
         <div class="ext-popup-hd-row">
-          <span class="ext-popup-badge">✦ Extrato fechado</span>
+          <span class="ext-popup-badge">
+            <span class="ext-popup-bars"><span></span><span></span></span>
+            Extrato fechado
+          </span>
           <button class="ext-popup-x" onclick="dismissPopup()" title="Fechar">✕</button>
         </div>
-        <div class="ext-popup-sparks" aria-hidden="true">
-          <span class="ext-popup-sp">✦</span>
-          <span class="ext-popup-sp">✦</span>
-          <span class="ext-popup-sp">✦</span>
-        </div>
+        <div class="ext-popup-month" id="ext-popup-month">—</div>
+        <div class="ext-popup-label" id="ext-popup-label">Shorti · Milena Lima Beauty</div>
       </div>
-      <div class="ext-popup-month" id="ext-popup-month">—</div>
-      <div class="ext-popup-label">Milena Lima Beauty</div>
-      <div class="ext-popup-stats" id="ext-popup-stats"></div>
-      <button class="ext-popup-btn" onclick="_extY=0;_extM=0;epage('extrato',null);dismissPopup()">Ver extrato completo →</button>
+      <div class="ext-popup-body">
+        <div class="ext-popup-stats" id="ext-popup-stats"></div>
+        <button class="ext-popup-btn" onclick="_extY=0;_extM=0;epage('extrato',null);dismissPopup()">Ver extrato completo →</button>
+      </div>
     </div>
   </div>
 
@@ -139,18 +145,12 @@
       <!-- ── Logo Shorti ── -->
       <div class="erp-branding">
         <div class="erp-logo-row">
-          <div class="erp-logo-icon">
-            <svg viewBox="0 0 22 22" fill="none" width="18" height="18">
-              <rect x="3"  y="13" width="4" height="6"  rx="1.5" fill="white" opacity=".55"/>
-              <rect x="9"  y="8"  width="4" height="11" rx="1.5" fill="white" opacity=".78"/>
-              <rect x="15" y="3"  width="4" height="16" rx="1.5" fill="white"/>
-            </svg>
-          </div>
+          <img src="favicon.svg" class="erp-logo-img" width="32" height="32" alt="Shorti">
           <span class="erp-logo-text">Shorti<span>.</span></span>
         </div>
         <div class="erp-workspace">
           <div class="erp-workspace-dot"></div>
-          <div class="erp-workspace-name">Milena Lima Beauty</div>
+          <div class="erp-workspace-name" id="erp-workspace-name">Milena Lima Beauty</div>
         </div>
       </div>
 
@@ -159,79 +159,156 @@
 
         <div class="nav-group"><span class="nl-text">Principal</span></div>
         <button class="nav-link on" onclick="epage('dashboard', this)" title="Dashboard">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="9" rx="2"/>
+            <rect x="3" y="14" width="7" height="7" rx="2"/>
+            <rect x="13" y="3" width="8" height="5" rx="2"/>
+            <rect x="13" y="11" width="8" height="10" rx="2"/>
+          </svg>
           <span class="nl-text">Dashboard</span>
         </button>
 
         <div class="nav-group"><span class="nl-text">Vendas</span></div>
         <button class="nav-link" onclick="epage('receber', this)" title="A Receber">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 10a2.5 2.5 0 0 0-5 0c0 1.38 1.12 2.5 2.5 2.5s2.5 1.12 2.5 2.5a2.5 2.5 0 0 1-5 0"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1V10a1 1 0 0 0-1-1z"/>
+            <path d="M16 9V7a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/>
+            <circle cx="17" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+          </svg>
           <span class="nl-text">A Receber</span>
         </button>
         <button class="nav-link" onclick="epage('historico', this)" title="Histórico">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l2.5 2.5"/><circle cx="12" cy="12" r="9"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M12 7v5l3.5 2"/>
+          </svg>
           <span class="nl-text">Histórico</span>
         </button>
         <button class="nav-link" onclick="epage('nvenda', this)" title="Nova Venda">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M12 11v6M9 14h6"/>
+          </svg>
           <span class="nl-text">Nova Venda</span>
         </button>
 
         <div class="nav-group"><span class="nl-text">Gestão</span></div>
         <button class="nav-link" onclick="epage('solicita', this)" title="Solicitações">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 13H14l-2 3h-4l-2-3H2"/>
+            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+          </svg>
           <span class="nl-text">Solicitações</span>
         </button>
         <button class="nav-link" onclick="epage('estoque', this)" title="Estoque">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="4" rx="1.5"/>
+            <rect x="2" y="10" width="20" height="4" rx="1.5"/>
+            <rect x="2" y="17" width="20" height="4" rx="1.5"/>
+          </svg>
           <span class="nl-text">Estoque</span>
         </button>
         <button class="nav-link" onclick="epage('clientes', this)" title="Clientes">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/>
+          </svg>
           <span class="nl-text">Clientes</span>
         </button>
         <button class="nav-link" onclick="epage('financeiro', this)" title="Financeiro">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 17.5 8.5 12l4.5 5 5.5-7 3-3"/>
+            <path d="M17 7h5v5"/>
+          </svg>
           <span class="nl-text">Financeiro</span>
         </button>
         <button class="nav-link" onclick="epage('catalogo', this)" title="Catálogo">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.41 11.58l-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 .59 1.42l9 9A2 2 0 0 0 13 22a2 2 0 0 0 1.41-.59l7-7A2 2 0 0 0 22 13a2 2 0 0 0-.59-1.42z"/>
+            <circle cx="6.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/>
+          </svg>
           <span class="nl-text">Catálogo</span>
         </button>
         <button class="nav-link" onclick="epage('extrato', this)" title="Extrato Mensal">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/>
+            <line x1="8" y1="10" x2="16" y2="10"/>
+            <line x1="8" y1="14" x2="13" y2="14"/>
+          </svg>
           <span class="nl-text">Extrato Mensal</span>
         </button>
         <button class="nav-link" onclick="epage('relatorios', this)" title="Relatórios">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="15" y="5" width="4" height="15" rx="2"/>
+            <rect x="9" y="10" width="4" height="10" rx="2"/>
+            <rect x="3" y="14" width="4" height="6" rx="2"/>
+          </svg>
           <span class="nl-text">Relatórios</span>
+        </button>
+
+        <button class="nav-link" onclick="epage('consulta', this)" title="Consultar Produto">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <span class="nl-text">Consultar produto</span>
         </button>
 
         <div class="nav-group"><span class="nl-text">Loja</span></div>
         <button class="nav-link" onclick="epage('loja', this)" title="Configurar loja">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <path d="M9 22V12h6v10"/>
+          </svg>
           <span class="nl-text">Configurar loja</span>
         </button>
 
+
       </nav>
 
-      <!-- ── Usuário ── -->
-      <div class="erp-user">
-        <div class="user-avatar">M</div>
-        <div style="flex:1;min-width:0">
-          <div class="user-name">Milena Lima</div>
-          <div class="user-role" id="user-email">Consultora</div>
-        </div>
-        <button class="logout-btn" onclick="doLogout()" title="Sair">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
+      <!-- Logout no sidebar (visível mobile via "Mais") -->
+      <div class="sidebar-logout">
+        <button class="sidebar-logout-btn" onclick="doLogout()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair da conta
         </button>
+      </div>
+
+      <!-- dados de usuário (ocultos, lidos pelo initTbUser) -->
+      <div style="display:none">
+        <div class="user-name">Milena Lima</div>
+        <div class="user-role" id="user-email">Consultora</div>
       </div>
     </aside>
 
     <main class="erp-main">
+      <!-- ── Header mobile — navy, dot-grid + glow ── -->
+      <header class="erp-mob-header mob-only is-dash">
+        <div class="emh-glow emh-glow-1" aria-hidden="true"></div>
+        <div class="emh-glow emh-glow-2" aria-hidden="true"></div>
+        <div class="emh-topbar">
+          <div class="emh-id">
+            <img src="logo-mark.svg" class="emh-logo-img" width="26" height="26" alt="Shorti">
+            <span class="emh-name">Shorti<b>.</b></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:2px">
+            <button class="emh-bell" aria-label="Scanner mobile" onclick="window.open('https://kauacaio.github.io/app.shorti/mobile-scan.html','_blank')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </button>
+            <button class="emh-bell" aria-label="Notificações" onclick="toggleNotifPanel()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="emh-bell-dot" id="notif-badge-mobile" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        <div class="emh-greet">
+          <p class="emh-greet-ctx" id="emh-ctx">Dashboard</p>
+          <h1 class="emh-greet-name" id="emh-name">Olá, <b>Milena</b></h1>
+        </div>
+        <div class="emh-arch" aria-hidden="true"></div>
+      </header>
       <!-- Background orbs — profundidade sem chamar atenção -->
       <div class="erp-orbs" aria-hidden="true">
         <div class="orb orb-blue"></div>
@@ -239,14 +316,52 @@
         <div class="orb orb-amber"></div>
       </div>
       <div class="erp-topbar">
-        <button class="erp-hamburger" onclick="openSidebar()" aria-label="Menu">☰</button>
+        <button class="erp-hamburger" onclick="openSidebar()" aria-label="Menu">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div class="erp-title" id="etitle">Dashboard</div>
         <div class="erp-actions">
-          <button class="btn btn-outline" onclick="closeERP()">← Voltar à loja</button>
-          <button class="btn btn-primary" onclick="epage('loja',null)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Editar loja
+          <!-- Consultar produto — só ícone -->
+          <button class="tb-btn" onclick="openCQ()" title="Consultar produto">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
+          <!-- Notificações -->
+          <button class="tb-btn" onclick="toggleNotifPanel()" title="Notificações" aria-label="Notificações">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="notif-badge-desktop"></span>
+          </button>
+          <div class="tb-sep"></div>
+          <!-- User pill + dropdown -->
+          <div class="tb-usr-wrap">
+            <button class="tb-usr" id="tb-usr-btn" onclick="toggleTbMenu()" aria-expanded="false">
+              <div class="tb-av" id="tb-av">M</div>
+              <span class="tb-un" id="tb-un">Minha conta</span>
+              <svg class="tb-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="tb-menu" id="tb-menu">
+              <button class="tb-mi" onclick="openCfgModal('conta'); closeTbMenu()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                Configurações
+              </button>
+              <button class="tb-mi" onclick="closeERP(); closeTbMenu()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Voltar à loja
+              </button>
+              <button class="tb-mi" onclick="restartTour()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Tour do sistema
+              </button>
+              <button class="tb-mi" onclick="window.open('legal.html','_blank'); closeTbMenu()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Privacidade &amp; Termos
+              </button>
+              <div class="tb-ms"></div>
+              <button class="tb-mi danger" onclick="doLogout()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sair
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <section class="erp-content">
@@ -263,26 +378,10 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Extrato
               </button>
-              <button class="btn btn-primary" onclick="openMod('mv')">
+              <button class="btn btn-primary" onclick="if(window.innerWidth<=768)mobNav('nvenda');else epage('nvenda',null)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Nova venda
               </button>
-            </div>
-          </div>
-
-          <!-- Banner extrato fechado -->
-          <div id="dash-banner" class="dash-banner" style="display:none">
-            <div class="dash-banner-sparks" aria-hidden="true">
-              <span class="dash-banner-spark">✦</span><span class="dash-banner-spark">✦</span><span class="dash-banner-spark">✦</span>
-            </div>
-            <div class="dash-banner-icon">✦</div>
-            <div class="dash-banner-body">
-              <div class="dash-banner-title">Extrato de <span id="dash-banner-mes"></span> disponível</div>
-              <div class="dash-banner-sub">Confira o resumo de vendas e recebimentos.</div>
-            </div>
-            <div class="dash-banner-actions">
-              <button class="dash-banner-btn" onclick="_extY=0;_extM=0;epage('extrato', null)">Ver extrato →</button>
-              <button class="dash-banner-dismiss" onclick="dismissBanner()">✕</button>
             </div>
           </div>
 
@@ -323,7 +422,8 @@
               </div>
               <button class="btn btn-mini btn-outline" onclick="epage('historico',null)">Ver histórico →</button>
             </div>
-            <div id="dash-rec" class="order-list"></div>
+            <div id="dash-rec" class="order-list mob-hide"></div>
+            <div id="dash-rec-cards" class="rb-cards mob-only"></div>
           </div>
 
         </section>
@@ -340,7 +440,8 @@
             <article class="summary-card"><div>Vencido</div><div class="summary-value" id="r-vencido" style="color:#DC2626">R$ 0,00</div><div class="summary-meta" style="color:#DC2626">prazo expirado</div></article>
             <article class="summary-card"><div>Qtd. pendente</div><div class="summary-value" id="r-qtd">0</div><div class="summary-meta" style="color:#71717A">clientes com saldo</div></article>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>WhatsApp</th><th>Produto</th><th>Total</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody id="rbtt"></tbody></table></div></div>
+          <div class="card data-card mob-hide"><div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>WhatsApp</th><th>Produto</th><th>Total</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody id="rbtt"></tbody></table></div></div>
+          <div class="rb-cards mob-only" id="rbcards"></div>
         </section>
 
         <section class="erp-page" id="ep-historico">
@@ -375,7 +476,7 @@
           <div class="dashboard-grid" style="margin-bottom:24px" id="hv-kpis"></div>
 
           <!-- Tabela -->
-          <article class="data-card">
+          <article class="data-card mob-hide">
             <div class="table-shell">
               <table>
                 <thead><tr><th>#</th><th>Data</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th><th>Ações</th></tr></thead>
@@ -383,6 +484,7 @@
               </table>
             </div>
           </article>
+          <div class="rb-cards mob-only" id="hvcards"></div>
         </section>
 
         <!-- ── Filter Drawer — Histórico ───────────────── -->
@@ -444,7 +546,7 @@
             <button class="hv-chip solic-fc" onclick="solcFtr(this,'Recebido')">Recebido</button>
           </div>
 
-          <div class="card data-card">
+          <div class="card data-card mob-hide">
             <div class="table-shell">
               <table>
                 <thead><tr><th>#</th><th>Produto</th><th>Qtd</th><th>Preço est.</th><th>Obs.</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead>
@@ -452,6 +554,7 @@
               </table>
             </div>
           </div>
+          <div class="rb-cards mob-only" id="solcards"></div>
         </section>
 
         <section class="erp-page" id="ep-nvenda">
@@ -473,6 +576,7 @@
               <span>Pagamento</span>
             </div>
           </div>
+          <div class="nv-step-label" id="nv-step-label">Cliente</div>
 
           <!-- ════ ETAPA 1 — CLIENTE ════ -->
           <div class="nv-panel on" id="nv-s1">
@@ -495,6 +599,11 @@
               <!-- Select oculto (compatibilidade) -->
               <select id="vc" style="display:none"></select>
 
+              <div class="nv-sem-cli-hint" id="nv-sem-cli-hint" style="display:none">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Sem cliente — venda ficará marcada como pendente
+              </div>
+
               <div class="nv-panel-ft">
                 <div></div>
                 <button class="btn btn-primary" onclick="nvGoStep(2)" id="nv-btn-s1">
@@ -507,59 +616,80 @@
 
           <!-- ════ ETAPA 2 — PRODUTOS ════ -->
           <div class="nv-panel" id="nv-s2">
-            <article class="data-card nv-wizard-card">
-              <div class="nv-panel-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                O que vai levar?
-              </div>
+            <div class="nv-s2-grid">
 
-              <!-- Busca + scan -->
-              <div style="display:flex;gap:8px;margin-bottom:10px">
-                <input type="text" class="input-field" id="v-busca"
-                  placeholder="Buscar produto…"
-                  oninput="renderProdPicker()" onfocus="renderProdPicker()"
-                  autocomplete="off" style="flex:1">
-                <button class="btn-scan-inline" onclick="openScanner('venda')" title="Escanear EAN-13" type="button">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
-                </button>
-              </div>
-
-              <!-- Product picker -->
-              <div class="prod-picker" id="prod-picker"></div>
-              <select id="vp" onchange="vUpd()" style="display:none"></select>
-
-              <!-- Preview + add -->
-              <div id="vprev" class="vprev-card" style="display:none">
-                <img id="vprev-img" class="vprev-img" src="" alt="" style="display:none">
-                <div style="flex:1;min-width:0">
-                  <div id="vprev-nm" class="vprev-nm"></div>
-                  <div class="vprev-meta"><span id="vprev-pr"></span> · <span id="vprev-st"></span></div>
+              <!-- Coluna principal — busca e produtos -->
+              <article class="data-card nv-wizard-card nv-s2-products">
+                <div class="nv-panel-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                  O que vai levar?
                 </div>
-                <div class="qty-ctrl">
-                  <button class="qty-btn" onclick="adjVq(-1)" type="button">−</button>
-                  <input type="number" class="input-field qty-in" id="vq" value="1" min="1">
-                  <button class="qty-btn" onclick="adjVq(1)" type="button">+</button>
+
+                <!-- Busca + scan -->
+                <div style="display:flex;gap:8px;margin-bottom:10px">
+                  <input type="text" class="input-field" id="v-busca"
+                    placeholder="Buscar produto…"
+                    oninput="renderProdPicker()" onfocus="renderProdPicker()"
+                    autocomplete="off" style="flex:1">
+                  <button class="btn-scan-inline btn-scan-rgb" onclick="openScanner('venda')" title="Escanear EAN-13" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
+                  </button>
                 </div>
-                <button class="btn btn-primary" onclick="nvAddItem()" type="button" style="height:36px;padding:0 14px;font-size:13px">＋ Add</button>
-              </div>
 
-              <!-- Carrinho -->
-              <div id="nv-cart" class="nv-cart"></div>
+                <!-- Product picker -->
+                <div class="prod-picker" id="prod-picker"></div>
+                <select id="vp" onchange="vUpd()" style="display:none"></select>
 
-              <!-- Total parcial -->
-              <div class="nv-total" id="nv-total-s2" style="display:none">
-                <span class="nv-total-lbl">Subtotal</span>
-                <div class="nv-total-val" id="vt">R$ 0,00</div>
-              </div>
+                <!-- Preview + add -->
+                <div id="vprev" class="vprev-card" style="display:none">
+                  <div class="vprev-thumb" id="vprev-thumb">
+                    <img id="vprev-img" class="vprev-img" src="" alt="" style="display:none">
+                    <span id="vprev-em" class="vprev-em"></span>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div id="vprev-nm" class="vprev-nm"></div>
+                    <div class="vprev-meta"><span id="vprev-pr"></span> · <span id="vprev-st"></span></div>
+                  </div>
+                  <div class="vprev-actions">
+                    <div class="qty-ctrl">
+                      <button class="qty-btn" onclick="adjVq(-1)" type="button">−</button>
+                      <input type="number" class="input-field qty-in" id="vq" value="1" min="1">
+                      <button class="qty-btn" onclick="adjVq(1)" type="button">+</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="nvAddItem()" type="button" style="height:36px;padding:0 14px;font-size:13px">＋ Add</button>
+                  </div>
+                </div>
+              </article>
 
-              <div class="nv-panel-ft">
-                <button class="btn btn-outline" onclick="nvGoStep(1)" type="button">← Voltar</button>
-                <button class="btn btn-primary" onclick="nvGoStep(3)" id="nv-btn-s2">
-                  Ir para pagamento
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-              </div>
-            </article>
+              <!-- Coluna lateral — carrinho -->
+              <article class="data-card nv-s2-cart">
+                <div class="card-title">Carrinho</div>
+
+                <div class="nv-cart-empty" id="nv-cart-empty">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                  <p>Carrinho vazio</p>
+                  <span>Selecione produtos ao lado</span>
+                </div>
+
+                <!-- Carrinho -->
+                <div id="nv-cart" class="nv-cart"></div>
+
+                <!-- Total parcial -->
+                <div class="nv-total" id="nv-total-s2" style="display:none">
+                  <span class="nv-total-lbl">Subtotal</span>
+                  <div class="nv-total-val" id="vt">R$ 0,00</div>
+                </div>
+
+                <div class="nv-panel-ft">
+                  <button class="btn btn-outline" onclick="nvGoStep(1)" type="button">← Voltar</button>
+                  <button class="btn btn-primary" onclick="nvGoStep(3)" id="nv-btn-s2">
+                    Ir para pagamento
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </article>
+
+            </div>
           </div>
 
           <!-- ════ ETAPA 3 — PAGAMENTO ════ -->
@@ -576,11 +706,26 @@
                 <div class="form-row">
                   <span class="fl-lbl">Forma de pagamento</span>
                   <div class="pay-chips" style="margin-top:8px">
-                    <button class="pay-chip on" onclick="selPay(this,'PIX')" type="button">PIX</button>
-                    <button class="pay-chip" onclick="selPay(this,'Cartão de Crédito')" type="button">Crédito</button>
-                    <button class="pay-chip" onclick="selPay(this,'Cartão de Débito')" type="button">Débito</button>
-                    <button class="pay-chip" onclick="selPay(this,'Dinheiro')" type="button">Dinheiro</button>
-                    <button class="pay-chip" onclick="selPay(this,'Fiado')" type="button" style="border-color:#D97706;color:#D97706">Fiado</button>
+                    <button class="pay-chip on" onclick="selPay(this,'PIX')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+                      PIX
+                    </button>
+                    <button class="pay-chip" onclick="selPay(this,'Cartão de Crédito')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      Crédito
+                    </button>
+                    <button class="pay-chip" onclick="selPay(this,'Cartão de Débito')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+                      Débito
+                    </button>
+                    <button class="pay-chip" onclick="selPay(this,'Dinheiro')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                      Dinheiro
+                    </button>
+                    <button class="pay-chip pay-chip-fiado" onclick="selPay(this,'Fiado')" type="button">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Fiado
+                    </button>
                   </div>
                   <input type="hidden" id="vpg" value="PIX">
                 </div>
@@ -604,9 +749,43 @@
                   <input type="date" class="input-field" id="vdtpag" style="margin-top:6px;max-width:200px">
                 </div>
 
+                <!-- PIX QR mini -->
+                <div class="nv-pix-qr-wrap" id="nv-pix-qr-wrap">
+                  <div class="nv-pix-mini-row" onclick="nvExpandPixQR()" title="Clique para ampliar">
+                    <div class="nv-pix-qr-thumb">
+                      <canvas id="nv-pix-qr-c" style="display:none"></canvas>
+                      <img id="nv-pix-qr-img" alt="QR PIX" style="display:none">
+                    </div>
+                    <div class="nv-pix-qr-meta">
+                      <div class="nv-pix-qr-lbl">Pagar via PIX</div>
+                      <div class="nv-pix-qr-key" id="nv-pix-key-lbl"></div>
+                      <div class="nv-pix-qr-val" id="nv-pix-val-lbl"></div>
+                    </div>
+                    <button class="nv-pix-expand" type="button" title="Ampliar QR">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    </button>
+                  </div>
+                  <div class="nv-pix-no-key" id="nv-pix-no-key" style="display:none">
+                    Chave Pix não configurada — <a href="#" onclick="epage('financeiro',null);return false">configure nas Configurações</a>
+                  </div>
+                </div>
+
+                <!-- Overlay PIX expandido -->
+                <div class="nv-pix-overlay" id="nv-pix-overlay" onclick="nvCollapsePixQR()" style="display:none">
+                  <div class="nv-pix-overlay-box" onclick="event.stopPropagation()">
+                    <div class="nv-pix-overlay-title">Pagar via PIX</div>
+                    <canvas id="nv-pix-qr-big-c" style="display:none"></canvas>
+                    <img id="nv-pix-qr-big-img" alt="QR PIX" style="display:none">
+                    <div class="nv-pix-overlay-val" id="nv-pix-overlay-val"></div>
+                    <div class="nv-pix-overlay-key" id="nv-pix-overlay-key"></div>
+                    <button class="cpt-pix-copy" type="button" id="nv-pix-copy-btn" onclick="nvCopyPixCode(this)">📋 Copiar código PIX</button>
+                    <button class="btn btn-outline" onclick="nvCollapsePixQR()" style="width:100%;margin-top:8px">Fechar</button>
+                  </div>
+                </div>
+
                 <div class="nv-panel-ft">
                   <button class="btn btn-outline" onclick="nvGoStep(2)" type="button">← Voltar</button>
-                  <button class="btn btn-primary" onclick="confirmV()" type="button" style="font-size:14px;padding:12px 28px">
+                  <button class="btn btn-primary btn-success" onclick="confirmV()" type="button" style="font-size:14px;padding:12px 28px">
                     ✓ Confirmar venda
                   </button>
                 </div>
@@ -639,7 +818,7 @@
               <p class="page-subtitle">Inventário e controle de produtos</p>
             </div>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-outline" onclick="openScanner('estoque')" title="Escanear código de barras">
+              <button class="btn btn-outline btn-scan-rgb" onclick="openScanner('estoque')" title="Escanear código de barras">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
                 Escanear
               </button>
@@ -647,7 +826,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 Métricas
               </button>
-              <button class="btn btn-primary" onclick="openMod('mp')">+ Produto</button>
+              <button class="btn btn-primary est-add-desk" onclick="openMod('mp')">+ Produto</button>
             </div>
           </div>
 
@@ -655,8 +834,11 @@
           <div class="est-filters">
             <div class="est-search-row">
               <input type="text" class="input-field" id="est-busca" placeholder="Buscar produto…" oninput="rEst()">
-              <button class="btn btn-outline est-scn-mob" onclick="openScanner('estoque')" title="Escanear">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
+              <button class="btn btn-outline est-scn-mob btn-scan-rgb" onclick="openScanner('estoque')" title="Escanear">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </button>
+              <button class="btn btn-primary est-add-mob" onclick="openMod('mp')" title="Novo produto" style="display:none">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </button>
             </div>
             <div class="est-chips-row est-chips-combined">
@@ -673,17 +855,8 @@
             </div>
           </div>
 
-          <!-- Hint mobile: lista oculta, orienta busca/cadastro -->
-          <div class="est-mobile-hint mob-only">
-            <div class="est-mobile-hint-icon">📦</div>
-            <p class="est-mobile-hint-title">Busque um produto acima</p>
-            <p class="est-mobile-hint-sub">Digite o nome para localizar e editar o estoque, ou cadastre um novo produto.</p>
-            <button class="btn btn-primary" style="margin-top:14px;width:100%;justify-content:center" onclick="openMod('mp')">+ Novo produto</button>
-            <button class="btn btn-outline" style="margin-top:8px;width:100%;justify-content:center;gap:6px" onclick="openScannerForNewProd()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
-              Cadastrar por código de barras
-            </button>
-          </div>
+          <!-- Resumo do estoque (mobile) -->
+          <div class="est-summary mob-only" id="est-summary"></div>
 
           <!-- Lista com grupos -->
           <div id="est-list"></div>
@@ -701,19 +874,6 @@
           </div>
         </div>
 
-        <!-- ── Drawer detalhes do produto ────────────── -->
-        <div class="filter-backdrop" id="prod-backdrop" onclick="closeProdDetail()"></div>
-        <div class="filter-drawer" id="prod-drawer">
-          <div class="filter-drawer-hd">
-            <h3 id="prod-drawer-title">Produto</h3>
-            <button class="filter-drawer-close" onclick="closeProdDetail()">✕</button>
-          </div>
-          <div class="filter-drawer-body" id="prod-drawer-body"></div>
-          <div class="filter-drawer-ft">
-            <button class="btn btn-outline" style="flex:1" id="prod-del-btn">Excluir</button>
-            <button class="btn btn-primary" style="flex:1" id="prod-edit-btn">Editar produto</button>
-          </div>
-        </div>
 
         <section class="erp-page" id="ep-clientes">
           <div class="page-header">
@@ -726,7 +886,8 @@
               <button class="btn btn-primary" onclick="newCli()">+ Cliente</button>
             </div>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th>Cliente</th><th>Contato</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th><th>Ações</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
+          <div class="card data-card mob-hide"><div class="table-shell"><table><thead><tr><th>Cliente</th><th>Contato</th><th>Cidade</th><th>Tipo de Pele</th><th>Total Gasto</th><th>Último Pedido</th><th>Ações</th></tr></thead><tbody id="ctt"></tbody></table></div></div>
+          <div class="rb-cards mob-only" id="clicards"></div>
         </section>
 
         <section class="erp-page" id="ep-financeiro">
@@ -745,7 +906,7 @@
           </div>
           <div class="card-grid-wide">
             <article class="data-card chart-card"><div class="card-title">Fluxo de caixa</div><div class="chart-shell"><canvas id="ch-flx"></canvas></div></article>
-            <article class="data-card"><div class="card-title">Lançamentos recentes</div><div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ftt"></tbody></table></div></article>
+            <article class="data-card"><div class="card-title">Lançamentos recentes</div><div class="table-shell mob-hide"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ftt"></tbody></table></div><div class="rb-cards mob-only" id="fincards"></div></article>
           </div>
         </section>
 
@@ -761,7 +922,7 @@
             <p>Na versão mobile, a lista de produtos fica oculta para dar mais espaço e foco nas buscas e no cadastro.</p>
             <p>Use o botão <strong>+ Produto</strong> para cadastrar ou editar itens.</p>
           </div>
-          <div class="card data-card"><div class="table-shell"><table><thead><tr><th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Desconto</th><th>Destaque</th><th>Ações</th></tr></thead><tbody id="ktt"></tbody></table></div></div>
+          <div class="card data-card mob-hide"><div class="table-shell"><table><thead><tr><th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Desconto</th><th>Destaque</th><th>Ações</th></tr></thead><tbody id="ktt"></tbody></table></div></div>
         </section>
 
         <section class="erp-page" id="ep-extrato">
@@ -792,7 +953,7 @@
                 <div class="ext-doc-hd-left">
                   <h2 class="ext-doc-title">Extrato Mensal</h2>
                   <p class="ext-doc-meta">
-                    <strong>Milena Lima Beauty</strong>
+                    <strong id="ext-doc-tenant-name">Milena Lima Beauty</strong>
                     <span>Consultora Oficial Mary Kay</span>
                     <span id="ext-subtitle">Demonstrativo financeiro completo</span>
                   </p>
@@ -832,7 +993,8 @@
                     <span class="card-title">Pedidos do mês</span>
                     <span id="ext-ped-count" style="font-size:12px;color:#71717A"></span>
                   </div>
-                  <div class="table-shell"><table><thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th></tr></thead><tbody id="ext-peds-tb"></tbody></table></div>
+                  <div class="table-shell mob-hide"><table><thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Pgto</th><th>Status</th></tr></thead><tbody id="ext-peds-tb"></tbody></table></div>
+                  <div class="rb-cards mob-only" id="ext-peds-cards"></div>
                 </article>
                 <article class="data-card" style="min-width:0">
                   <div class="card-title">Top clientes</div>
@@ -849,7 +1011,8 @@
                   <span class="card-title">Lançamentos financeiros</span>
                   <span id="ext-trans-count" style="font-size:12px;color:#71717A"></span>
                 </div>
-                <div class="table-shell"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ext-trans-tb"></tbody></table></div>
+                <div class="table-shell mob-hide"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody id="ext-trans-tb"></tbody></table></div>
+                <div class="rb-cards mob-only" id="ext-trans-cards"></div>
               </article>
 
               <!-- Rodapé -->
@@ -877,77 +1040,382 @@
               <p class="page-subtitle">Análise do negócio</p>
             </div>
           </div>
-          <div class="card-grid-wide">
-            <article class="data-card chart-card"><div class="card-title">Top produtos vendidos</div><div class="chart-shell"><canvas id="ch-top"></canvas></div></article>
-            <article class="data-card chart-card"><div class="card-title">Vendas por dia da semana</div><div class="chart-shell"><canvas id="ch-dia"></canvas></div></article>
+
+          <!-- KPIs do ano -->
+          <div class="dashboard-grid" id="rel-kpis" style="margin-bottom:20px"></div>
+
+          <!-- Gráficos -->
+          <div class="card-grid-wide" style="margin-bottom:20px">
+            <article class="data-card">
+              <div class="card-header" style="margin-bottom:16px">
+                <div>
+                  <div class="card-title" style="margin:0">Top produtos</div>
+                  <div style="font-size:12px;color:var(--tx-m);margin-top:3px">Por quantidade vendida</div>
+                </div>
+              </div>
+              <div class="chart-shell" style="height:220px"><canvas id="ch-top"></canvas></div>
+            </article>
+            <article class="data-card">
+              <div class="card-header" style="margin-bottom:16px">
+                <div>
+                  <div class="card-title" style="margin:0">Vendas por dia</div>
+                  <div style="font-size:12px;color:var(--tx-m);margin-top:3px">Distribuição semanal</div>
+                </div>
+              </div>
+              <div class="chart-shell" style="height:220px"><canvas id="ch-dia"></canvas></div>
+            </article>
           </div>
-          <div class="data-card"><div class="card-title">Resumo anual</div><div class="table-shell"><table><thead><tr><th>Mês</th><th>Pedidos</th><th>Receita</th><th>Ticket Médio</th><th>Novos Clientes</th><th>Meta</th></tr></thead><tbody id="ratt"></tbody></table></div></div>
+
+          <!-- Resumo mensal -->
+          <article class="data-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title" style="margin:0">Resumo mensal</div>
+                <div style="font-size:12px;color:var(--tx-m);margin-top:3px">Últimos 6 meses</div>
+              </div>
+            </div>
+            <div class="table-shell">
+              <table class="rel-table">
+                <thead>
+                  <tr>
+                    <th>Mês</th>
+                    <th>Pedidos</th>
+                    <th>Receita</th>
+                    <th>Ticket Médio</th>
+                    <th>Clientes</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ratt"></tbody>
+              </table>
+            </div>
+          </article>
         </section>
         <section class="erp-page" id="ep-loja">
           <div class="page-header">
             <div>
               <h2>Configurar Loja</h2>
-              <p class="page-subtitle">Edite os textos exibidos na tela de vendas</p>
+              <p class="page-subtitle">Edite o conteúdo, a aparência e a publicação da sua loja</p>
             </div>
             <button class="btn btn-primary" onclick="saveLojaSettings()">Salvar alterações</button>
           </div>
 
-          <div class="card-grid-wide" style="margin-bottom:20px">
-            <article class="data-card">
-              <div class="card-title" style="margin-bottom:16px">Banner & Contato</div>
+          <div class="loja-tabs">
+            <button class="loja-tab-btn on" onclick="lojaTab('conteudo', this)">Conteúdo</button>
+            <button class="loja-tab-btn" onclick="lojaTab('aparencia', this)">Aparência</button>
+            <button class="loja-tab-btn" onclick="lojaTab('publicacao', this)">Publicação</button>
+          </div>
+
+          <div class="loja-tab-panel" id="loja-tab-conteudo">
+
+            <div class="card-grid-wide" style="margin-bottom:20px">
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Banner & Contato</div>
+                <div class="form-grid">
+                  <label class="form-label full">Texto do banner promocional <small style="font-weight:400;opacity:.55">(use *PALAVRA* para destaque)</small>
+                    <input type="text" class="input-field" id="ls-banner" placeholder="Frete *GRÁTIS* em compras acima de R$ 150">
+                  </label>
+                </div>
+              </article>
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Ticker de texto</div>
+                <div class="form-grid">
+                  <label class="form-label full">Texto do marquee <small style="font-weight:400;opacity:.55">(separe os itens com ·)</small>
+                    <input type="text" class="input-field" id="ls-marquee">
+                  </label>
+                </div>
+              </article>
+            </div>
+
+            <article class="data-card" style="margin-bottom:20px">
+              <div class="card-title" style="margin-bottom:16px">Hero — seção principal</div>
               <div class="form-grid">
-                <label class="form-label full">Texto do banner promocional <small style="font-weight:400;opacity:.55">(use *PALAVRA* para destaque)</small>
-                  <input type="text" class="input-field" id="ls-banner" placeholder="Frete *GRÁTIS* em compras acima de R$ 150">
+                <label class="form-label">Kicker (acima do título)
+                  <input type="text" class="input-field" id="ls-kicker">
                 </label>
-                <label class="form-label">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
-                  <input type="text" class="input-field" id="ls-wa" placeholder="5511999999999">
+                <label class="form-label">Prova social
+                  <input type="text" class="input-field" id="ls-proof" placeholder="+500 clientes · Avaliação 4.9/5">
+                </label>
+                <label class="form-label">Linha 1 do título
+                  <input type="text" class="input-field" id="ls-hl1">
+                </label>
+                <label class="form-label">Linha 2 — itálico colorido
+                  <input type="text" class="input-field" id="ls-hl2">
+                </label>
+                <label class="form-label">Linha 3 do título
+                  <input type="text" class="input-field" id="ls-hl3">
+                </label>
+                <label class="form-label">Linha 4 — itálico colorido
+                  <input type="text" class="input-field" id="ls-hl4">
+                </label>
+                <label class="form-label full">Sub-texto
+                  <textarea class="input-field" rows="2" id="ls-sub"></textarea>
                 </label>
               </div>
             </article>
+
             <article class="data-card">
-              <div class="card-title" style="margin-bottom:16px">Ticker de texto</div>
-              <div class="form-grid">
-                <label class="form-label full">Texto do marquee <small style="font-weight:400;opacity:.55">(separe os itens com ·)</small>
-                  <input type="text" class="input-field" id="ls-marquee">
-                </label>
+              <div class="card-title" style="margin-bottom:16px">Barra de benefícios</div>
+              <div id="ls-benefits-grid" class="form-grid"></div>
+            </article>
+          </div>
+
+          <div class="loja-tab-panel" id="loja-tab-aparencia" style="display:none">
+            <article class="data-card" style="margin-bottom:20px">
+              <div class="card-title" style="margin-bottom:16px">Modelo da loja</div>
+              <div class="tpl-grid">
+                <button type="button" class="tpl-card" data-template="classico" onclick="selectLojaTemplate('classico', this)">
+                  <span class="tpl-preview tpl-preview--classico">
+                    <span class="tpl-p-hero"><span class="tpl-p-text"></span><span class="tpl-p-img"></span></span>
+                    <span class="tpl-p-grid"><span></span><span></span><span></span></span>
+                  </span>
+                  <span class="tpl-name">Clássico</span>
+                </button>
+                <button type="button" class="tpl-card" data-template="moderno" onclick="selectLojaTemplate('moderno', this)">
+                  <span class="tpl-preview tpl-preview--moderno">
+                    <span class="tpl-p-hero-full"><span class="tpl-p-text"></span></span>
+                    <span class="tpl-p-grid tpl-p-grid--bento"><span></span><span></span><span></span><span></span></span>
+                  </span>
+                  <span class="tpl-name">Moderno</span>
+                </button>
+                <button type="button" class="tpl-card" data-template="minimal" onclick="selectLojaTemplate('minimal', this)">
+                  <span class="tpl-preview tpl-preview--minimal">
+                    <span class="tpl-p-hero-center"><span class="tpl-p-text tpl-p-text--center"></span></span>
+                    <span class="tpl-p-grid tpl-p-grid--col2"><span></span><span></span></span>
+                  </span>
+                  <span class="tpl-name">Minimalista</span>
+                </button>
+              </div>
+              <input type="hidden" id="ls-template" value="classico">
+            </article>
+
+            <div class="card-grid-wide" style="margin-bottom:20px">
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Cores</div>
+                <div class="form-grid">
+                  <label class="form-label">Cor principal
+                    <input type="color" class="input-field input-color" id="ls-color-primary" oninput="sendPreviewUpdate()">
+                  </label>
+                  <label class="form-label">Cor de destaque
+                    <input type="color" class="input-field input-color" id="ls-color-accent" oninput="sendPreviewUpdate()">
+                  </label>
+                </div>
+              </article>
+              <article class="data-card">
+                <div class="card-title" style="margin-bottom:16px">Fonte</div>
+                <div class="form-grid">
+                  <label class="form-label full">Estilo da fonte
+                    <select class="input-field" id="ls-font" onchange="sendPreviewUpdate()">
+                      <option value="elegante">Elegante (Cormorant + DM Sans)</option>
+                      <option value="moderno">Moderna (Poppins + Inter)</option>
+                      <option value="minimal">Minimalista (Inter)</option>
+                      <option value="classica">Clássica (Playfair + Lato)</option>
+                      <option value="suave">Suave (Quicksand + Nunito)</option>
+                      <option value="sofisticada">Sofisticada (Marcellus + Manrope)</option>
+                    </select>
+                  </label>
+                </div>
+              </article>
+            </div>
+
+            <article class="data-card">
+              <div class="card-title" style="margin-bottom:16px">Prévia em tempo real</div>
+              <div class="loja-preview-wrap">
+                <iframe id="loja-preview" class="loja-preview-frame"></iframe>
               </div>
             </article>
           </div>
 
-          <article class="data-card" style="margin-bottom:20px">
-            <div class="card-title" style="margin-bottom:16px">Hero — seção principal</div>
-            <div class="form-grid">
-              <label class="form-label">Kicker (acima do título)
-                <input type="text" class="input-field" id="ls-kicker">
-              </label>
-              <label class="form-label">Prova social
-                <input type="text" class="input-field" id="ls-proof" placeholder="+500 clientes · Avaliação 4.9/5">
-              </label>
-              <label class="form-label">Linha 1 do título
-                <input type="text" class="input-field" id="ls-hl1">
-              </label>
-              <label class="form-label">Linha 2 — itálico colorido
-                <input type="text" class="input-field" id="ls-hl2">
-              </label>
-              <label class="form-label">Linha 3 do título
-                <input type="text" class="input-field" id="ls-hl3">
-              </label>
-              <label class="form-label">Linha 4 — itálico colorido
-                <input type="text" class="input-field" id="ls-hl4">
-              </label>
-              <label class="form-label full">Sub-texto
-                <textarea class="input-field" rows="2" id="ls-sub"></textarea>
-              </label>
-            </div>
-          </article>
+          <div class="loja-tab-panel" id="loja-tab-publicacao" style="display:none">
+            <article class="data-card">
+              <div class="card-title" style="margin-bottom:16px">Status da loja</div>
+              <div class="pub-status-row">
+                <span class="pub-badge" id="ls-pub-badge"></span>
+                <button type="button" class="btn btn-outline" id="ls-pub-toggle" onclick="toggleLojaPublicada()"></button>
+              </div>
+              <p class="pub-hint">Quando despublicada, sua loja exibe uma página de "Loja indisponível" para os visitantes. O painel do ERP continua acessível normalmente.</p>
 
-          <article class="data-card">
-            <div class="card-title" style="margin-bottom:16px">Barra de benefícios</div>
-            <div id="ls-benefits-grid" class="form-grid"></div>
-          </article>
+              <!-- Link de acesso — aparece só quando publicada -->
+              <div class="pub-link-card" id="ls-pub-link-card" style="display:none">
+                <div class="pub-link-label">Link da sua loja</div>
+                <div class="pub-link-row">
+                  <span class="pub-link-url" id="ls-pub-link-url"></span>
+                  <button class="pub-link-copy" id="ls-pub-link-copy" onclick="copyLojaLink()" title="Copiar link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copiar
+                  </button>
+                  <a class="pub-link-open btn btn-outline" id="ls-pub-link-open" href="#" target="_blank" rel="noopener">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Abrir
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <article class="data-card" id="bio-security-card" style="margin-top:20px;display:none">
+              <div class="card-title" style="margin-bottom:16px">Segurança do dispositivo</div>
+              <div class="pub-status-row">
+                <span class="pub-badge" id="bio-badge"></span>
+                <button type="button" class="btn btn-outline" id="bio-toggle" onclick="toggleBioLock()"></button>
+              </div>
+              <p class="pub-hint" id="bio-hint">Use a biometria (digital, Face ID, Windows Hello) para destravar o Shorti mais rápido neste aparelho, sem digitar a senha.</p>
+            </article>
+          </div>
         </section>
+
+        <!-- ── Consultar Produto ──────────────────────── -->
+        <section class="erp-page" id="ep-consulta">
+          <div class="page-header">
+            <div>
+              <h2>Consultar Produto</h2>
+              <p class="page-subtitle">Escaneie o código ou pesquise pelo nome</p>
+            </div>
+          </div>
+
+          <div class="cq-page-layout">
+
+            <!-- Painel esquerdo: câmera / QR / conectado -->
+            <div class="cq-page-left">
+
+              <!-- Câmera (mobile) -->
+              <div id="cq-camera-wrap" style="display:none" class="cq-camera-wrap">
+                <div id="cq-reader"></div>
+                <div class="cq-frame">
+                  <div class="cq-corner cq-tl"></div><div class="cq-corner cq-tr"></div>
+                  <div class="cq-corner cq-bl"></div><div class="cq-corner cq-br"></div>
+                  <div class="cq-scan-line"></div>
+                </div>
+                <div class="cq-cam-label">Aponte para o código de barras do produto</div>
+              </div>
+
+              <!-- QR / estados (desktop) -->
+              <div id="cq-qr-wrap" style="display:none" class="cq-qr-wrap-page">
+                <div id="cq-state-waiting">
+
+                  <p class="cq-conn-heading">Conectar celular</p>
+
+                  <!-- Opção A: QR code -->
+                  <div class="cq-conn-option" id="cq-qr-option" style="display:none">
+                    <div class="cq-conn-opt-badge cq-badge-fast-green">Mais rápido</div>
+                    <div class="cq-conn-opt-row">
+                      <div class="cq-qr-frame">
+                        <canvas id="cq-qr-canvas" width="140" height="140"></canvas>
+                        <img id="cq-qr-img" width="140" height="140" alt="QR" style="display:none;border-radius:6px">
+                      </div>
+                      <div class="cq-conn-opt-text">
+                        <p class="cq-conn-opt-title">Escaneie o QR code</p>
+                        <p class="cq-conn-opt-sub">Aponte a câmera do celular para o QR. Conecta automaticamente, sem digitar nada.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Divisor -->
+                  <div class="cq-conn-or" id="cq-conn-or" style="display:none"><span>ou</span></div>
+
+                  <!-- Opção B: Link + código -->
+                  <div class="cq-conn-option">
+                    <p class="cq-conn-opt-title">Abra o app e digite o código</p>
+                    <p class="cq-conn-opt-sub">Envie o link para o celular e insira o código abaixo.</p>
+                    <button class="cq-copy-btn" id="cq-copy-btn" onclick="cqCopyLink()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copiar link do app
+                    </button>
+                    <p class="cq-pin-eyebrow">Código a digitar no app</p>
+                    <div class="cq-pin-digits" id="cq-pin-digits">
+                      <span class="cq-pin-d">·</span><span class="cq-pin-d">·</span><span class="cq-pin-d">·</span>
+                      <span class="cq-pin-sep"></span>
+                      <span class="cq-pin-d">·</span><span class="cq-pin-d">·</span><span class="cq-pin-d">·</span>
+                    </div>
+                  </div>
+
+                  <!-- Segurança -->
+                  <div class="cq-conn-security">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Não compartilhe este código com ninguém
+                  </div>
+
+                  <!-- Status -->
+                  <div class="cq-phone-status" style="margin-top:4px">
+                    <span class="cq-phone-dot" id="cq-phone-dot"></span>
+                    <span id="cq-phone-txt">Aguardando celular…</span>
+                  </div>
+
+                </div>
+
+                <div id="cq-state-connected" class="cq-connected-card" style="display:none">
+                  <div class="cq-conn-rings">
+                    <div class="cq-conn-ring r1"></div>
+                    <div class="cq-conn-ring r2"></div>
+                    <div class="cq-conn-ring r3"></div>
+                    <div class="cq-conn-icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                    </div>
+                  </div>
+                  <div class="cq-conn-badge">
+                    <span class="cq-conn-badge-dot"></span>
+                    <span class="cq-conn-badge-txt">Conectado</span>
+                  </div>
+                  <div class="cq-conn-title">Pronto para escanear</div>
+                  <p class="cq-conn-sub">Aponte a câmera do celular<br>para o código de barras do produto</p>
+                  <div class="cq-conn-dots"><span></span><span></span><span></span></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Painel direito: busca + resultados -->
+            <div class="cq-page-right">
+              <div class="cq-search-row">
+                <div class="cq-search-wrap">
+                  <svg class="cq-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" id="cq-search" class="input-field cq-input" placeholder="Nome, código de barras ou categoria…" oninput="cqSearch()" autocomplete="off">
+                  <button class="cq-clear-btn" id="cq-clear" onclick="cqClearSearch()" style="display:none">✕</button>
+                </div>
+              </div>
+              <div id="cq-search-results" style="display:none" class="cq-search-results"></div>
+              <div id="cq-product-card"   style="display:none" class="cq-product-card"></div>
+              <div id="cq-placeholder" class="cq-placeholder">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <p>Escaneie um código de barras<br>ou pesquise pelo nome do produto</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
       </section>
     </main>
+  </div>
+
+  <!-- ── Central de notificações ─────────────────────── -->
+  <div class="filter-backdrop" id="notif-backdrop" onclick="closeNotifPanel()"></div>
+  <div class="filter-drawer notif-drawer" id="notif-drawer">
+    <div class="filter-drawer-hd">
+      <h3>Notificações</h3>
+      <button class="filter-drawer-close" onclick="closeNotifPanel()">✕</button>
+    </div>
+    <div class="filter-drawer-body notif-list" id="notif-list"></div>
+    <div class="filter-drawer-ft">
+      <button class="btn btn-outline" style="flex:1" onclick="markAllNotifsRead()">Marcar todas como lidas</button>
+    </div>
+  </div>
+
+  <!-- ── Drawer detalhes do produto ────────────── -->
+  <div class="filter-backdrop" id="prod-backdrop" onclick="closeProdDetail()"></div>
+  <div class="filter-drawer" id="prod-drawer">
+    <div class="filter-drawer-hd">
+      <h3 id="prod-drawer-title">Produto</h3>
+      <button class="filter-drawer-close" onclick="closeProdDetail()">✕</button>
+    </div>
+    <div class="filter-drawer-body" id="prod-drawer-body"></div>
+    <div class="filter-drawer-ft">
+      <button class="btn btn-outline" style="color:#EF4444;border-color:#FECACA;white-space:nowrap" id="prod-del-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Excluir
+      </button>
+      <button class="btn btn-primary" style="flex:1" id="prod-edit-btn">Editar produto</button>
+    </div>
   </div>
 
   <div class="modal" id="mv"><div class="modal-box">
@@ -998,7 +1466,7 @@
       <label class="form-label full">Data de pagamento<input type="date" class="input-field" id="mvdtpag" style="margin-top:4px"></label>
     </div>
     <div class="summary-box modal-summary"><div class="summary-row"><span>Total</span><strong id="mvt">R$ 0,00</strong></div></div>
-    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mv')">Cancelar</button><button class="btn btn-primary" onclick="confirmMV()">Confirmar venda</button></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mv')">Cancelar</button><button class="btn btn-primary" onclick="confirmMV()" id="mv-confirm-btn">Confirmar venda</button></div>
   </div></div>
 
   <!-- ── Modal produto — wizard mobile / duas colunas desktop ─────────── -->
@@ -1062,7 +1530,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <label class="form-label" style="grid-column:1/-1">
                 Nome do produto *
-                <input type="text" class="input-field" id="pe-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px">
+                <input type="text" class="input-field" id="pe-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px" oninput="checkProdReady()">
               </label>
               <!-- Emoji: visível só no mobile dentro do wizard -->
               <label class="form-label mp-mob-field">
@@ -1142,7 +1610,7 @@
                   <input type="text" class="input-field" id="pe-bc"
                     placeholder="0000000000000" maxlength="13" pattern="[0-9]{13}"
                     style="font-family:monospace;letter-spacing:.06em">
-                  <button type="button" class="btn btn-outline" style="padding:0 10px;flex-shrink:0"
+                  <button type="button" class="btn btn-outline btn-scan-rgb" style="padding:0 10px;flex-shrink:0"
                     onclick="openScannerForField()" title="Escanear para preencher">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="20"/><rect x="9" y="2" width="2" height="20"/><rect x="13" y="2" width="3" height="20"/><rect x="18" y="2" width="4" height="20"/></svg>
                   </button>
@@ -1179,7 +1647,7 @@
     <div class="modal-header"><h3 id="mc-title">Novo Cliente</h3><button class="modal-close" onclick="closeMod('mc')">✕</button></div>
     <input type="hidden" id="nc-id">
     <div class="form-grid">
-      <label class="form-label full">Nome completo *<input type="text" class="input-field" id="nc-nm" placeholder="Nome da cliente" style="margin-top:4px"></label>
+      <label class="form-label full">Nome completo *<input type="text" class="input-field" id="nc-nm" placeholder="Nome da cliente" style="margin-top:4px" oninput="checkCliReady()"></label>
       <label class="form-label">WhatsApp<input type="tel" class="input-field" id="nc-tel" placeholder="(11) 99999-9999" style="margin-top:4px"></label>
       <label class="form-label">E-mail<input type="email" class="input-field" id="nc-em" placeholder="email@exemplo.com" style="margin-top:4px"></label>
       <label class="form-label">Cidade<input type="text" class="input-field" id="nc-ci" placeholder="São Paulo" style="margin-top:4px"></label>
@@ -1255,11 +1723,11 @@
         </div>
         <input type="hidden" id="tr-tp" value="receita">
       </div>
-      <label class="form-label full">Descrição<input type="text" class="input-field" id="tr-ds" placeholder="Ex: Pedido #001, Reposição de estoque…" style="margin-top:4px"></label>
+      <label class="form-label full">Descrição<input type="text" class="input-field" id="tr-ds" placeholder="Ex: Pedido #001, Reposição de estoque…" style="margin-top:4px" oninput="checkTrReady()"></label>
       <label class="form-label">Valor (R$)<input type="number" class="input-field" id="tr-vl" step="0.01" placeholder="0,00" style="margin-top:4px"></label>
       <label class="form-label">Data<input type="date" class="input-field" id="tr-dt" style="margin-top:4px"></label>
     </div>
-    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mt')">Cancelar</button><button class="btn btn-primary" onclick="saveTr()">Salvar</button></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeMod('mt')">Cancelar</button><button class="btn btn-primary" onclick="saveTr()" id="mt-save-btn">Salvar</button></div>
   </div></div>
 
   <!-- ── Cupom Fiscal ─────────────────────────────── -->
@@ -1269,6 +1737,7 @@
       <div class="cupom-actions-bar">
         <button class="cupom-btn" onclick="closeMod('cupom')">Fechar</button>
         <button class="cupom-btn cupom-btn-wa" onclick="whatsappCupom()">📲 WhatsApp</button>
+        <button class="cupom-btn" id="cupom-btn-carne" style="display:none" onclick="printCarne()">🧾 Gerar carnê</button>
         <button class="cupom-btn cupom-btn-main" onclick="window.print()">🖨 Imprimir</button>
       </div>
     </div>
@@ -1295,6 +1764,57 @@
     </div>
   </div>
 
+  <!-- Modal: alterar/testar chave Pix (segurança) -->
+  <div class="modal" id="mpix">
+    <div class="modal-box" style="max-width:440px">
+      <div class="modal-header"><h3>Alterar chave Pix</h3><button class="modal-close" onclick="pixCancelChange()">✕</button></div>
+
+      <!-- Etapa 1: riscos + confirmação de senha -->
+      <div id="mpix-step1">
+        <div class="pix-risk">
+          <div class="pix-risk-title">⚠️ Antes de continuar, confirme:</div>
+          <ul class="pix-risk-list">
+            <li>Verifique se a chave pertence à <strong>sua própria conta</strong> — se estiver errada, o dinheiro dos clientes irá para outra pessoa e não será possível recuperar.</li>
+            <li>Essa chave fica visível para os clientes no comprovante de venda (QR Code Pix).</li>
+            <li>Nunca compartilhe sua chave Pix, e-mail ou senha com terceiros.</li>
+          </ul>
+        </div>
+        <div class="form-grid" style="margin-top:14px">
+          <label class="form-label full">E-mail
+            <input type="email" class="input-field" id="mpix-email" placeholder="seu@email.com" autocomplete="username" oninput="checkPixReady()">
+          </label>
+          <label class="form-label full">Senha <small style="font-weight:400;opacity:.55">(confirme sua senha para continuar)</small>
+            <input type="password" class="input-field" id="mpix-pass" placeholder="••••••••" autocomplete="current-password" oninput="checkPixReady()">
+          </label>
+        </div>
+        <div class="pix-err" id="mpix-err" style="display:none"></div>
+      </div>
+
+      <!-- Etapa 2: QR de teste de R$ 1,00 -->
+      <div id="mpix-step2" style="display:none">
+        <p class="pix-test-info">Escaneie o QR Code abaixo com o app do seu banco e envie <strong>R$ 1,00</strong> para confirmar que a chave está correta antes de divulgar para os clientes.</p>
+        <div class="cpt-pix-body" style="justify-content:center">
+          <div class="cpt-pix-qr"><canvas id="mpix-qr"></canvas><img id="mpix-img" alt="QR Pix de teste" style="display:none"></div>
+          <div class="cpt-pix-info">
+            <div class="cpt-pix-val">R$ 1,00</div>
+            <div class="cpt-pix-key" id="mpix-key"></div>
+          </div>
+        </div>
+        <button class="cpt-pix-copy" type="button" onclick="copyPixCode(_mpixPayload, this)">📋 Copiar código Pix de teste</button>
+        <p class="pix-test-q">O R$ 1,00 caiu certo na sua conta?</p>
+      </div>
+
+      <div class="modal-actions" id="mpix-actions-1">
+        <button class="btn btn-outline" onclick="pixCancelChange()">Cancelar</button>
+        <button class="btn btn-primary" onclick="pixConfirmStep1()" id="mpix-confirm-btn">Confirmar e gerar teste</button>
+      </div>
+      <div class="modal-actions" id="mpix-actions-2" style="display:none">
+        <button class="btn btn-outline" onclick="pixTestResult(false)">⚠️ Não caiu / errado</button>
+        <button class="btn btn-success" onclick="pixTestResult(true)">✅ Caiu certo!</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal editar pedido -->
   <div class="modal" id="med"><div class="modal-box" style="max-width:440px">
     <div class="modal-header"><h3>Editar Pedido</h3><button class="modal-close" onclick="closeMod('med')">✕</button></div>
@@ -1302,7 +1822,7 @@
     <div class="form-grid">
       <label class="form-label full">Cliente<select class="input-field" id="med-c" style="margin-top:4px"></select></label>
       <label class="form-label">Pagamento<select class="input-field" id="med-pg" style="margin-top:4px">
-        <option>PIX</option><option>Dinheiro</option><option>Cartão de Débito</option><option>Cartão de Crédito</option><option>Boleto</option><option>Fiado</option><option>Recebido</option>
+        <option>A combinar</option><option>PIX</option><option>Dinheiro</option><option>Cartão de Débito</option><option>Cartão de Crédito</option><option>Boleto</option><option>Fiado</option><option>Recebido</option>
       </select></label>
       <label class="form-label">Parcelas<input type="number" class="input-field" id="med-parc" min="1" max="12" value="1" style="margin-top:4px"></label>
       <label class="form-label">Data de pagamento<input type="date" class="input-field" id="med-dtpag" style="margin-top:4px"></label>
@@ -1322,7 +1842,7 @@
     </div>
     <input type="hidden" id="sl-id">
     <div class="form-grid">
-      <label class="form-label full">Produto *<input type="text" class="input-field" id="sl-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px"></label>
+      <label class="form-label full">Produto *<input type="text" class="input-field" id="sl-nm" placeholder="Ex: Sérum Vitamina C FPS 30" style="margin-top:4px" oninput="checkSolicReady()"></label>
       <label class="form-label">Quantidade<input type="number" class="input-field" id="sl-q" value="1" min="1" style="margin-top:4px"></label>
       <label class="form-label">Preço estimado (R$)<input type="number" class="input-field" id="sl-pr" step="0.01" placeholder="Opcional" style="margin-top:4px"></label>
       <label class="form-label full">Observações<input type="text" class="input-field" id="sl-obs" placeholder="Ex: cor, tamanho, código Mary Kay…" style="margin-top:4px"></label>
@@ -1365,17 +1885,112 @@
 
       <!-- ── Painel QR code (Scanner por celular) ── -->
       <div class="scn-phone-panel" id="scn-phone-panel" style="display:none">
-        <div class="scn-qr-wrap">
-          <canvas id="scn-qr-canvas" width="200" height="200"></canvas>
-          <img id="scn-qr-img" width="200" height="200" alt="QR Code" style="display:none;border-radius:6px">
+
+        <!-- Cabeçalho branco -->
+        <div class="scn-panel-header">
+          <div class="scn-panel-brand">
+            <div class="scn-panel-brand-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </div>
+            <span class="scn-panel-brand-name">Shorti Scanner</span>
+          </div>
+          <button class="scn-panel-close" onclick="closeScanner()" title="Fechar">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-        <p id="scn-qr-url" style="display:none;font-size:10px;color:rgba(255,255,255,.3);word-break:break-all;text-align:center;padding:0 8px;margin-top:4px"></p>
-        <div class="scn-phone-status" id="scn-phone-status">
-          <span class="scn-phone-dot" id="scn-phone-dot"></span>
-          <span id="scn-phone-status-txt">Aguardando celular...</span>
+
+        <!-- Corpo scrollável -->
+        <div class="scn-panel-body">
+
+          <!-- Reconectando -->
+          <div class="scn-reconnect-state" id="scn-reconnect-state">
+            <div class="scn-reconnect-spinner"></div>
+            <p class="scn-reconnect-txt">Conectando ao celular pareado…</p>
+          </div>
+
+          <div id="scn-pin-block" style="display:none">
+
+            <p class="scn-connect-title">Conectar celular</p>
+
+            <!-- Opção A: QR (caminho rápido) -->
+            <div class="scn-option-card" id="scn-qr-secondary" style="display:none">
+              <div class="scn-option-badge scn-badge-fast">Mais rápido</div>
+              <div class="scn-qr-hero-row">
+                <div class="scn-qr-wrap">
+                  <canvas id="scn-qr-canvas" width="120" height="120"></canvas>
+                  <img id="scn-qr-img" width="120" height="120" alt="QR" style="display:none">
+                </div>
+                <div class="scn-qr-hero-text">
+                  <p class="scn-option-title">Escaneie o QR code</p>
+                  <p class="scn-option-sub">Abra a câmera do celular e aponte para o QR. A câmera conecta automaticamente, sem digitar nada.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Divisor -->
+            <div class="scn-or-divider"><span>ou</span></div>
+
+            <!-- Opção B: Link + código manual -->
+            <div class="scn-option-card">
+              <p class="scn-option-title">Abra o app e digite o código</p>
+              <p class="scn-option-sub">Envie o link para o celular e, no app, digite o código abaixo para conectar.</p>
+              <button class="scn-share-btn" id="scn-copy-link-btn" onclick="copyMobileScanLink()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar link do app
+              </button>
+              <p class="scn-code-label">Código a digitar no app</p>
+              <div class="scn-pin-digits" id="scn-pin-digits">
+                <span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span>
+                <span class="scn-pin-divider"></span>
+                <span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span><span class="scn-pin-digit">·</span>
+              </div>
+            </div>
+
+            <!-- Aviso de segurança -->
+            <div class="scn-security-notice">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Não compartilhe este código com ninguém. Ele dá acesso direto ao seu scanner.
+            </div>
+
+            <!-- Dispositivos registrados -->
+            <div class="scn-devices-section" id="scn-devices-wrap" style="display:none">
+              <div class="scn-devices-header">
+                <span class="scn-devices-title">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                  Meus dispositivos
+                </span>
+                <button class="scn-add-dev-btn" onclick="toggleAddDevice()" title="Adicionar">+</button>
+              </div>
+              <div id="scn-device-list"></div>
+              <div id="scn-add-dev-form" style="display:none">
+                <input id="scn-dev-code-inp" class="scn-dev-inp" placeholder="Código do celular (ex: MXK7P2)" maxlength="7"
+                       oninput="this.value=this.value.replace(/\s/g,'').toUpperCase()" onkeydown="if(event.key==='Enter')addDevice()">
+                <input id="scn-dev-name-inp" class="scn-dev-inp" placeholder="Nome (ex: iPhone da Milena)" onkeydown="if(event.key==='Enter')addDevice()">
+                <div style="display:flex;gap:8px">
+                  <button class="scn-dev-save-btn" onclick="addDevice()">Salvar</button>
+                  <button class="scn-dev-cancel-btn" onclick="toggleAddDevice()">Cancelar</button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /scn-pin-block -->
+          <p id="scn-qr-url" style="display:none"></p>
+          <p class="scn-qr-net-hint" id="scn-qr-net-hint" style="display:none"></p>
+
+        </div><!-- /scn-panel-body -->
+
+        <!-- Footer fixo -->
+        <div class="scn-panel-footer">
+          <div class="scn-phone-status" id="scn-phone-status">
+            <span class="scn-phone-dot" id="scn-phone-dot"></span>
+            <span id="scn-phone-status-txt">Aguardando celular…</span>
+          </div>
+          <div class="scn-phone-actions">
+            <button class="scn-refresh-btn" id="scn-refresh-btn" onclick="refreshPhoneQr()" title="Novo código">↻ Novo código</button>
+            <button class="scn-disconnect-btn" onclick="disconnectPhone()">Desconectar</button>
+          </div>
         </div>
-        <p class="scn-phone-hint-txt">Escaneie o QR code com seu celular<br>para usar a câmera do celular como scanner</p>
-        <button class="scn-disconnect-btn" onclick="disconnectPhone()" title="Encerrar sessão do celular">✕ Desconectar</button>
+
       </div>
 
       <!-- Câmera + frame -->
@@ -1385,6 +2000,9 @@
         <!-- Overlay escuro nas bordas -->
         <div class="scn-vignette" aria-hidden="true"></div>
 
+        <!-- Flash verde ao detectar um código -->
+        <div class="scn-flash" id="scn-flash" aria-hidden="true"></div>
+
         <!-- Frame animado -->
         <div class="scn-frame" aria-hidden="true">
           <!-- 4 cantos -->
@@ -1392,6 +2010,8 @@
           <div class="scn-corner scn-corner-tr"></div>
           <div class="scn-corner scn-corner-bl"></div>
           <div class="scn-corner scn-corner-br"></div>
+          <!-- Alvo pulsante: indica onde centralizar o produto -->
+          <div class="scn-center-pulse" aria-hidden="true"></div>
           <!-- Linha de scan -->
           <div class="scn-line" id="scn-line"></div>
         </div>
@@ -1492,7 +2112,29 @@
     </div>
   </div>
 
-  <script src="./app.js" defer></script>
+
+  <!-- ── Modal Consultar Produto ──────────────────────────── -->
+
+  <script src="./core.js" defer></script>
+  <script src="./app/ui.js" defer></script>
+  <script src="./app/extrato.js" defer></script>
+  <script src="./app/dashboard.js" defer></script>
+  <script src="./app/pedidos.js" defer></script>
+  <script src="./app/solicita.js" defer></script>
+  <script src="./app/estoque.js" defer></script>
+  <script src="./app/clientes.js" defer></script>
+  <script src="./app/catalogo.js" defer></script>
+  <script src="./app/pix.js" defer></script>
+  <script src="./app/vendas.js" defer></script>
+  <script src="./app/financeiro.js" defer></script>
+  <script src="./app/scanner.js" defer></script>
+  <script src="./app/consulta.js" defer></script>
+  <script src="./app/charts.js" defer></script>
+  <script src="./app/biometria.js" defer></script>
+  <script src="./app/loja.js" defer></script>
+  <script src="./app/notificacoes.js" defer></script>
+  <script src="./app/tour.js" defer></script>
+  <script src="./app/init.js" defer></script>
   <a href="grupolima.html" class="gl-badge">
     <span class="gl-badge-bars">
       <span class="gl-badge-bar"></span>
@@ -1518,7 +2160,7 @@
     <!-- Botão central — Nova Venda (FAB) — vai para a página de Nova Venda -->
     <button class="mob-tab mob-tab-fab" onclick="mobNav('nvenda')" data-page="nvenda" aria-label="Nova venda">
       <div class="mob-fab-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       </div>
       <span>Venda</span>
     </button>
@@ -1583,61 +2225,417 @@
     l.addEventListener('click', () => { if (window.innerWidth <= 768) closeSidebar(); });
   });
 
-  /* ── Release Modal ── */
+  /* ── Topbar user dropdown ── */
+  function toggleTbMenu() {
+    const menu = document.getElementById('tb-menu');
+    const btn  = document.getElementById('tb-usr-btn');
+    const open = menu.classList.toggle('on');
+    btn.setAttribute('aria-expanded', open);
+  }
+  function closeTbMenu() {
+    document.getElementById('tb-menu')?.classList.remove('on');
+    document.getElementById('tb-usr-btn')?.setAttribute('aria-expanded', 'false');
+  }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('tb-usr-btn')?.contains(e.target) &&
+        !document.getElementById('tb-menu')?.contains(e.target)) {
+      closeTbMenu();
+    }
+  });
+  /* Popula o user pill a partir do nome da sidebar */
+  /* initTbUser — chamado após DB.settings estar pronto (via window.onSettingsReady) */
+  window.initTbUser = function() {
+    const nm = (typeof DB !== 'undefined' && DB.settings?.displayName) || '';
+    if (!nm) return;
+    window._userName = nm;
+    const parts    = nm.split(' ');
+    const initials = (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+    const first    = parts[0];
+    const avEl = document.getElementById('tb-av');
+    const unEl = document.getElementById('tb-un');
+    if (avEl) avEl.textContent = initials;
+    if (unEl) unEl.textContent = first;
+  };
+
+  /* ── Release Modal — carrega release.html ── */
   (function () {
-    const KEY    = 'mlb_rl_v22';
-    const ov     = document.getElementById('rl-ov');
-    const blob   = document.getElementById('rl-blob');
-    const segs   = document.querySelectorAll('.rl-seg');
-    const scenes = document.querySelectorAll('.rl-scene');
-    let   cur    = 0;
+    const KEY = 'srt_rl_v1';
+    const ov  = document.getElementById('rl-ov');
 
-    const blobCfg = [
-      { color: 'rgba(196,137,122,.12)', x: '50%', y: '46%' },
-      { color: 'rgba(196,137,122,.18)', x: '37%', y: '52%' },
-      { color: 'rgba(217,119,6,.13)',   x: '63%', y: '40%' },
-      { color: 'rgba(99,102,241,.15)',  x: '45%', y: '57%' },
-      { color: 'rgba(196,137,122,.11)', x: '50%', y: '46%' },
-    ];
-
-    function applyBlob(n) {
-      const b = blobCfg[n] || blobCfg[0];
-      blob.style.backgroundColor = b.color;
-      blob.style.left = b.x;
-      blob.style.top  = b.y;
-    }
-
-    function applyStory(n) {
-      segs.forEach((s, i) => {
-        s.classList.remove('done', 'act');
-        if (i < n)  s.classList.add('done');
-        if (i === n) s.classList.add('act');
-      });
-    }
-
-    function show() { ov.classList.add('on'); applyBlob(0); applyStory(0); }
-
-    function goTo(n) {
-      scenes[cur].classList.remove('on');
-      scenes[cur].classList.add('out');
-      const prev = cur;
-      setTimeout(() => scenes[prev].classList.remove('out'), 560);
-      cur = n;
-      scenes[cur].classList.add('on');
-      applyBlob(n);
-      applyStory(n);
-    }
-
-    window.rlNext  = () => { if (cur < scenes.length - 1) goTo(cur + 1); };
     window.rlClose = () => {
       ov.classList.remove('on');
       ov.classList.add('out');
-      scenes.forEach(s => s.classList.remove('on'));
       localStorage.setItem(KEY, '1');
     };
-
-    if (!localStorage.getItem(KEY)) setTimeout(show, 500);
   })();
+
+  /* PWA: registra o service worker (cache do app shell p/ instalação) */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'nav' && e.data.link) {
+        if (window.innerWidth <= 768) mobNav(e.data.link);
+        else epage(e.data.link, null);
+      }
+    });
+  }
+  </script>
+
+  <!-- ── Modal: Configurações (Conta / Equipe / Financeiro) ── -->
+  <div class="cfg-backdrop" id="cfg-backdrop" onclick="closeCfgModal()"></div>
+  <div class="cfg-modal" id="cfg-modal" role="dialog" aria-label="Configurações">
+
+    <!-- Sidebar esquerda -->
+    <div class="cfg-sidebar">
+      <div class="cfg-sidebar-title">Configurações</div>
+      <button class="cfg-tab on" id="cfg-tab-conta" onclick="cfgTab('conta', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Conta
+      </button>
+      <button class="cfg-tab" id="cfg-tab-equipe" onclick="cfgTab('equipe', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Equipe
+      </button>
+      <button class="cfg-tab" id="cfg-tab-financeiro" onclick="cfgTab('financeiro', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+        Financeiro
+      </button>
+    </div>
+
+    <!-- Área de conteúdo -->
+    <div class="cfg-content">
+      <button class="cfg-close" onclick="closeCfgModal()" aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <!-- Painel Conta -->
+      <div class="cfg-panel on" id="cfg-panel-conta">
+        <h3>Minha Conta</h3>
+        <div class="cfg-avatar-row">
+          <div class="cfg-av" id="cfg-av">M</div>
+          <div>
+            <div class="cfg-av-name" id="cfg-av-name">—</div>
+            <div class="cfg-av-email" id="cfg-av-email">—</div>
+          </div>
+        </div>
+        <label class="form-label full" style="margin-bottom:18px">Seu nome
+          <input type="text" class="input-field" id="cfg-nome" placeholder="Ex: Milena Lima" autocomplete="name" style="margin-top:6px">
+        </label>
+        <button class="btn btn-primary" style="height:40px;font-size:14px;min-width:140px" onclick="saveCfgConta()">
+          <div class="bi"><div class="sp"></div><span class="lbl">Salvar</span></div>
+        </button>
+      </div>
+
+      <!-- Painel Equipe -->
+      <div class="cfg-panel" id="cfg-panel-equipe">
+        <div class="cfg-panel-hd">
+          <h3>Equipe</h3>
+          <button class="btn btn-primary" id="cfg-equipe-invite-btn" onclick="openEquipeInvite()" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Convidar membro
+          </button>
+        </div>
+        <div class="equipe-list" id="cfg-equipe-list"></div>
+
+        <!-- Modal inline de convite -->
+        <div class="cfg-invite-box" id="cfg-invite-box" style="display:none">
+          <div class="cfg-invite-hd">
+            <span>Convidar membro</span>
+            <button onclick="closeCfgInvite()" class="cfg-close-inline" aria-label="Fechar">✕</button>
+          </div>
+          <label class="form-label full" style="margin-bottom:12px">Nome
+            <input type="text" class="input-field" id="inv-nome" placeholder="Ex: Kauã Lima" autocomplete="name" style="margin-top:6px">
+          </label>
+          <label class="form-label full" style="margin-bottom:12px">E-mail
+            <input type="email" class="input-field" id="inv-email" placeholder="email@exemplo.com" inputmode="email" style="margin-top:6px">
+          </label>
+          <label class="form-label full" style="margin-bottom:16px">Cargo
+            <select class="input-field" id="inv-role" style="margin-top:6px">
+              <option value="funcionario">Funcionário</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+          <div class="alert" id="inv-alert" style="display:none"></div>
+          <button class="btn btn-primary btn-block" id="inv-send-btn" onclick="sendEquipeInvite()">
+            <div class="bi"><div class="sp"></div><span class="lbl">Enviar convite</span></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Painel Financeiro -->
+      <div class="cfg-panel" id="cfg-panel-financeiro">
+        <h3>Financeiro</h3>
+        <label class="form-label full" style="margin-bottom:16px">Número WhatsApp <small style="font-weight:400;opacity:.55">(só números)</small>
+          <input type="text" class="input-field" id="cfg-wa" placeholder="5511999999999" style="margin-top:6px">
+        </label>
+        <label class="form-label full" style="margin-bottom:8px">Chave PIX <small style="font-weight:400;opacity:.55">(CPF, e-mail, telefone ou chave aleatória)</small>
+          <input type="text" class="input-field" id="cfg-pix" placeholder="00000000000" style="margin-top:6px">
+        </label>
+        <div class="pix-status-row" style="margin-bottom:20px">
+          <span class="pix-badge" id="cfg-pix-badge" style="display:none"></span>
+          <button type="button" class="pix-retest-btn" id="cfg-pix-retest" style="display:none" onclick="cfgPixRetest()">🔄 Testar novamente</button>
+        </div>
+        <button class="btn btn-primary" style="height:40px;font-size:14px;min-width:140px" onclick="saveCfgFinanceiro()">
+          <div class="bi"><div class="sp"></div><span class="lbl">Salvar</span></div>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+  /* ── Modal Configurações ── */
+  async function openCfgModal(tab) {
+    tab = tab || 'conta';
+
+    /* Preencher aba Conta */
+    const nome = DB?.settings?.displayName || '';
+    const nmInp = document.getElementById('cfg-nome');
+    const avEl  = document.getElementById('cfg-av');
+    const avNm  = document.getElementById('cfg-av-name');
+    const avEm  = document.getElementById('cfg-av-email');
+    if (nmInp) nmInp.value = nome;
+    if (avNm)  avNm.textContent = nome || '—';
+    if (avEl && nome) {
+      const p = nome.split(' ');
+      avEl.textContent = (p[0][0] + (p[1]?.[0] || '')).toUpperCase();
+    }
+    try {
+      const session = await SBAuth.getSession();
+      if (avEm) avEm.textContent = session?.user?.email || '';
+    } catch(e) {}
+
+    /* Preencher aba Financeiro */
+    const s = DB?.settings || {};
+    const waInp  = document.getElementById('cfg-wa');
+    const pixInp = document.getElementById('cfg-pix');
+    const badge  = document.getElementById('cfg-pix-badge');
+    const retest = document.getElementById('cfg-pix-retest');
+    if (waInp)  waInp.value  = s.whatsapp || '';
+    if (pixInp) pixInp.value = s.pix || '';
+    if (badge && retest) {
+      if (!s.pix) {
+        badge.style.display  = 'none';
+        retest.style.display = 'none';
+      } else if (s.pixVerified) {
+        badge.className      = 'pix-badge pix-badge-ok';
+        badge.textContent    = '✓ Pix verificado';
+        badge.style.display  = '';
+        retest.style.display = '';
+      } else {
+        badge.className      = 'pix-badge pix-badge-warn';
+        badge.textContent    = '⚠ Não verificado';
+        badge.style.display  = '';
+        retest.style.display = '';
+      }
+    }
+
+    /* Selecionar aba */
+    cfgTab(tab, document.getElementById('cfg-tab-' + tab));
+
+    /* Se aba equipe, carregar lista */
+    if (tab === 'equipe') _cfgLoadEquipe();
+
+    /* Abrir modal */
+    document.getElementById('cfg-modal')?.classList.add('open');
+    document.getElementById('cfg-backdrop')?.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    if (tab === 'conta') setTimeout(() => nmInp?.focus(), 80);
+  }
+
+  function closeCfgModal() {
+    document.getElementById('cfg-modal')?.classList.remove('open');
+    document.getElementById('cfg-backdrop')?.classList.remove('on');
+    document.body.style.overflow = '';
+    closeCfgInvite();
+  }
+
+  function cfgTab(id, btn) {
+    document.querySelectorAll('.cfg-panel').forEach(p => p.classList.remove('on'));
+    document.querySelectorAll('.cfg-tab').forEach(b => b.classList.remove('on'));
+    const panel = document.getElementById('cfg-panel-' + id);
+    if (panel) panel.classList.add('on');
+    if (btn)   btn.classList.add('on');
+    /* Carregar equipe ao entrar na aba */
+    if (id === 'equipe') _cfgLoadEquipe();
+  }
+
+  function _cfgLoadEquipe() {
+    /* Ajusta visibilidade do botão de convite */
+    const isAdmin = window._tenantRole === 'admin';
+    const invBtn  = document.getElementById('cfg-equipe-invite-btn');
+    if (invBtn) invBtn.style.display = isAdmin ? '' : 'none';
+
+    /* Reutiliza a lógica de equipe.js mas aponta para cfg-equipe-list */
+    const wrap = document.getElementById('cfg-equipe-list');
+    if (!wrap) return;
+    wrap.innerHTML = '<p class="equipe-loading">Carregando…</p>';
+
+    if (typeof SBTeam === 'undefined') {
+      wrap.innerHTML = '<p class="equipe-empty">SBTeam não disponível.</p>';
+      return;
+    }
+
+    SBTeam.list(window._tenant?.id).then(members => {
+      if (!members || !members.length) {
+        wrap.innerHTML = '<p class="equipe-empty">Nenhum membro ainda. Execute migration_team.sql para ativar.</p>';
+        return;
+      }
+      wrap.innerHTML = members.map(m => `
+        <div class="equipe-card" data-id="${m.id}">
+          <div class="equipe-av">${(m.nome || '?')[0].toUpperCase()}</div>
+          <div class="equipe-info">
+            <div class="equipe-nome">${esc(m.nome || 'Sem nome')}</div>
+            <div class="equipe-role ${m.role}">${m.role === 'admin' ? 'Admin' : 'Funcionário'}</div>
+          </div>
+          ${isAdmin ? `
+          <div class="equipe-actions">
+            <button class="equipe-role-btn" title="Alterar cargo"
+              onclick="toggleMemberRole('${m.id}','${m.role}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="equipe-del-btn" title="Remover"
+              onclick="removeMember('${m.id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>` : ''}
+        </div>
+      `).join('');
+    }).catch(e => {
+      const msg = e.message?.includes('does not exist')
+        ? 'Execute migration_team.sql no Supabase para ativar a equipe.'
+        : esc(e.message);
+      wrap.innerHTML = `<p class="equipe-empty" style="color:var(--tx-s)">${msg}</p>`;
+    });
+  }
+
+  /* Sobrescreve toggleMemberRole e removeMember para recarregar a lista do cfg */
+  const _origToggleMemberRole = typeof toggleMemberRole === 'function' ? toggleMemberRole : null;
+  const _origRemoveMember     = typeof removeMember === 'function' ? removeMember : null;
+
+  async function toggleMemberRole(id, currentRole) {
+    const newRole = currentRole === 'admin' ? 'funcionario' : 'admin';
+    try {
+      await SBTeam.updateRole(id, window._tenant?.id, newRole);
+      showToast(`Cargo alterado para ${newRole === 'admin' ? 'Admin' : 'Funcionário'}`, 'ok');
+      _cfgLoadEquipe();
+    } catch(e) { showToast(e.message, 'err'); }
+  }
+
+  async function removeMember(id) {
+    if (!confirm('Remover este membro do painel?')) return;
+    try {
+      await SBTeam.remove(id, window._tenant?.id);
+      showToast('Membro removido', 'ok');
+      _cfgLoadEquipe();
+    } catch(e) { showToast(e.message, 'err'); }
+  }
+
+  /* Modal inline de convite */
+  function openEquipeInvite() {
+    const invBox = document.getElementById('cfg-invite-box');
+    const invNm  = document.getElementById('inv-nome');
+    const invEm  = document.getElementById('inv-email');
+    const invRl  = document.getElementById('inv-role');
+    const invAl  = document.getElementById('inv-alert');
+    if (invNm)  invNm.value  = '';
+    if (invEm)  invEm.value  = '';
+    if (invRl)  invRl.value  = 'funcionario';
+    if (invAl)  invAl.style.display = 'none';
+    if (invBox) { invBox.style.display = ''; setTimeout(() => invNm?.focus(), 60); }
+  }
+
+  function closeCfgInvite() {
+    const invBox = document.getElementById('cfg-invite-box');
+    if (invBox) invBox.style.display = 'none';
+  }
+
+  async function sendEquipeInvite() {
+    const email = document.getElementById('inv-email')?.value?.trim();
+    const nome  = document.getElementById('inv-nome')?.value?.trim();
+    const role  = document.getElementById('inv-role')?.value || 'funcionario';
+    const alertEl = document.getElementById('inv-alert');
+    if (!email) { if (alertEl) { alertEl.textContent = 'Informe o e-mail.'; alertEl.style.display = 'block'; } return; }
+    const btn = document.getElementById('inv-send-btn');
+    if (btn) { btn.disabled = true; btn.classList.add('ld'); }
+    if (alertEl) alertEl.style.display = 'none';
+    try {
+      await SBTeam.invite({ email, nome, role, tenantId: window._tenant?.id });
+      if (btn) { btn.disabled = false; btn.classList.remove('ld'); }
+      showToast('Convite enviado ✓', 'ok');
+      closeCfgInvite();
+      _cfgLoadEquipe();
+    } catch(e) {
+      if (btn) { btn.disabled = false; btn.classList.remove('ld'); }
+      if (alertEl) { alertEl.textContent = e.message; alertEl.style.display = 'block'; }
+    }
+  }
+
+  /* Salvar aba Conta */
+  async function saveCfgConta() {
+    const nome = document.getElementById('cfg-nome')?.value?.trim();
+    if (!nome) return;
+    const btn = document.querySelector('#cfg-panel-conta .btn');
+    if (btn) { btn.classList.add('ld'); btn.disabled = true; }
+    try {
+      DB.settings.displayName = nome;
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(DB.settings)); } catch(ee) {}
+      await SBSettings.set(DB.settings, window._tenant?.id);
+      window._userName = nome;
+      const parts = nome.split(' ');
+      const first = parts[0];
+      const ini   = (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+      const unEl  = document.getElementById('tb-un');
+      const avEl2 = document.getElementById('tb-av');
+      const emhN  = document.getElementById('emh-name');
+      const cfgAv = document.getElementById('cfg-av');
+      const cfgNm = document.getElementById('cfg-av-name');
+      if (unEl)  unEl.textContent  = first;
+      if (avEl2) avEl2.textContent = ini;
+      if (cfgAv) cfgAv.textContent = ini;
+      if (cfgNm) cfgNm.textContent = nome;
+      if (emhN) { const h = new Date().getHours(); const g = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; emhN.innerHTML = `${g}, <b>${first}</b>`; }
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Nome atualizado ✓', 'ok');
+    } catch(e) {
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Erro ao salvar', 'err');
+    }
+  }
+
+  /* Salvar aba Financeiro */
+  async function saveCfgFinanceiro() {
+    const btn    = document.querySelector('#cfg-panel-financeiro .btn');
+    const newWa  = (document.getElementById('cfg-wa')?.value  || '').replace(/\D/g, '');
+    const newPix = (document.getElementById('cfg-pix')?.value || '').trim();
+    const oldPix = DB.settings.pix || '';
+    if (btn) { btn.classList.add('ld'); btn.disabled = true; }
+    try {
+      DB.settings.whatsapp = newWa;
+      if (newPix !== oldPix) {
+        /* Alterar Pix exige confirmação de senha — pixRequestChange usará cfg-pix como campo de retorno */
+        DB.settings.whatsapp = newWa;
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(DB.settings)); } catch(ee) {}
+        sbSync(() => SBSettings.set(DB.settings, window._tenant?.id));
+        if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+        pixRequestChange(newPix, oldPix);
+        return;
+      }
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(DB.settings)); } catch(ee) {}
+      sbSync(() => SBSettings.set(DB.settings, window._tenant?.id));
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Configurações salvas ✓', 'ok');
+    } catch(e) {
+      if (btn) { btn.classList.remove('ld'); btn.disabled = false; }
+      showToast('Erro ao salvar', 'err');
+    }
+  }
+
+  /* Retest Pix a partir da aba Financeiro */
+  function cfgPixRetest() {
+    if (!DB.settings.pix) return;
+    pixRequestChange(DB.settings.pix, DB.settings.pix);
+  }
   </script>
 </body>
 </html>

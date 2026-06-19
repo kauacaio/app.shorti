@@ -29,25 +29,20 @@ const mime = {
   '.woff': 'font/woff',
 };
 
-let _tunnelUrl  = null;  // preenchido quando localtunnel conectar
-let _externalIp = null;  // IP público da máquina (senha do localtunnel)
+let _tunnelUrl = null;
 
-/* ── Handler de requisições (compartilhado entre HTTP e HTTPS) ── */
+/* ── Handler de requisições ─────────────────────── */
 function handler(req, res) {
-  /* CORS para o localtunnel funcionar */
-  res.setHeader('Access-Control-Allow-Origin', '*');
-
-  const parsed = url.parse(req.url);
+  const parsed = url.parse(req.url, true);
   let pathname = parsed.pathname;
 
-  /* Endpoint: retorna URL do túnel + IP externo (senha do localtunnel) */
+  /* Endpoint: retorna URL do túnel */
   if (pathname === '/api/tunnel') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ url: _tunnelUrl, password: _externalIp }));
+    res.end(JSON.stringify({ url: _tunnelUrl }));
     return;
   }
 
-  /* Arquivos estáticos */
   if (pathname === '/' || pathname === '') pathname = '/index.html';
 
   /* Bloqueia acesso direto aos certificados */
@@ -68,7 +63,7 @@ function handler(req, res) {
   });
 }
 
-/* ── Servidor HTTPS — porta 3000 (PC) ── */
+/* ── Servidor HTTPS — porta 3000 (PC, rede local) ── */
 const tlsOpts = {
   key:  fs.readFileSync(path.join(__dirname, 'key.pem')),
   cert: fs.readFileSync(path.join(__dirname, 'cert.pem')),
@@ -77,13 +72,13 @@ https.createServer(tlsOpts, handler).listen(3000, '0.0.0.0', () => {
   console.log('✅ HTTPS  → https://192.168.3.48:3000/erp.html');
 });
 
-/* ── Servidor HTTP — porta 3001 (localtunnel) ── */
+/* ── Servidor HTTP — porta 3001 (exposta via túnel SSH) ── */
 http.createServer(handler).listen(3001, '127.0.0.1', () => {
-  console.log('🔁 HTTP   → http://localhost:3001  (para localtunnel)');
+  console.log('🔁 HTTP   → http://localhost:3001  (para o túnel SSH)');
   startTunnel();
 });
 
-/* ── Túnel SSH via serveo.net (HTTPS válido, sem senha) ── */
+/* ── Túnel SSH via serveo.net ── */
 function startTunnel() {
   console.log('🌐 Iniciando túnel SSH (serveo.net)...');
 
@@ -95,33 +90,20 @@ function startTunnel() {
     'serveo.net'
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
 
+  function parseUrl(text) {
+    const match = text.match(/https?:\/\/[^\s]+serveousercontent\.com/i);
+    if (match && !_tunnelUrl) {
+      _tunnelUrl = match[0].replace(/^http:/, 'https:');
+      console.log('');
+      console.log('📱 Celular → escaneie o QR no ERP');
+      console.log('   ' + _tunnelUrl + '/mobile-scan.html');
+      console.log('');
+    }
+  }
+
   let buf = '';
-  tun.stdout.on('data', (data) => {
-    buf += data.toString();
-    console.log('[tunnel]', data.toString().trim());
-
-    const match = buf.match(/https?:\/\/[^\s]+serveousercontent\.com/i);
-    if (match && !_tunnelUrl) {
-      _tunnelUrl = match[0].replace(/^http:/, 'https:');
-      console.log('');
-      console.log('📱 QR code URL (celular):');
-      console.log('   ' + _tunnelUrl + '/mobile-scan.html');
-      console.log('');
-    }
-  });
-
-  tun.stderr.on('data', (d) => {
-    const line = d.toString().trim();
-    console.log('[tunnel]', line);
-    const match = line.match(/https?:\/\/[^\s]+serveousercontent\.com/i);
-    if (match && !_tunnelUrl) {
-      _tunnelUrl = match[0].replace(/^http:/, 'https:');
-      console.log('');
-      console.log('📱 QR code URL (celular):');
-      console.log('   ' + _tunnelUrl + '/mobile-scan.html');
-      console.log('');
-    }
-  });
+  tun.stdout.on('data', d => { buf += d.toString(); console.log('[tunnel]', d.toString().trim()); parseUrl(buf); });
+  tun.stderr.on('data', d => { const l = d.toString().trim(); console.log('[tunnel]', l); parseUrl(l); });
 
   tun.on('close', (code) => {
     console.warn(`[tunnel] encerrado (${code}) — reiniciando em 8s...`);

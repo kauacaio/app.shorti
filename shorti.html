@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shorti — Direto ao ponto.</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,700;1,900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #1B44B8;
+      --tx:   #0F172A;
+      --txm:  #64748B;
+      --txs:  #94A3B8;
+      --bd:   #E2E8F0;
+      --dark: #04060C;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--dark); color: #fff; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    ::selection { background: var(--blue); color: #fff; }
+
+    /* ══ NAV ══════════════════════════════════ */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 58px; display: flex; align-items: center;
+      transition: background .4s, border-color .4s;
+      border-bottom: 1px solid transparent;
+    }
+    .nav.lit { background: rgba(255,255,255,.92); border-color: var(--bd); backdrop-filter: blur(20px); }
+    .nav-in { max-width: 1000px; margin: 0 auto; padding: 0 36px; width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+    .lb { display: flex; align-items: flex-end; gap: 2.5px; }
+    .lb span { border-radius: 2px; transform: skewX(-14deg); transition: background .4s; }
+    .lb span:nth-child(1) { width: 3.5px; height: 9px; opacity: .45; }
+    .lb span:nth-child(2) { width: 4px; height: 13px; }
+    .nav    .lb span { background: rgba(255,255,255,.6); }
+    .nav.lit .lb span { background: var(--blue); }
+    .lw { font-size: 19px; font-weight: 900; letter-spacing: -.06em; transition: color .4s; }
+    .nav    .lw { color: #fff; }
+    .nav.lit .lw { color: var(--tx); }
+    .lw b { transition: color .4s; }
+    .nav    .lw b { color: rgba(107,152,255,.9); }
+    .nav.lit .lw b { color: var(--blue); }
+    .nav-cta {
+      font: 600 13px/1 'Inter', sans-serif; text-decoration: none;
+      padding: 9px 18px; border-radius: 8px;
+      transition: all .25s;
+      border: 1.5px solid rgba(255,255,255,.2); color: rgba(255,255,255,.75);
+    }
+    .nav.lit .nav-cta { background: var(--blue); color: #fff; border-color: transparent; box-shadow: 0 2px 14px rgba(27,68,184,.28); }
+    .nav-cta:hover { transform: translateY(-1px); }
+
+    /* ══ HERO ══════════════════════════════════ */
+    .hero {
+      position: fixed; top: 0; left: 0; right: 0; height: 100vh; z-index: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; overflow: hidden; background: var(--dark);
+    }
+    /* grid */
+    .hero-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(107,152,255,.15) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+    /* top glow */
+    .hero-glow {
+      position: absolute; top: -180px; left: 50%; transform: translateX(-50%);
+      width: 640px; height: 480px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(27,68,184,.2) 0%, transparent 65%);
+      pointer-events: none;
+      animation: glow-pulse 6s ease-in-out infinite;
+    }
+    @keyframes glow-pulse { 0%,100%{opacity:.8;transform:translateX(-50%) scale(1)} 50%{opacity:1;transform:translateX(-50%) scale(1.08)} }
+
+    /* badge */
+    .h-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(255,255,255,.1); border-radius: 100px;
+      padding: 5px 14px 5px 9px; background: rgba(255,255,255,.05);
+      font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.45);
+      margin-bottom: 36px; position: relative; z-index: 1;
+      opacity: 0; animation: up .5s ease .08s forwards;
+    }
+    .bdot { width: 6px; height: 6px; border-radius: 50%; background: #4D7EFF; }
+
+    /* wordmark */
+    .h-wm {
+      font-size: clamp(96px, 16vw, 210px); font-weight: 900;
+      letter-spacing: -.06em; line-height: .85;
+      color: #fff; position: relative; z-index: 1;
+      user-select: none; cursor: default;
+    }
+    .wl { display: inline-block; opacity: 0; animation: lpop .65s cubic-bezier(.34,1.56,.64,1) both; transition: transform .28s cubic-bezier(.34,1.56,.64,1); }
+    .wl-dot { background: linear-gradient(135deg, #4D7EFF 0%, #A78BFA 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation-delay: .44s !important; }
+    .wl:nth-child(1){animation-delay:.08s}.wl:nth-child(2){animation-delay:.14s}
+    .wl:nth-child(3){animation-delay:.20s}.wl:nth-child(4){animation-delay:.26s}
+    .wl:nth-child(5){animation-delay:.32s}.wl:nth-child(6){animation-delay:.38s}
+    @keyframes lpop { from{opacity:0;transform:translateY(20px) scale(.9)} to{opacity:1;transform:none} }
+
+    /* phrase */
+    .h-phrase {
+      font-size: clamp(16px, 2.2vw, 22px); font-weight: 300;
+      color: rgba(255,255,255,.45); margin-top: 20px;
+      position: relative; z-index: 1;
+      opacity: 0; animation: up .7s ease .55s forwards;
+    }
+    .h-phrase strong { font-weight: 800; color: rgba(255,255,255,.85); font-style: italic; }
+
+    /* cta */
+    .h-cta {
+      margin-top: 40px; position: relative; z-index: 1;
+      opacity: 0; animation: up .7s ease .68s forwards;
+    }
+    .btn-w {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; color: var(--dark);
+      border: none; border-radius: 10px; padding: 14px 28px;
+      font: 700 15px/1 'Inter', sans-serif; text-decoration: none;
+      box-shadow: 0 4px 28px rgba(255,255,255,.12);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-w:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(255,255,255,.2); }
+
+    /* scroll cue */
+    .sc {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+      opacity: 0; animation: up .6s ease 1.1s forwards;
+    }
+    .sc-line { width: 1px; height: 40px; overflow: hidden; }
+    .sc-fill { width: 100%; height: 100%; background: rgba(255,255,255,.25); animation: scl 1.8s ease infinite; }
+    @keyframes scl { 0%{transform:translateY(-100%)} 50%{transform:translateY(0)} 100%{transform:translateY(100%)} }
+    .sc-lbl { font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.2); }
+
+    /* spacer */
+    .spacer { height: 100vh; }
+
+    /* ══ CONTENT (slides over dark hero) ════════ */
+    #content { position: relative; z-index: 2; }
+    #content > *:first-child { box-shadow: 0 -40px 80px rgba(0,0,0,.45); }
+
+    /* ══ FEATURES LIST ══════════════════════════ */
+    .feat {
+      background: #fff; color: var(--tx);
+      padding: 100px 36px;
+    }
+    .feat-in { max-width: 1000px; margin: 0 auto; }
+    .feat-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding-bottom: 32px; border-bottom: 1px solid var(--bd);
+      margin-bottom: 0;
+    }
+    .feat-title { font-size: clamp(28px,4vw,44px); font-weight: 900; letter-spacing: -.045em; color: var(--tx); }
+    .feat-title em { font-style: italic; color: var(--blue); }
+    .feat-by { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--txs); }
+    .feat-rows { }
+    .feat-row {
+      display: grid; grid-template-columns: 48px 1fr 1fr;
+      align-items: center; gap: 24px;
+      padding: 28px 0; border-bottom: 1px solid var(--bd);
+      opacity: 0; transform: translateY(16px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .feat-row.on { opacity: 1; transform: none; }
+    .feat-row:nth-child(1){transition-delay:.0s}
+    .feat-row:nth-child(2){transition-delay:.07s}
+    .feat-row:nth-child(3){transition-delay:.14s}
+    .feat-row:nth-child(4){transition-delay:.21s}
+    .feat-row:nth-child(5){transition-delay:.28s}
+    .fr-num { font-size: 11px; font-weight: 800; color: var(--blue); letter-spacing: .06em; }
+    .fr-name { font-size: clamp(18px,2.5vw,26px); font-weight: 800; letter-spacing: -.03em; color: var(--tx); }
+    .fr-desc { font-size: 14px; color: var(--txm); line-height: 1.5; }
+    @media(max-width:640px) {
+      .feat-row { grid-template-columns: 36px 1fr; }
+      .fr-desc { display: none; }
+    }
+
+    /* ══ QUOTE ══════════════════════════════════ */
+    .quote {
+      background: var(--blue); padding: 100px 36px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .quote::before {
+      content: 'Shorti.'; position: absolute;
+      font-size: clamp(120px,20vw,260px); font-weight: 900;
+      letter-spacing: -.06em; color: rgba(255,255,255,.05);
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      white-space: nowrap; user-select: none; pointer-events: none; line-height: 1;
+    }
+    .qt-in { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+    .qt-text {
+      font-size: clamp(36px,5.5vw,72px); font-weight: 900;
+      letter-spacing: -.045em; line-height: .93; color: #fff;
+      opacity: 0; transform: translateY(24px);
+      transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1);
+    }
+    .qt-text em { font-style: italic; color: rgba(255,255,255,.42); }
+    .qt-text.on { opacity: 1; transform: none; }
+    .qt-src { margin-top: 28px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.3); opacity: 0; transition: opacity .5s ease .3s; }
+    .qt-src.on { opacity: 1; }
+
+    /* ══ CTA DARK ════════════════════════════════ */
+    .cta {
+      background: var(--dark); padding: 140px 36px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta::before {
+      content: ''; position: absolute; top: -160px; left: 50%; transform: translateX(-50%);
+      width: 560px; height: 440px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(27,68,184,.18) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-in { position: relative; z-index: 1; max-width: 540px; margin: 0 auto; }
+    .cta-h {
+      font-size: clamp(52px,9vw,108px); font-weight: 900;
+      letter-spacing: -.055em; line-height: .88; color: #fff; margin-bottom: 16px;
+    }
+    .cta-h em { font-style: italic; background: linear-gradient(135deg,#4D7EFF,#A78BFA); -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .cta-sub { font-size: 17px; color: rgba(255,255,255,.38); margin-bottom: 44px; }
+    .cta-note { margin-top: 20px; font-size: 12px; color: rgba(255,255,255,.2); }
+
+    /* ══ FOOTER ══════════════════════════════════ */
+    footer { background: var(--dark); border-top: 1px solid rgba(255,255,255,.06); padding: 32px 36px; }
+    .foot-in { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+    .foot-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+    .flb { display: flex; align-items: flex-end; gap: 2px; }
+    .flb span { background: var(--blue); border-radius: 1.5px; transform: skewX(-14deg); }
+    .flb span:nth-child(1){width:3px;height:8px;opacity:.45}.flb span:nth-child(2){width:3.5px;height:11px}
+    .flwm { font-size: 16px; font-weight: 900; letter-spacing: -.05em; color: rgba(255,255,255,.7); }
+    .flwm b { color: #6B98FF; }
+    .foot-copy { font-size: 12px; color: rgba(255,255,255,.22); }
+    .foot-lk { font-size: 13px; color: rgba(255,255,255,.25); text-decoration: none; transition: color .14s; }
+    .foot-lk:hover { color: rgba(255,255,255,.55); }
+    @media(max-width:560px){.foot-in{flex-direction:column;text-align:center}}
+
+    /* ══ SHARED ══════════════════════════════════ */
+    @keyframes up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+    .rv { opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
+    .rv.on { opacity:1; transform:none; }
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <a href="#" class="logo">
+      <div class="lb"><span></span><span></span></div>
+      <div class="lw">Shorti<b>.</b></div>
+    </a>
+    <a href="login.html" class="nav-cta">Entrar →</a>
+  </div>
+</nav>
+
+<!-- HERO — fixo, escuro -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+
+  <div class="h-badge"><span class="bdot"></span>ERP · GrupoLima</div>
+
+  <div class="h-wm" id="wm" aria-label="Shorti.">
+    <span class="wl">S</span><span
+    class="wl">h</span><span
+    class="wl">o</span><span
+    class="wl">r</span><span
+    class="wl">t</span><span
+    class="wl">i</span><span
+    class="wl wl-dot">.</span>
+  </div>
+
+  <p class="h-phrase">
+    Você não precisa de sorte.<br>
+    <strong>Precisa de Shorti.</strong>
+  </p>
+
+  <div class="h-cta">
+    <a href="login.html" class="btn-w">
+      Entrar no painel
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <div class="sc">
+    <div class="sc-line"><div class="sc-fill"></div></div>
+    <span class="sc-lbl">role</span>
+  </div>
+</section>
+
+<!-- Spacer empurra o conteúdo branco para baixo -->
+<div class="spacer"></div>
+
+<!-- CONTEÚDO sobe sobre o hero escuro -->
+<div id="content">
+
+  <!-- FEATURES -->
+  <section class="feat">
+    <div class="feat-in">
+      <div class="feat-head rv">
+        <h2 class="feat-title">Tudo que você precisa.<br><em>Nada mais.</em></h2>
+        <span class="feat-by">Shorti ERP</span>
+      </div>
+      <div class="feat-rows" id="featRows">
+        <div class="feat-row">
+          <span class="fr-num">01</span>
+          <span class="fr-name">Dashboard</span>
+          <span class="fr-desc">Vendas, estoque e métricas. Em tempo real. Uma tela.</span>
+        </div>
+        <div class="feat-row">
+          <span class="fr-num">02</span>
+          <span class="fr-name">Estoque</span>
+          <span class="fr-desc">Cadastro, quantidades e alertas. Nunca mais fica sem produto.</span>
+        </div>
+        <div class="feat-row">
+          <span class="fr-num">03</span>
+          <span class="fr-name">Vendas</span>
+          <span class="fr-desc">Registre cada transação. Histórico completo, filtros por período.</span>
+        </div>
+        <div class="feat-row">
+          <span class="fr-num">04</span>
+          <span class="fr-name">Scanner</span>
+          <span class="fr-desc">Câmera do celular vira leitor de código de barras. Zero digitação.</span>
+        </div>
+        <div class="feat-row">
+          <span class="fr-num">05</span>
+          <span class="fr-name">Sem fio</span>
+          <span class="fr-desc">Celular como scanner remoto via QR code. Sem cabo, sem app extra.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE -->
+  <section class="quote" id="qt">
+    <div class="qt-in">
+      <p class="qt-text">Short no nome.<br><em>Grande nos resultados.</em></p>
+      <p class="qt-src">GrupoLima · Shorti ERP</p>
+    </div>
+  </section>
+
+  <!-- CTA DARK — volta ao escuro -->
+  <section class="cta">
+    <div class="cta-in">
+      <h2 class="cta-h rv">Chega de<br><em>planilha.</em></h2>
+      <p class="cta-sub rv d1">Entre agora. Organize tudo.</p>
+      <div class="rv d2">
+        <a href="login.html" class="btn-w">
+          Entrar no Shorti
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <p class="cta-note rv d3">Desenvolvido por GrupoLima</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot-in">
+      <a href="#" class="foot-logo">
+        <div class="flb"><span></span><span></span></div>
+        <div class="flwm">Shorti<b>.</b></div>
+      </a>
+      <div class="foot-copy">© 2026 GrupoLima</div>
+      <a href="grupolima.html" class="foot-lk">GrupoLima →</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* WORDMARK WAVE */
+const wls = [...document.querySelectorAll('.wl')];
+function wave(i) { wls.forEach((l,j)=>{ const d=Math.abs(i-j); l.style.transform=`translateY(-${[12,6,2,0][Math.min(d,3)]}px)`; }); }
+wls.forEach((l,i)=>{ l.addEventListener('mouseenter',()=>wave(i)); l.addEventListener('mouseleave',()=>wls.forEach(l=>l.style.transform='')); });
+
+/* NAV TRANSFORM */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('lit', window.scrollY > window.innerHeight * .5);
+}, { passive: true });
+
+/* FEATURE ROWS REVEAL */
+const rows = document.querySelectorAll('.feat-row');
+const rowIO = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); rowIO.unobserve(e.target); } });
+}, { threshold: 0.2 });
+rows.forEach(r => rowIO.observe(r));
+
+/* QUOTE REVEAL */
+const qt = document.getElementById('qt');
+const qtTxt = qt.querySelector('.qt-text');
+const qtSrc = qt.querySelector('.qt-src');
+const qtIO = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { qtTxt.classList.add('on'); qtSrc.classList.add('on'); qtIO.disconnect(); } });
+}, { threshold: .3 });
+qtIO.observe(qt);
+
+/* SCROLL REVEALS */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+}, { threshold: .1 });
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

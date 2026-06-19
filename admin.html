@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Shorti — Painel GrupoLima</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: #F8FAFC;
+      color: #0F172A;
+    }
+
+    :root {
+      --blue:   #1B44B8;
+      --blue-h: #1538A0;
+      --blue-l: #EFF4FF;
+      --ok:     #10B981;
+      --err:    #EF4444;
+      --tx:     #0F172A;
+      --tx-m:   #64748B;
+      --tx-s:   #94A3B8;
+      --bd:     #E2E8F0;
+      --surf:   #fff;
+    }
+
+    /* ── Toast ──────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: #0F172A; color: #fff;
+      padding: 10px 20px; border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 9999; white-space: nowrap;
+    }
+    .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Gate MFA ────────────────────────────────────── */
+    .gate {
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      padding: 24px;
+      background: linear-gradient(170deg, #0d1117 0%, #0f1f4a 35%, #1a2d7a 65%, #1d4ed8 100%);
+    }
+    .gate-box {
+      width: 100%; max-width: 360px;
+      background: #fff; border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.30);
+    }
+    .gate-logo {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 20px; font-weight: 900; letter-spacing: -.04em;
+      margin-bottom: 24px; justify-content: center;
+    }
+    .gate-logo img { width: 28px; height: 28px; border-radius: 8px; }
+    .gate-logo .dot { color: #7C3AED; }
+    .gate-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: #1B44B8;
+      background: #EFF4FF; border: 1px solid #C7D7FD;
+      border-radius: 20px; padding: 3px 10px;
+    }
+
+    .gate-title { font-size: 16px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+    .gate-desc  { font-size: 12.5px; color: var(--tx-m); line-height: 1.55; margin-bottom: 20px; }
+
+    .gate-qr { display: flex; justify-content: center; margin-bottom: 8px; }
+    .gate-qr img { border: 1px solid var(--bd); border-radius: 10px; }
+    .gate-secret {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 11px; color: var(--tx-s);
+      word-break: break-all; text-align: center;
+      margin-bottom: 16px; background: #F8FAFC;
+      border: 1px solid var(--bd); border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .field { position: relative; margin-bottom: 12px; }
+    .field input {
+      width: 100%; height: 50px;
+      background: #fff; border: 1.5px solid var(--bd);
+      border-radius: 10px; padding: 0 14px;
+      font-size: 20px; font-weight: 700; letter-spacing: .2em;
+      text-align: center; font-family: 'Inter', sans-serif;
+      color: var(--tx); outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(27,68,184,.09);
+    }
+    .field label {
+      display: block; font-size: 11px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--tx-m); margin-bottom: 6px;
+    }
+
+    .gate-alert {
+      display: none; padding: 9px 12px;
+      background: #FEF2F2; border: 1px solid #FECACA;
+      border-radius: 8px; font-size: 12px; color: #B91C1C;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      width: 100%; height: 46px;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: background .14s, transform .1s, box-shadow .14s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .btn-primary {
+      background: var(--blue); color: #fff;
+      box-shadow: 0 2px 12px rgba(27,68,184,.22);
+    }
+    .btn-primary:hover { background: var(--blue-h); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(27,68,184,.28); }
+    .btn-outline {
+      background: #fff; color: var(--tx-m);
+      border: 1.5px solid var(--bd);
+    }
+    .btn-outline:hover { border-color: var(--tx-s); color: var(--tx); }
+    .btn:active { transform: scale(.99); }
+    .sp { display: none; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    .btn.ld .lbl { display: none; } .btn.ld .sp { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Admin page ──────────────────────────────────── */
+    .ad-page { display: none; min-height: 100vh; flex-direction: column; }
+    .ad-page.on { display: flex; }
+
+    .ad-header {
+      position: sticky; top: 0; z-index: 10;
+      background: #fff; border-bottom: 1px solid var(--bd);
+      padding: 12px 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .ad-logo {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 17px; font-weight: 900; letter-spacing: -.03em;
+    }
+    .ad-logo img { width: 26px; height: 26px; border-radius: 7px; }
+    .ad-logo .dot { color: #7C3AED; }
+    .ad-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: #1B44B8;
+      background: #EFF4FF; border: 1px solid #C7D7FD;
+      border-radius: 20px; padding: 3px 10px;
+    }
+    .ad-user { display: flex; align-items: center; gap: 10px; }
+    .ad-email { font-size: 12.5px; color: var(--tx-m); }
+    .ad-logout {
+      height: 32px; padding: 0 14px;
+      background: #fff; border: 1.5px solid var(--bd);
+      border-radius: 8px; font-size: 12px; font-weight: 600;
+      color: var(--tx-m); cursor: pointer; width: auto; margin: 0;
+      transition: border-color .13s, color .13s;
+    }
+    .ad-logout:hover { border-color: var(--tx-s); color: var(--tx); }
+
+    .ad-main { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 28px 28px 60px; }
+
+    .ad-kpis {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px;
+    }
+    .kpi {
+      background: #fff; border: 1px solid var(--bd);
+      border-radius: 14px; padding: 18px 20px;
+    }
+    .kpi-label { font-size: 11.5px; color: var(--tx-m); font-weight: 500; margin-bottom: 6px; }
+    .kpi-value { font-size: 26px; font-weight: 800; letter-spacing: -.04em; color: var(--tx); line-height: 1; }
+    .kpi-meta  { font-size: 11px; color: var(--tx-s); margin-top: 4px; }
+
+    .ad-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 14px;
+    }
+    .ad-toolbar h2 { font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
+    .ad-invite {
+      height: 36px; padding: 0 16px; width: auto; margin: 0;
+      background: var(--blue); color: #fff; border: none;
+      border-radius: 9px; font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      transition: background .13s;
+    }
+    .ad-invite:hover { background: var(--blue-h); }
+
+    .table-wrap {
+      background: #fff; border: 1px solid var(--bd);
+      border-radius: 14px; overflow: hidden;
+    }
+    .table-wrap table { width: 100%; border-collapse: collapse; min-width: 860px; }
+    .table-wrap thead th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--tx-s); background: #F8FAFC;
+      border-bottom: 1px solid var(--bd);
+      white-space: nowrap;
+    }
+    .table-wrap tbody td {
+      padding: 12px 16px; font-size: 13px;
+      border-bottom: 1px solid #F1F5F9;
+      white-space: nowrap;
+    }
+    .table-wrap tbody tr:last-child td { border-bottom: none; }
+    .table-wrap tbody tr:hover td { background: #FAFCFF; }
+
+    .store-link { font-weight: 600; color: var(--tx); text-decoration: none; }
+    .store-link:hover { color: var(--blue); }
+    .store-slug { font-size: 11px; color: var(--tx-s); font-family: ui-monospace, 'SF Mono', Menlo, monospace; margin-top: 2px; }
+
+    .xb {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .xb-green  { background: #D1FAE5; color: #065F46; }
+    .xb-blue   { background: #DBEAFE; color: #1E40AF; }
+    .xb-gold   { background: #FEF3C7; color: #92400E; }
+    .xb-gray   { background: #F1F5F9; color: var(--tx-s); }
+
+    .ad-empty {
+      text-align: center; padding: 60px 20px;
+      color: var(--tx-m); font-size: 13.5px;
+    }
+
+    /* ── Modal convidar ─────────────────────────────── */
+    .modal {
+      display: none; position: fixed; inset: 0; z-index: 800;
+      background: rgba(15,23,42,.45); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal.on { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 400px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.18);
+    }
+    .modal-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px; border-bottom: 1px solid var(--bd);
+    }
+    .modal-hd h3 { font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: #F8FAFC; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: var(--tx-m);
+      transition: background .13s;
+    }
+    .modal-close:hover { background: var(--bd); }
+    .modal-body { padding: 20px; }
+    .modal-label { font-size: 12px; font-weight: 600; color: var(--tx-m); margin-bottom: 5px; display: block; }
+    .modal-input {
+      width: 100%; height: 44px;
+      background: #fff; border: 1.5px solid var(--bd);
+      border-radius: 9px; padding: 0 12px;
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      color: var(--tx); outline: none;
+      transition: border-color .14s, box-shadow .14s;
+      margin-bottom: 12px;
+    }
+    .modal-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(27,68,184,.09);
+    }
+    .modal-alert {
+      display: none; padding: 9px 12px;
+      background: #FEF2F2; border: 1px solid #FECACA;
+      border-radius: 8px; font-size: 12px; color: #B91C1C;
+      margin-bottom: 10px;
+    }
+    .modal-actions {
+      display: flex; gap: 8px; justify-content: flex-end;
+      padding: 0 20px 20px;
+    }
+    .modal-actions .btn { width: auto; padding: 0 18px; margin: 0; }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 860px) {
+      .ad-kpis { grid-template-columns: repeat(2,1fr); }
+      .ad-header { padding: 12px 16px; }
+      .ad-main { padding: 18px 16px 60px; }
+      .table-wrap { overflow-x: auto; }
+    }
+    @media (max-width: 480px) {
+      .ad-kpis { grid-template-columns: 1fr; }
+      .ad-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <!-- ── Gate: MFA obrigatório ── -->
+  <div class="gate" id="gate" style="display:none">
+    <div class="gate-box">
+      <div class="gate-logo">
+        <img src="favicon.svg" alt="Shorti">
+        Shorti<span class="dot">.</span>
+        <span class="gate-badge">GrupoLima</span>
+      </div>
+
+      <!-- Primeiro acesso: configurar TOTP -->
+      <div id="view-enroll">
+        <div class="gate-title">Configure a verificação em duas etapas</div>
+        <div class="gate-desc">O painel GrupoLima acessa os dados de todas as lojas. Escaneie o QR code com Google Authenticator ou Authy antes de continuar.</div>
+        <div class="gate-qr" id="mfa-qr"></div>
+        <div class="gate-secret" id="mfa-secret"></div>
+        <div class="field">
+          <label for="enroll-code">Código de 6 dígitos</label>
+          <input type="text" id="enroll-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+        </div>
+        <div class="gate-alert" id="enroll-alert"></div>
+        <button class="btn btn-primary" id="enroll-btn" onclick="confirmEnroll()">
+          <div class="sp"></div><span class="lbl">Ativar e continuar</span>
+        </button>
+        <button class="btn btn-outline" onclick="doLogout()">Cancelar</button>
+      </div>
+
+      <!-- Sessões seguintes: inserir código TOTP -->
+      <div id="view-challenge" style="display:none">
+        <div class="gate-title">Verificação em duas etapas</div>
+        <div class="gate-desc">Digite o código gerado pelo seu app autenticador para acessar o painel GrupoLima.</div>
+        <div class="field">
+          <label for="challenge-code">Código de 6 dígitos</label>
+          <input type="text" id="challenge-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+        </div>
+        <div class="gate-alert" id="challenge-alert"></div>
+        <button class="btn btn-primary" id="challenge-btn" onclick="confirmChallenge()">
+          <div class="sp"></div><span class="lbl">Verificar e entrar</span>
+        </button>
+        <button class="btn btn-outline" onclick="doLogout()">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Painel admin ── -->
+  <div class="ad-page" id="ad-page">
+    <header class="ad-header">
+      <div class="ad-logo">
+        <img src="favicon.svg" alt="Shorti">
+        Shorti<span class="dot">.</span>
+        <span class="ad-badge">Painel GrupoLima</span>
+      </div>
+      <div class="ad-user">
+        <span class="ad-email" id="ad-email"></span>
+        <button class="ad-logout" onclick="doLogout()">Sair</button>
+      </div>
+    </header>
+
+    <main class="ad-main">
+      <div class="ad-kpis">
+        <div class="kpi">
+          <div class="kpi-label">Total de lojas</div>
+          <div class="kpi-value" id="kpi-total">—</div>
+          <div class="kpi-meta" id="kpi-total-meta"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Lojas publicadas</div>
+          <div class="kpi-value" id="kpi-pub">—</div>
+          <div class="kpi-meta" id="kpi-pub-meta"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Pedidos totais</div>
+          <div class="kpi-value" id="kpi-peds">—</div>
+          <div class="kpi-meta">em todas as lojas</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Faturamento</div>
+          <div class="kpi-value" id="kpi-fat">—</div>
+          <div class="kpi-meta">soma não cancelada</div>
+        </div>
+      </div>
+
+      <div class="ad-toolbar">
+        <h2>Lojas (tenants)</h2>
+        <button class="ad-invite" onclick="openInvite()">+ Convidar cliente</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Loja</th>
+              <th>Criada em</th>
+              <th>Última atividade</th>
+              <th>Publicada</th>
+              <th>WhatsApp</th>
+              <th>Pix</th>
+              <th>Produtos</th>
+              <th>Clientes</th>
+              <th>Pedidos</th>
+              <th>Faturamento</th>
+            </tr>
+          </thead>
+          <tbody id="ad-tbody"></tbody>
+        </table>
+        <div class="ad-empty" id="ad-empty" style="display:none">Nenhuma loja cadastrada ainda.</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Modal: convidar cliente ── -->
+  <div class="modal" id="m-invite">
+    <div class="modal-box">
+      <div class="modal-hd">
+        <h3>Convidar cliente</h3>
+        <button class="modal-close" onclick="closeMod('m-invite')">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="modal-label" for="inv-nome">Nome da loja / responsável</label>
+        <input class="modal-input" id="inv-nome" type="text" placeholder="Ex: Espaço Bella Estética">
+        <label class="modal-label" for="inv-email">E-mail</label>
+        <input class="modal-input" id="inv-email" type="email" placeholder="cliente@email.com">
+        <div class="modal-alert" id="inv-alert"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeMod('m-invite')">Cancelar</button>
+        <button class="btn btn-primary" id="inv-btn" onclick="doInvite()">
+          <div class="sp"></div><span class="lbl">Enviar convite</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+  <script src="./supabase.js" defer></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const brl = v => 'R$ ' + (+v||0).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+,)/g, '$1.');
+    const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('pt-BR') : '—';
+    const fmtDT   = iso => iso ? new Date(iso).toLocaleDateString('pt-BR') + ' ' + new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '—';
+    const xb = (on, label, cls) => `<span class="xb ${on ? cls : 'xb-gray'}">${label}</span>`;
+
+    function showToast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('on');
+      setTimeout(() => t.classList.remove('on'), 2800);
+    }
+
+    function openMod(id)  { $(id).classList.add('on'); document.body.style.overflow = 'hidden'; }
+    function closeMod(id) { $(id).classList.remove('on'); document.body.style.overflow = ''; }
+
+    async function doLogout() {
+      if (typeof SBAuth !== 'undefined') { try { await SBAuth.signOut(); } catch(e) {} }
+      window.location.replace('login.html');
+    }
+
+    /* ── MFA ─────────────────────────────────────────── */
+    let _mfaFactorId = null;
+
+    function showGate(which) {
+      $('gate').style.display = '';
+      $('view-enroll').style.display    = which === 'enroll'    ? '' : 'none';
+      $('view-challenge').style.display = which === 'challenge' ? '' : 'none';
+    }
+
+    async function checkMfaGate() {
+      const level = await SBAuth.mfaLevel();
+      if (level.currentLevel === 'aal2') return true;
+
+      const factors = await SBAuth.mfaListFactors();
+      const totp = factors.totp?.find(f => f.status === 'verified');
+      if (totp) {
+        _mfaFactorId = totp.id;
+        $('challenge-alert').style.display = 'none';
+        $('challenge-code').value = '';
+        showGate('challenge');
+      } else {
+        await startEnroll();
+      }
+      return false;
+    }
+
+    async function startEnroll() {
+      $('enroll-alert').style.display = 'none';
+      $('enroll-code').value = '';
+      $('mfa-qr').innerHTML = '';
+      $('mfa-secret').textContent = '';
+
+      /* Tenta remover fatores não verificados antes de criar um novo */
+      try {
+        const factors = await SBAuth.mfaListFactors();
+        for (const f of factors.totp || []) {
+          if (f.status !== 'verified') await SBAuth.mfaUnenroll(f.id).catch(() => {});
+        }
+      } catch(e) {}
+
+      try {
+        const data = await SBAuth.mfaEnroll();
+        _mfaFactorId = data.id;
+        const img = document.createElement('img');
+        img.alt = 'QR code'; img.width = 180; img.height = 180;
+        img.src = data.totp.qr_code;
+        $('mfa-qr').innerHTML = '';
+        $('mfa-qr').appendChild(img);
+        $('mfa-secret').textContent = data.totp.secret;
+        showGate('enroll');
+      } catch(e) {
+        /* Fator já existe e não pôde ser removido — usa o existente */
+        const factors = await SBAuth.mfaListFactors().catch(() => ({ totp: [] }));
+        const existing = (factors.totp || []).find(f => f.status !== 'verified');
+        if (existing) {
+          _mfaFactorId = existing.id;
+          $('challenge-code').value = '';
+          $('challenge-alert').textContent = 'Você já configurou o autenticador anteriormente. Digite o código do app para continuar.';
+          $('challenge-alert').style.display = 'block';
+          showGate('challenge');
+          return;
+        }
+        $('enroll-alert').textContent = e.message || 'Erro ao gerar código de configuração.';
+        $('enroll-alert').style.display = 'block';
+        showGate('enroll');
+      }
+    }
+
+    async function verifyCode(code, alertEl, btn) {
+      if (!/^\d{6}$/.test(code)) {
+        alertEl.textContent = 'Digite o código de 6 dígitos do app autenticador.';
+        alertEl.style.display = 'block';
+        return false;
+      }
+      btn.classList.add('ld'); btn.disabled = true;
+      try {
+        const ch = await SBAuth.mfaChallenge(_mfaFactorId);
+        await SBAuth.mfaVerify(_mfaFactorId, ch.id, code);
+        $('gate').style.display = 'none';
+        await loadPanel();
+        return true;
+      } catch(e) {
+        alertEl.textContent = e.message || 'Código inválido.';
+        alertEl.style.display = 'block';
+        return false;
+      } finally {
+        btn.classList.remove('ld'); btn.disabled = false;
+      }
+    }
+
+    function confirmEnroll() {
+      const alertEl = $('enroll-alert');
+      alertEl.style.display = 'none';
+      verifyCode($('enroll-code').value.trim(), alertEl, $('enroll-btn'));
+    }
+
+    function confirmChallenge() {
+      const alertEl = $('challenge-alert');
+      alertEl.style.display = 'none';
+      verifyCode($('challenge-code').value.trim(), alertEl, $('challenge-btn'));
+    }
+
+    /* Enter submits */
+    ['enroll-code','challenge-code'].forEach(id => {
+      $(id)?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); id === 'enroll-code' ? confirmEnroll() : confirmChallenge(); }
+      });
+    });
+
+    /* ── Painel ──────────────────────────────────────── */
+    function renderTenants(rows) {
+      const total = rows.length;
+      const pub   = rows.filter(r => r.published).length;
+      const peds  = rows.reduce((s,r) => s + (+r.pedidos||0), 0);
+      const fat   = rows.reduce((s,r) => s + (+r.faturamento||0), 0);
+
+      $('kpi-total').textContent     = total;
+      $('kpi-total-meta').textContent = total === 1 ? '1 loja' : `${total} lojas`;
+      $('kpi-pub').textContent       = pub;
+      $('kpi-pub-meta').textContent  = total ? `${pub} de ${total}` : '—';
+      $('kpi-peds').textContent      = peds;
+      $('kpi-fat').textContent       = brl(fat);
+
+      $('ad-empty').style.display = total ? 'none' : '';
+      $('ad-tbody').innerHTML = rows.map(r => `
+        <tr>
+          <td>
+            <a class="store-link" href="loja.html?loja=${encodeURIComponent(r.slug)}" target="_blank" rel="noopener">${r.nome || r.slug}</a>
+            <div class="store-slug">${r.slug}</div>
+          </td>
+          <td>${fmtDate(r.created_at)}</td>
+          <td>${fmtDT(r.last_active_at)}</td>
+          <td>${xb(r.published, r.published ? 'Sim' : 'Não', 'xb-green')}</td>
+          <td>${xb(!!r.whatsapp, r.whatsapp ? 'Sim' : 'Não', 'xb-blue')}</td>
+          <td>${xb(r.pix_verified, r.pix_verified ? 'Verificado' : (r.pix ? 'Pendente' : 'Não'), r.pix_verified ? 'xb-gold' : 'xb-blue')}</td>
+          <td>${r.produtos}</td>
+          <td>${r.clientes}</td>
+          <td>${r.pedidos}</td>
+          <td>${brl(r.faturamento)}</td>
+        </tr>`).join('');
+    }
+
+    async function loadPanel() {
+      $('ad-page').classList.add('on');
+      try {
+        const rows = await SBAdmin.listTenants();
+        renderTenants(rows);
+      } catch(e) {
+        showToast('Erro ao carregar: ' + e.message);
+        renderTenants([]);
+      }
+    }
+
+    /* ── Convite ─────────────────────────────────────── */
+    function openInvite() {
+      $('inv-nome').value = '';
+      $('inv-email').value = '';
+      $('inv-alert').style.display = 'none';
+      openMod('m-invite');
+    }
+
+    async function doInvite() {
+      const nome  = $('inv-nome').value.trim();
+      const email = $('inv-email').value.trim();
+      const alert = $('inv-alert');
+      alert.style.display = 'none';
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert.textContent = 'Informe um e-mail válido.';
+        alert.style.display = 'block';
+        return;
+      }
+      const btn = $('inv-btn');
+      btn.classList.add('ld'); btn.disabled = true;
+      try {
+        const res = await SBAdmin.invite({ email, nome });
+        closeMod('m-invite');
+        showToast(res.local ? 'Modo local: convite simulado.' : `Convite enviado para ${email}.`);
+      } catch(e) {
+        alert.textContent = e.message || 'Erro ao enviar convite.';
+        alert.style.display = 'block';
+      } finally {
+        btn.classList.remove('ld'); btn.disabled = false;
+      }
+    }
+
+    /* ── Boot ────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window._localMode) {
+        $('ad-email').textContent = '🧪 Modo local';
+        await loadPanel();
+        return;
+      }
+
+      if (!window._sbClient) return;
+
+      try {
+        const session = await SBAuth.getSession();
+        if (!session) { window.location.replace('login.html'); return; }
+        if (session.user?.email) $('ad-email').textContent = session.user.email;
+
+        const isAdmin = await Tenants.isAdmin();
+        if (!isAdmin) { window.location.replace('erp.html'); return; }
+
+        const mfaOk = await checkMfaGate();
+        if (mfaOk) await loadPanel();
+      } catch(e) {
+        console.warn('[admin boot]', e.message);
+        window.location.replace('login.html');
+      }
+
+      $('m-invite').addEventListener('click', e => { if (e.target === $('m-invite')) closeMod('m-invite'); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMod('m-invite'); });
+    });
+  </script>
+</body>
+</html>
