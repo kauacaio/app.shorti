@@ -50,8 +50,9 @@
       position: fixed; inset: 0;
       background: #000;
     }
-    #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-    #reader canvas { display: none !important; }
+    #reader video  { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+    /* Esconde só o canvas de processamento interno — não o viewfinder */
+    #reader canvas[style*="display: none"] { display: none !important; }
 
     /* Scan frame overlay */
     #scan-overlay {
@@ -449,6 +450,9 @@
     if (!_deviceCode) { _deviceCode = _genDeviceCode(); localStorage.setItem(DEV_KEY, _deviceCode); }
 
     let _pendingAutoSid = null;
+    let _scanCool = false;
+    let _count    = 0;
+    let _channel  = null;
     /* Cliente Supabase inicializado logo no carregamento da página */
     let _sbEarly = null;
     try { _sbEarly = supabase.createClient(SB_URL, SB_KEY); } catch(e) {}
@@ -630,10 +634,6 @@
         }
       });
     }
-
-    let _scanCool  = false;
-    let _count     = 0;
-    let _channel   = null;
 
     async function sendManual() {
       const inp   = document.getElementById('manual-inp');
