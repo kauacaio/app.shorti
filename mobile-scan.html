@@ -50,8 +50,9 @@
       position: fixed; inset: 0;
       background: #000;
     }
-    #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-    #reader canvas { display: none !important; }
+    #reader video  { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+    /* Esconde só o canvas de processamento interno — não o viewfinder */
+    #reader canvas[style*="display: none"] { display: none !important; }
 
     /* Scan frame overlay */
     #scan-overlay {

@@ -519,10 +519,15 @@ function _bindPhoneEvents(ch) {
     })
     .on('broadcast', { event: 'barcode' }, ({ payload }) => {
       if (!payload?.code) return;
+      /* Celular mandando barcode = está conectado, mesmo que phone-connected tenha chegado antes da subscription */
+      if (!_phoneConnected) {
+        _phoneConnected = true;
+        if (_phoneSid) localStorage.setItem(PHONE_SID_KEY, _phoneSid);
+      }
       const txt = $('scn-phone-status-txt');
       _phoneSetStatus('received');
       if (txt) txt.textContent = `✓ ${payload.code}`;
-      setTimeout(() => { if (_phoneConnected) _phoneSetStatus('connected'); }, 700);
+      setTimeout(() => _phoneSetStatus('connected', '📱 Celular conectado — pronto para escanear'), 700);
       onScanResult(payload.code);
     });
 }
@@ -610,7 +615,20 @@ async function _startPhonePairing() {
     config: { broadcast: { self: false } }
   });
   _bindPhoneEvents(_phoneChannel);
-  _phoneChannel.subscribe();
+  _phoneChannel
+    .on('broadcast', { event: 'pong' }, () => {
+      if (!_phoneConnected) {
+        _phoneConnected = true;
+        if (_phoneSid) localStorage.setItem(PHONE_SID_KEY, _phoneSid);
+        _phoneSetStatus('connected', '📱 Celular conectado — pronto para escanear');
+      }
+    })
+    .subscribe(status => {
+      /* Assim que conectado, pinga o celular — se ele já estiver na sessão responde com pong */
+      if (status === 'SUBSCRIBED') {
+        _phoneChannel.send({ type: 'broadcast', event: 'ping', payload: {} });
+      }
+    });
 }
 
 /* Gera um novo QR do zero — útil quando o link anterior não funcionou
