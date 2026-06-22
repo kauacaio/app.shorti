@@ -29,6 +29,7 @@ function epage(id, el) {
   const tt = { dashboard: 'Dashboard', receber: 'A Receber', historico: 'Histórico de Vendas', solicita: 'Solicitações', nvenda: 'Nova Venda', estoque: 'Estoque', clientes: 'Clientes', financeiro: 'Financeiro', catalogo: 'Catálogo', extrato: 'Extrato Mensal', relatorios: 'Relatórios', loja: 'Configurar Loja', consulta: 'Consultar Produto' };
   $('etitle').textContent = tt[id] || id;
   if ($('emh-ctx')) $('emh-ctx').textContent = tt[id] || id;
+  if (typeof SLog !== 'undefined') SLog.page(tt[id] || id);
   const mhdr = document.querySelector('.erp-mob-header');
   if (mhdr) mhdr.classList.toggle('is-dash', id === 'dashboard');
   if (id === 'dashboard') rMet();

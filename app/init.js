@@ -14,7 +14,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       let session = await SBAuth.getSession();
       /* Access token expirado mas refresh token ainda válido — renova */
       if (!session) session = await SBAuth.refreshSession().catch(() => null);
-      if (!session) { window.location.replace('login.html'); return; }
+      if (!session) {
+        if (typeof SLog !== 'undefined') SLog.sessionExpired();
+        window.location.replace('login.html'); return;
+      }
       const emailEl = $('user-email');
       if (emailEl && session.user?.email) emailEl.textContent = session.user.email;
       window._userId = session.user?.id || null;

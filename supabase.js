@@ -51,11 +51,18 @@ const SBAuth = {
   async signIn(email, password) {
     if (!_sbClient) throw new Error('Supabase não configurado');
     const { data, error } = await _sbClient.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) {
+      if (typeof SLog !== 'undefined') SLog.loginFail(email, error.message);
+      throw error;
+    }
+    if (typeof SLog !== 'undefined') SLog.loginOk(email);
     return data;
   },
   async signOut() {
     if (!_sbClient) return;
+    const { data: sess } = await _sbClient.auth.getSession();
+    const email = sess?.session?.user?.email;
+    if (typeof SLog !== 'undefined') SLog.logout(email);
     const { error } = await _sbClient.auth.signOut();
     if (error) throw error;
   },

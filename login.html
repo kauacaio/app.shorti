@@ -998,6 +998,7 @@ function showWorkspacePicker(workspaces) {
     `;
     card.addEventListener('click', () => {
       sessionStorage.setItem('_shorti_workspace', ws.id);
+      if (typeof SLog !== 'undefined') SLog.workspaceSelected(ws.slug, ws.nome);
       window.location.href = 'erp.html';
     });
     list.appendChild(card);
