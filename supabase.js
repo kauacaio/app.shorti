@@ -58,6 +58,15 @@ const SBAuth = {
     if (typeof SLog !== 'undefined') SLog.loginOk(email);
     return data;
   },
+  async signInWithGoogle() {
+    if (!_sbClient) throw new Error('Supabase não configurado');
+    const redirect = `${location.origin}/login.html`;
+    const { error } = await _sbClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: redirect, queryParams: { access_type: 'offline', prompt: 'consent' } }
+    });
+    if (error) throw error;
+  },
   async signOut() {
     if (!_sbClient) return;
     const { data: sess } = await _sbClient.auth.getSession();
