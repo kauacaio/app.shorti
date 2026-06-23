@@ -574,64 +574,57 @@
 
     /* ════ MOBILE — Tela de boas-vindas estilo app ════════ */
     @media (max-width: 768px) {
-      html, body { height: 100%; overflow-y: auto; }
+      /* Trava a página — zero scroll na tela toda */
+      html, body { height: 100%; height: 100dvh; overflow: hidden; }
 
       .page {
         display: flex; flex-direction: column;
-        min-height: 100vh; min-height: 100dvh;
+        height: 100vh; height: 100dvh;
         background: linear-gradient(170deg, #1a2a6c 0%, #1d4ed8 55%, #2563eb 100%);
         grid-template-columns: none;
+        overflow: hidden;
       }
 
-      /* ── Hero ── */
+      /* ── Hero — encolhe pra dar espaço pro card ── */
       .brand {
-        flex: none;
+        flex: 0 0 auto;
         background: transparent !important;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
-        padding: 0 28px 20px;
-        padding-top: max(52px, calc(env(safe-area-inset-top) + 36px));
+        padding-top: max(44px, calc(env(safe-area-inset-top) + 24px));
+        padding-bottom: 16px;
         text-align: center;
-        min-height: 36vh;
       }
       .brand::after, .brand-ring, .brand-grid,
       .brand-orbit, .brand-watermark { display: none !important; }
-
-      /* oculta tudo exceto o wordmark */
       .mob-logo, .mob-title-wrap, .mob-features { display: none !important; }
       .eyebrow, .brand-line, .b-tagline, .arrived, .brand-stats { display: none !important; }
-
-      /* wordmark no escuro */
       .b-inner { display: flex !important; flex-direction: column; align-items: center; }
-      .wm-row { font-size: clamp(54px, 18vw, 76px); margin-bottom: 0; }
+      .wm-row { font-size: clamp(48px, 16vw, 68px); margin-bottom: 0; }
       .wm { color: #fff !important; }
       .wm-bars span:nth-child(1) { background: rgba(255,255,255,.35) !important; }
       .wm-bars span:nth-child(2) { background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,.55) 100%) !important; }
 
-      /* ── Card de login ── */
+      /* ── Card — ocupa o resto e rola internamente se precisar ── */
       .form-side {
+        flex: 1;
         background: #fff !important;
         border-radius: 28px 28px 0 0;
         border-left: none !important; border-top: none !important;
-        padding: 24px 22px;
+        padding: 22px 22px;
         padding-bottom: max(20px, env(safe-area-inset-bottom));
         box-shadow: 0 -6px 32px rgba(0,0,0,.16);
         align-items: flex-start; justify-content: flex-start;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
       .card { max-width: 100% !important; width: 100%; opacity: 1; animation: none; }
       .c-title { font-size: 20px; }
-      .c-sub { margin-bottom: 20px; }
+      .c-sub { font-size: 13px; margin-bottom: 16px; }
       .field { margin-bottom: 10px; }
-      .divider { margin: 12px 0; }
+      .forgot { margin-bottom: 14px; }
+      .divider { margin: 10px 0; }
       .demo-note, .footer, #btn-demo-link { display: none !important; }
-      #divider-demo { margin: 10px 0; }
-
-      /* tela pequena */
-      @media (max-height: 680px) {
-        .brand { min-height: 28vh; padding-bottom: 12px; }
-        .wm-row { font-size: 44px; }
-        .c-sub { display: none; }
-      }
     }
   </style>
 </head>
