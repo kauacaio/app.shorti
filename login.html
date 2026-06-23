@@ -416,6 +416,31 @@
     }
     .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--bd); }
 
+    /* Google button */
+    .btn-google {
+      width: 100%; height: 46px;
+      background: #fff; color: #3c4043;
+      border: 1.5px solid var(--bd);
+      border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: -.01em;
+      cursor: pointer; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 10px;
+      transition: background .14s, border-color .14s, box-shadow .14s, transform .12s;
+    }
+    .btn-google:hover {
+      background: #F8FAFC;
+      border-color: var(--bd-s);
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      transform: translateY(-1px);
+    }
+    .btn-google:active { transform: scale(.99); }
+    .btn-google:disabled { opacity: .65; cursor: not-allowed; transform: none !important; }
+    .btn-google .sp { display:none; width:16px; height:16px; border:2px solid rgba(0,0,0,.15); border-top-color:#3c4043; border-radius:50%; animation:spin .7s linear infinite; }
+    .btn-google.ld .lbl { display:none; } .btn-google.ld .sp { display:block; }
+
     /* demo / test account */
     .btn-demo {
       width: 100%; height: 46px;
@@ -598,8 +623,8 @@
       .c-sub { margin-bottom: 20px; }
       .field { margin-bottom: 10px; }
       .divider { margin: 12px 0; }
-      .demo-note, .footer, .btn-demo { display: none !important; }
-      #btnGoogle { margin-bottom: 0 !important; }
+      .demo-note, .footer, #btn-demo-link { display: none !important; }
+      #divider-demo { margin: 10px 0; }
 
       /* tela pequena */
       @media (max-height: 680px) {
@@ -794,13 +819,13 @@
       <div class="divider" id="divider-demo">ou</div>
 
       <!-- Google Sign-In -->
-      <button type="button" class="btn-demo" id="btnGoogle" onclick="signInGoogle()" style="margin-bottom:10px;">
+      <button type="button" class="btn-google" id="btnGoogle" onclick="signInGoogle()">
         <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
         <span class="lbl">Entrar com Google</span>
         <div class="sp"></div>
       </button>
 
-      <a href="erp.html?local" class="btn-demo">
+      <a href="erp.html?local" class="btn-demo" id="btn-demo-link">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         Acessar conta de testes
       </a>
